@@ -26,12 +26,14 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from .anomaly import AnomalyDetector
-from .base import Action, BaseDetector, DetectorResult, Finding, Stage
+from .base import Action, BaseDetector, DetectorResult, Finding, Severity, Stage
+from .classify import DataClassifier
 from .harmful import HarmfulContentDetector, HarmfulOutputDetector
 from .injection import InjectionDetector
 from .normalizer import Normalizer
 from .output import CanaryLeakDetector, ExfiltrationDetector, RefusalConsistencyDetector
 from .pii import PIIDetector, PIILeakDetector
+from .rag import RAGAccessControl
 from .secrets import SecretsDetector, SecretsLeakDetector
 
 # Additional findings beyond the top one contribute at this decay per rank.
@@ -116,10 +118,21 @@ PROFILES: dict[str, PolicyProfile] = {
 DEFAULT_PROFILE = "balanced"
 
 
-def compute_risk_score(findings: Sequence[Finding]) -> float:
-    """Worst-finding floor plus decayed corroboration from the rest."""
+def compute_risk_score(findings: Sequence[Finding], mode: str = "worst_decay") -> float:
+    """Turn findings into a single 0-100 risk score.
+
+    Two modes:
+      * "worst_decay" (default) — the worst finding sets the floor and each
+        additional finding adds a sharply discounted amount.  Answers "how bad
+        is the worst thing, and is there corroboration?" without letting five
+        LOWs outweigh one CRITICAL.
+      * "sum" — plain additive scoring capped at 100, matching the midterm
+        framework's 합산 점수 model (rule scores added together).
+    """
     if not findings:
         return 0.0
+    if mode == "sum":
+        return min(_MAX_SCORE, round(sum(f.score for f in findings), 2))
     ranked = sorted((f.score for f in findings), reverse=True)
     score = ranked[0]
     for rank, value in enumerate(ranked[1:], start=1):
@@ -212,6 +225,8 @@ class PipelineResult:
     original_text: str = ""
     final_text: str = ""
     duration_ms: float = 0.0
+    # Public pipeline context (RAG retrieval, data grade) for the caller/UI.
+    context: dict[str, Any] = field(default_factory=dict)
 
     @property
     def blocked(self) -> bool:
@@ -234,6 +249,11 @@ class PipelineResult:
             "modified": self.modified,
             "blocked": self.blocked,
             "duration_ms": round(self.duration_ms, 3),
+            "data_grade": self.context.get("data_grade"),
+            "data_grade_label": self.context.get("data_grade_label"),
+            "data_grade_allowance": self.context.get("data_grade_allowance"),
+            "rag_permitted": self.context.get("rag_permitted", []),
+            "rag_denied": self.context.get("rag_denied", []),
         }
 
 
@@ -265,6 +285,10 @@ def build_input_detectors(
             detectors.append(NeMoRailsDetector())
 
     detectors.append(HarmfulContentDetector())
+    # RAG retrieval-stage access control, then the 5-grade data classifier
+    # (runs last so it can aggregate everything the earlier stages found).
+    detectors.append(RAGAccessControl())
+    detectors.append(DataClassifier())
     return detectors
 
 
@@ -288,8 +312,12 @@ class GuardrailEngine:
         *,
         use_presidio: bool = False,
         use_nemo: bool = False,
+        scoring: str = "worst_decay",
+        clearance: str = "student",
     ) -> None:
         self.profile = profile if isinstance(profile, PolicyProfile) else PROFILES[profile]
+        self.scoring = scoring if scoring in {"worst_decay", "sum"} else "worst_decay"
+        self.clearance = clearance
         self._input = build_input_detectors(use_presidio=use_presidio, use_nemo=use_nemo)
         self._output = build_output_detectors()
 
@@ -338,6 +366,7 @@ class GuardrailEngine:
         detectors = self._input if stage is Stage.INPUT else self._output
         ctx: dict[str, Any] = dict(context or {})
         ctx.setdefault("normalized", text)
+        ctx.setdefault("clearance", self.clearance)
 
         result = PipelineResult(stage=stage, original_text=text, final_text=text)
         started = time.perf_counter()
@@ -352,7 +381,17 @@ class GuardrailEngine:
             ctx.update(det_result.context)
 
             result.findings.extend(det_result.findings)
-            running_score = compute_risk_score(result.findings)
+            # Expose accumulated findings so late stages (data classifier) can
+            # aggregate what earlier detectors found, with their severities.
+            ctx["_finding_pairs"] = [
+                (f.category, f.severity.weight) for f in result.findings
+            ]
+            ctx["_critical_pii"] = [
+                f.category
+                for f in result.findings
+                if f.category.startswith("pii.") and f.severity is Severity.CRITICAL
+            ]
+            running_score = compute_risk_score(result.findings, self.scoring)
             running_action, _ = decide_action(result.findings, running_score, self.profile)
 
             outcome = StageOutcome(
@@ -379,11 +418,29 @@ class GuardrailEngine:
             if running_action is Action.BLOCK:
                 break
 
-        result.risk_score = compute_risk_score(result.findings)
+        result.risk_score = compute_risk_score(result.findings, self.scoring)
         result.action, result.rationale = decide_action(
             result.findings, result.risk_score, self.profile
         )
         result.final_text = current
+        # If the pipeline short-circuited on BLOCK before the data classifier ran,
+        # still assign a data grade from what was found so the UI is complete.
+        if stage is Stage.INPUT and "data_grade" not in ctx:
+            from .classify import GRADES, classify_grade
+
+            pairs = [(f.category, f.severity.weight) for f in result.findings]
+            crit = {
+                f.category
+                for f in result.findings
+                if f.category.startswith("pii.") and f.severity is Severity.CRITICAL
+            }
+            g = classify_grade(pairs, ctx)
+            if crit & {"pii.rrn", "pii.credit_card"}:
+                g = max(g, 5)
+            ctx["data_grade"] = g
+            ctx["data_grade_label"] = GRADES[g].label
+            ctx["data_grade_allowance"] = GRADES[g].allowance
+        result.context = {k: v for k, v in ctx.items() if not k.startswith("_")}
         result.duration_ms = (time.perf_counter() - started) * 1000
         return result
 

@@ -96,6 +96,12 @@ select { min-width: 150px; cursor: pointer; }
 .verdict.v-sanitize { background: #2a2410; border-color: var(--warn); }
 .verdict.v-flag { background: #1a2438; border-color: var(--info); }
 .verdict.v-allow { background: var(--safe-dim); border-color: var(--safe); }
+.grade-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; margin-left: 6px; display: inline-block; vertical-align: middle; }
+.grade-badge.g1 { background: var(--safe); color: #04220f; }
+.grade-badge.g2 { background: var(--low); color: #04283a; }
+.grade-badge.g3 { background: var(--med); color: #3a2e00; }
+.grade-badge.g4 { background: var(--high); color: #fff; }
+.grade-badge.g5 { background: var(--crit); color: #fff; }
 
 /* ---------- lanes ---------- */
 .lanes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }

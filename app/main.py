@@ -29,6 +29,8 @@ from .guardrail import (
     Stage,
     new_trace_id,
 )
+from .guardrail.rag import CLEARANCE_LABELS, KNOWLEDGE_BASE
+from .guardrail.rag import retrieve as rag_retrieve
 from .llm import available_backends, get_backend
 from .models import AnalyzeRequest, InspectRequest
 
@@ -52,16 +54,41 @@ app = FastAPI(
 )
 
 
-def _engine(profile: str) -> GuardrailEngine:
+def _engine(profile: str, *, scoring: str = "worst_decay", clearance: str = "student") -> GuardrailEngine:
     if profile not in PROFILES:
         raise HTTPException(status_code=400, detail=f"알 수 없는 정책 프로파일: {profile}")
     return GuardrailEngine(
-        profile, use_presidio=settings.use_presidio, use_nemo=settings.use_nemo
+        profile,
+        use_presidio=settings.use_presidio,
+        use_nemo=settings.use_nemo,
+        scoring=scoring,
+        clearance=clearance,
     )
 
 
 def _sse(event: str, data: dict[str, Any]) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
+def _integration_status() -> dict[str, Any]:
+    """Live status of the optional third-party engines for the UI."""
+    from .guardrail.adapters import nemo_available, presidio_available
+    from .guardrail.adapters.nemo import nemo_active
+
+    presidio_on = settings.use_presidio and presidio_available()
+    nemo_installed = settings.use_nemo and nemo_available()
+    return {
+        "presidio": presidio_on,
+        "nemo": nemo_installed and nemo_active(),
+        "presidio_status": (
+            "활성" if presidio_on else ("설정됨(미설치)" if settings.use_presidio else "off")
+        ),
+        "nemo_status": (
+            "활성"
+            if (nemo_installed and nemo_active())
+            else ("탑재됨(LLM 키 필요)" if nemo_installed else ("설정됨(미설치)" if settings.use_nemo else "off"))
+        ),
+    }
 
 
 def _categories(results: list[PipelineResult]) -> list[str]:
@@ -84,12 +111,20 @@ async def _run_unguarded(
     """The status quo: the prompt goes straight to the model, verbatim.
 
     Output detectors still run here — but only to *label* what got through.
-    Nothing is blocked, which is the whole point of the comparison.
+    Nothing is blocked, which is the whole point of the comparison.  RAG
+    retrieval runs with NO clearance filter, so restricted documents are pulled
+    into the model's context and leaked.
     """
     await emit("unguarded_start", {"prompt": prompt})
 
+    # No access control: retrieve every matching document regardless of CLR.
+    retrieved = rag_retrieve(prompt, None)
+    model_input = prompt
+    if retrieved.context_text():
+        model_input = prompt + "\n\n" + retrieved.context_text()
+
     llm = get_backend(backend_id)
-    response = await llm.complete(prompt, system)
+    response = await llm.complete(model_input, system)
     await emit(
         "unguarded_model",
         {"response": response.to_dict(), "system_prompt_sent": system},
@@ -126,9 +161,11 @@ async def _run_guarded(
     profile: str,
     emit: Any,
     step_delay: float,
+    scoring: str = "worst_decay",
+    clearance: str = "student",
 ) -> dict[str, Any]:
     """The protected path: input pipeline → model → output pipeline."""
-    engine = _engine(profile)
+    engine = _engine(profile, scoring=scoring, clearance=clearance)
     await emit("guarded_start", {"prompt": prompt, "profile": engine.profile.to_dict()})
 
     async def on_input_stage(outcome, running):  # type: ignore[no-untyped-def]
@@ -159,12 +196,18 @@ async def _run_guarded(
         await emit("guarded_done", blocked_payload)
         return blocked_payload
 
-    # The model receives the sanitized prompt, never the raw one.
+    # The model receives the sanitized prompt, never the raw one — and only the
+    # RAG documents the caller's clearance permits (retrieval-stage filtering).
     forwarded = input_result.final_text
-    await emit("guarded_model_start", {"forwarded_prompt": forwarded})
+    permitted_context = input_result.context.get("rag_permitted_context", "")
+    model_input = forwarded + ("\n\n" + permitted_context if permitted_context else "")
+    await emit(
+        "guarded_model_start",
+        {"forwarded_prompt": forwarded, "rag_permitted": input_result.context.get("rag_permitted", [])},
+    )
 
     llm = get_backend(backend_id)
-    response = await llm.complete(forwarded, system)
+    response = await llm.complete(model_input, system)
     await emit("guarded_model", {"response": response.to_dict()})
 
     async def on_output_stage(outcome, running):  # type: ignore[no-untyped-def]
@@ -216,7 +259,7 @@ async def _run_guarded(
 async def _orchestrate(req: AnalyzeRequest) -> AsyncIterator[str]:
     """Run both lanes concurrently, multiplexing their events onto one stream."""
     trace_id = new_trace_id()
-    engine = _engine(req.profile)
+    engine = _engine(req.profile, scoring=req.scoring, clearance=req.clearance)
     canary = GuardrailEngine.new_canary()
     system = SYSTEM_PROMPT_TEMPLATE.format(canary=canary)
     step_delay = settings.stage_delay_s if req.animate else 0.0
@@ -234,6 +277,8 @@ async def _orchestrate(req: AnalyzeRequest) -> AsyncIterator[str]:
             "system_prompt": system,
             "compare": req.compare,
             "backend": req.backend,
+            "clearance": req.clearance,
+            "scoring": req.scoring,
             **engine.describe(),
         },
     )
@@ -249,7 +294,8 @@ async def _orchestrate(req: AnalyzeRequest) -> AsyncIterator[str]:
 
     async def guarded_task() -> None:
         results["guarded"] = await _run_guarded(
-            req.prompt, system, req.backend, canary, req.profile, emit, step_delay
+            req.prompt, system, req.backend, canary, req.profile, emit, step_delay,
+            scoring=req.scoring, clearance=req.clearance,
         )
 
     async def runner() -> None:
@@ -305,6 +351,9 @@ def _summarize(
         "output_score": output_res.get("risk_score", 0.0),
         "finding_count": len(all_findings),
         "categories": categories,
+        "data_grade": input_res.get("data_grade"),
+        "data_grade_label": input_res.get("data_grade_label"),
+        "rag_denied": input_res.get("rag_denied", []),
         "guardrail_overhead_ms": round(total_ms, 2),
         "unguarded_leak_count": (unguarded or {}).get("leak_count", 0),
         "prevented": bool(
@@ -363,13 +412,21 @@ async def get_config() -> dict[str, Any]:
     return {
         **engine.describe(),
         "backends": available_backends(),
-        "integrations": {
-            "presidio": settings.use_presidio,
-            "nemo": settings.use_nemo,
-        },
+        "integrations": _integration_status(),
+        "clearances": [{"id": k, "label": v} for k, v in CLEARANCE_LABELS.items()],
+        "scoring_modes": [
+            {"id": "worst_decay", "label": "최악+보강 감쇠 (기본)"},
+            {"id": "sum", "label": "합산 (프레임워크 방식)"},
+        ],
+        "knowledge_base": [
+            {"doc_id": d.doc_id, "title": d.title, "min_clr": d.min_clr, "grade": d.grade}
+            for d in KNOWLEDGE_BASE
+        ],
         "defaults": {
             "profile": settings.default_profile,
             "backend": settings.default_backend,
+            "clearance": "student",
+            "scoring": "worst_decay",
         },
     }
 

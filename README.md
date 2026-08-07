@@ -25,6 +25,12 @@
 | `pii` | 주민번호·카드번호(체크섬 검증)·연락처·계좌·이메일 탐지 및 마스킹 |
 | `injection` | 지시 무시·역할 조작·시스템 프롬프트 탈취·구분자 위조 등 기법별 탐지 (다중 기법 시 가중) |
 | `harmful` | 무기·악성코드·침입·약물 등 분류. 실행 의도 + 유해 주제일 때만 점수화, 방어 목적 표현은 완화 |
+| `rag_access` | **RAG 권한 접근통제 (CLR)** — 학사 지식베이스를 요청자 권한 등급에 따라 검색 단계에서 필터링. 권한 초과(타 학생 성적·인사기록 등) 요청 차단. 같은 질의도 권한이 다르면 다른 답 |
+| `data_classifier` | **데이터 분류 5등급** — 프롬프트의 데이터 민감도를 1~5등급으로 분류하고 각 등급의 외부 AI 허용 범위를 제시 (점수와 별개의 분류 라벨 축) |
+
+**점수 방식**: `최악+보강 감쇠`(기본) 또는 `합산`(프레임워크 방식) 선택 가능 (`scoring` 파라미터).
+
+**RAG 권한 등급 (CLR)**: 외부/비로그인(CLR0) · 재학생(CLR1) · 교직원(CLR2) · 학사관리자(CLR3). `clearance` 파라미터로 지정하며 "같은 질의, 다른 답"을 시연합니다.
 
 출력 파이프라인:
 
@@ -39,13 +45,23 @@
 차단/마스킹 규칙이 다릅니다. 점수는 단순 합산이 아니라 "최악 항목 + 감쇠된 보강 근거" 방식이라
 LOW 여러 개가 CRITICAL 하나를 넘지 못합니다.
 
-### 외부 엔진 연동 (선택)
+### 외부 엔진 연동 — Microsoft Presidio · NVIDIA NeMo Guardrails
 
-`Detector` 프로토콜 기반이라 오픈소스 엔진을 어댑터로 끼울 수 있습니다. 라이브러리가 없으면
-자동으로 내장 탐지기로 폴백합니다.
+`Detector` 프로토콜 기반이라 오픈소스 엔진을 어댑터로 결합합니다. **`Dockerfile.full` /
+`docker-compose.full.yml`** 로 빌드하면 두 엔진이 실제로 탑재·실행됩니다 (기본 이미지는 CI
+속도를 위해 미포함, 라이브러리 부재 시 내장 탐지기로 자동 폴백).
 
-- **Microsoft Presidio** (`GUARDRAIL_USE_PRESIDIO=1`): NER 기반 PII 추가 탐지
-- **NVIDIA NeMo Guardrails** (`GUARDRAIL_USE_NEMO=1`): 입력 레일(주제 제어·탈옥 자가검사)
+- **Microsoft Presidio** (`GUARDRAIL_USE_PRESIDIO=1`): spaCy NER 기반으로 영문 이름·주소·기관 등
+  정규식이 못 잡는 PII를 추가 탐지. full 이미지에서 **오프라인으로 완전 동작** (상태: 활성).
+- **NVIDIA NeMo Guardrails** (`GUARDRAIL_USE_NEMO=1`): 입력 레일(주제 제어·탈옥 자가검사).
+  self-check 레일이 LLM을 호출하므로 `ANTHROPIC_API_KEY` 설정 시 완전 활성화 (미설정 시
+  "탑재됨(LLM 키 필요)" 상태로 안전하게 비동작).
+
+```bash
+# Presidio + NeMo 탑재 버전 실행
+docker compose -f docker-compose.full.yml up -d --build
+# UI 상단 칩에서 각 엔진의 활성/탑재 상태를 확인할 수 있습니다.
+```
 
 ## 실행
 

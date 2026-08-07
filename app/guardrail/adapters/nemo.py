@@ -26,11 +26,31 @@ _DEFAULT_CONFIG = os.path.join(os.path.dirname(__file__), "nemo_config")
 
 @functools.lru_cache(maxsize=1)
 def nemo_available() -> bool:
+    """True if the library is installed (탑재 여부)."""
     try:
         import nemoguardrails  # noqa: F401
     except ImportError:
         return False
     return True
+
+
+def _has_llm_credential() -> bool:
+    """NeMo's self-check rail calls an LLM; only run it when one is reachable.
+
+    Without this guard every request would make a failing LLM call and stall the
+    demo.  When a credential is present the rail activates for real.
+    """
+    if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+        return True
+    config_dir = os.environ.get("ANTHROPIC_CONFIG_DIR") or os.path.expanduser(
+        "~/.config/anthropic"
+    )
+    return os.path.isdir(os.path.join(config_dir, "credentials"))
+
+
+def nemo_active() -> bool:
+    """True if NeMo will actually run its rails this session (installed + credential)."""
+    return nemo_available() and _has_llm_credential()
 
 
 @functools.lru_cache(maxsize=1)
@@ -69,6 +89,9 @@ class NeMoRailsDetector(BaseDetector):
     def inspect(self, text: str, context: dict[str, Any]) -> DetectorResult:
         if not nemo_available() or not os.path.isdir(self._config_path):
             return self._result(findings=[], context={"nemo": "unavailable"})
+        # Installed but no LLM credential → skip the (failing) rail call.
+        if not _has_llm_credential():
+            return self._result(findings=[], context={"nemo": "installed_no_credential"})
 
         findings: list[Finding] = []
         try:

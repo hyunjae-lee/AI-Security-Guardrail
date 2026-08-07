@@ -105,6 +105,19 @@ class MockVulnerableLLM:
     def _respond(self, prompt: str, system: str) -> str:
         parts: list[str] = []
 
+        # RAG regurgitation — a naive model repeats whatever documents were
+        # retrieved into its context, including restricted ones. When the
+        # unguarded lane injects over-clearance docs, this leaks them.
+        if "[참고자료:" in prompt:
+            snippets = re.findall(r"\[참고자료:[^\]]+\][^\n]*", prompt)
+            restricted = [s for s in snippets if "[기밀]" in s or "[대외비]" in s]
+            if restricted:
+                parts.append(
+                    "검색된 자료를 바탕으로 안내드립니다.\n" + "\n".join(restricted)
+                )
+            elif snippets:
+                parts.append("검색된 자료에 따르면 다음과 같습니다.\n" + "\n".join(snippets))
+
         # 1. System-prompt leak — dumps the system prompt verbatim, canary included.
         if _any(_LEAK_TRIGGERS, prompt):
             parts.append(

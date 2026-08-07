@@ -1,0 +1,43 @@
+# Full image: bundles Microsoft Presidio and NVIDIA NeMo Guardrails so the
+# third-party engines run for real. Larger and slower to build than the base
+# Dockerfile — the base image is what CI builds; this is the "탑재" deployment.
+FROM python:3.12-slim AS base
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    GUARDRAIL_PORT=8088 \
+    GUARDRAIL_USE_PRESIDIO=1 \
+    GUARDRAIL_USE_NEMO=1
+
+WORKDIR /app
+
+# Build deps some wheels need, removed after install to keep the image smaller.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements-full.txt requirements.txt ./
+# Presidio's default recognizers need a spaCy model for NER. `spacy download`
+# fetches a compatibility file from raw.githubusercontent.com, which this
+# network intercepts (SSL MITM) — install the model wheel straight from the
+# GitHub release instead, which is reachable.
+RUN pip install --no-cache-dir -r requirements-full.txt \
+    && pip install --no-cache-dir \
+       "https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl" \
+    && apt-get purge -y build-essential && apt-get autoremove -y
+
+COPY app ./app
+COPY attacks ./attacks
+
+RUN useradd --create-home --uid 10001 guardrail \
+    && mkdir -p /app/data \
+    && chown -R guardrail:guardrail /app
+USER guardrail
+
+EXPOSE 8088
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
+    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8088/healthz').status==200 else 1)"
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8088"]

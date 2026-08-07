@@ -1,0 +1,24 @@
+services:
+  guardrail:
+    build:
+      context: .
+      dockerfile: Dockerfile.full
+    image: ai-security-guardrail:full
+    container_name: ai-security-guardrail
+    restart: unless-stopped
+    ports:
+      - "8088:8088"
+    environment:
+      GUARDRAIL_PROFILE: ${GUARDRAIL_PROFILE:-balanced}
+      GUARDRAIL_BACKEND: ${GUARDRAIL_BACKEND:-mock}
+      GUARDRAIL_STAGE_DELAY: ${GUARDRAIL_STAGE_DELAY:-0.28}
+      # Presidio + NeMo are baked into this image and enabled by default.
+      GUARDRAIL_USE_PRESIDIO: ${GUARDRAIL_USE_PRESIDIO:-1}
+      GUARDRAIL_USE_NEMO: ${GUARDRAIL_USE_NEMO:-1}
+      # Set a Claude credential to fully activate the NeMo self-check rail.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    volumes:
+      - guardrail-data:/app/data
+
+volumes:
+  guardrail-data:

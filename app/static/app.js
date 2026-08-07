@@ -110,6 +110,30 @@ function populateSelectors(cfg, samples) {
     backendSel.appendChild(o);
   });
 
+  const clrSel = $("#clearance");
+  if (clrSel) {
+    clrSel.innerHTML = "";
+    (cfg.clearances || []).forEach((c) => {
+      const o = document.createElement("option");
+      o.value = c.id;
+      o.textContent = c.label;
+      if (c.id === (cfg.defaults?.clearance || "student")) o.selected = true;
+      clrSel.appendChild(o);
+    });
+  }
+
+  const scoreSel = $("#scoring");
+  if (scoreSel) {
+    scoreSel.innerHTML = "";
+    (cfg.scoring_modes || []).forEach((s) => {
+      const o = document.createElement("option");
+      o.value = s.id;
+      o.textContent = s.label;
+      if (s.id === (cfg.defaults?.scoring || "worst_decay")) o.selected = true;
+      scoreSel.appendChild(o);
+    });
+  }
+
   const sampleSel = $("#sample");
   const cats = {};
   (samples.categories || []).forEach((c) => (cats[c.id] = c.label));
@@ -128,16 +152,17 @@ function populateSelectors(cfg, samples) {
 function renderIntegrations(integ) {
   const box = $("#integrations");
   const items = [
-    { id: "presidio", label: "Microsoft Presidio (PII/NER)" },
-    { id: "nemo", label: "NVIDIA NeMo Guardrails" },
+    { id: "presidio", label: "Microsoft Presidio (PII/NER)", status: integ.presidio_status },
+    { id: "nemo", label: "NVIDIA NeMo Guardrails", status: integ.nemo_status },
   ];
   box.innerHTML = items
-    .map(
-      (i) =>
-        `<span class="integ-chip ${integ[i.id] ? "on" : ""}">${integ[i.id] ? "● " : "○ "}${esc(
-          i.label
-        )}</span>`
-    )
+    .map((i) => {
+      const on = !!integ[i.id];
+      const st = i.status && i.status !== "off" ? ` · ${esc(i.status)}` : "";
+      return `<span class="integ-chip ${on ? "on" : ""}">${on ? "● " : "○ "}${esc(
+        i.label
+      )}${st}</span>`;
+    })
     .join("");
 }
 
@@ -287,6 +312,8 @@ async function runDemo() {
     prompt,
     profile: $("#profile").value,
     backend: $("#backend").value,
+    clearance: ($("#clearance") || {}).value || "student",
+    scoring: ($("#scoring") || {}).value || "worst_decay",
     compare: true,
     animate: true,
   };
@@ -421,6 +448,8 @@ function dispatch(event, d) {
   }
 }
 
+const GRADE_CLS = { 1: "g1", 2: "g2", 3: "g3", 4: "g4", 5: "g5" };
+
 function showVerdict(s) {
   const meta = ACTION_META[s.final_action] || ACTION_META.allow;
   const v = $("#verdict");
@@ -428,9 +457,19 @@ function showVerdict(s) {
   const prevented = s.prevented
     ? `<b style="color:var(--safe)">가드레일이 실제 유출을 차단했습니다.</b> `
     : "";
+  const grade =
+    s.data_grade && s.data_grade_label
+      ? `<span class="grade-badge ${GRADE_CLS[s.data_grade] || "g1"}">데이터 ${esc(
+          s.data_grade_label
+        )}</span>`
+      : "";
+  const rag =
+    (s.rag_denied || []).length > 0
+      ? `<span class="grade-badge g4">RAG 권한초과 차단 ${s.rag_denied.length}건</span>`
+      : "";
   v.innerHTML =
     `<span class="v-icon">${meta.icon}</span>` +
-    `<div><div>가드레일 최종 판정: ${meta.label}</div>` +
+    `<div><div>가드레일 최종 판정: ${meta.label} ${grade} ${rag}</div>` +
     `<div class="v-detail">${prevented}` +
     `무방비 경로 유출 ${s.unguarded_leak_count}건 · 탐지 ${s.finding_count}건 · ` +
     `입력점수 ${s.input_score} / 출력점수 ${s.output_score} · ` +
