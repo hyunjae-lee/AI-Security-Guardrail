@@ -5,11 +5,66 @@ const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-const state = { config: null, samples: [], canary: null, running: false };
+const state = { config: null, samples: [], canary: null, running: false, run: {} };
+
+// --------------------------------------------------------------- word diff
+// LCS-based token diff. Whitespace is kept as tokens so redaction tokens like
+// [REDACTED:RRN] (no internal spaces) stay atomic and align cleanly.
+function diffWords(a, b) {
+  const A = (a || "").split(/(\s+)/);
+  const B = (b || "").split(/(\s+)/);
+  const CAP = 1600; // guard against length-bomb inputs
+  if (A.length > CAP || B.length > CAP) {
+    return [{ t: "eq", s: (a || "").slice(0, 400) + " …(생략)" }];
+  }
+  const n = A.length, m = B.length;
+  const dp = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+  for (let i = n - 1; i >= 0; i--)
+    for (let j = m - 1; j >= 0; j--)
+      dp[i][j] = A[i] === B[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const out = [];
+  let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (A[i] === B[j]) out.push({ t: "eq", s: A[i++] }), j++;
+    else if (dp[i + 1][j] >= dp[i][j + 1]) out.push({ t: "del", s: A[i++] });
+    else out.push({ t: "ins", s: B[j++] });
+  }
+  while (i < n) out.push({ t: "del", s: A[i++] });
+  while (j < m) out.push({ t: "ins", s: B[j++] });
+  return out;
+}
+
+// Full diff for the guarded side (deletions struck, insertions highlighted).
+function renderDiff(parts) {
+  return parts
+    .map((p) =>
+      p.t === "eq" ? esc(p.s) : p.t === "del" ? `<del>${esc(p.s)}</del>` : `<ins>${esc(p.s)}</ins>`
+    )
+    .join("");
+}
+
+// Original text as the unguarded lane sent it — the parts the guardrail *would*
+// have removed are marked as raw exposure.
+function renderOriginalWithExposure(parts) {
+  return parts
+    .filter((p) => p.t !== "ins")
+    .map((p) => (p.t === "del" ? `<span class="danger-tok">${esc(p.s)}</span>` : esc(p.s)))
+    .join("");
+}
+
+function redactionSummary(parts) {
+  const counts = {};
+  for (const p of parts) {
+    if (p.t !== "ins") continue;
+    const m = p.s.match(/\[REDACTED:(\w+)\]/);
+    if (m) counts[m[1]] = (counts[m[1]] || 0) + 1;
+  }
+  return Object.entries(counts).map(([k, v]) => `${k}×${v}`);
+}
 
 const ACTION_META = {
-  block: { icon: "⛔", label: "차단됨 (BLOCK)", cls: "v-block" },
-  sanitize: { icon: "🧼", label: "치환 후 전달 (SANITIZE)", cls: "v-sanitize" },
+  block: { icon: "⛔", label: "차단 (BLOCK)", cls: "v-block" },
+  sanitize: { icon: "🧼", label: "마스킹 후 전달 (MASK)", cls: "v-sanitize" },
   flag: { icon: "🚩", label: "전달 + 검토 표시 (FLAG)", cls: "v-flag" },
   allow: { icon: "✅", label: "정상 통과 (ALLOW)", cls: "v-allow" },
 };
@@ -119,6 +174,66 @@ function resetLanes() {
     el.classList.remove("active", "blocked", "passed");
   });
   $$(".arrow").forEach((a) => a.classList.remove("flowing"));
+  ["di-ug", "di-g", "do-ug", "do-g"].forEach((id) => {
+    $("#" + id).innerHTML = "대기 중…";
+    $("#" + id).className = "diff-text muted";
+  });
+  $("#di-note").innerHTML = "";
+  $("#do-note").innerHTML = "";
+}
+
+function renderDiffs() {
+  const g = state.run.guarded;
+  const u = state.run.unguarded;
+  if (!g) return;
+
+  // ---- ① input payload: 사용자 → AI ----
+  if (g.blocked_at === "input") {
+    $("#di-ug").className = "diff-text";
+    $("#di-ug").innerHTML = renderOriginalWithExposure(diffWords(g.original_prompt, g.forwarded_prompt || ""));
+    $("#di-g").className = "diff-text";
+    $("#di-g").innerHTML = `<span class="danger-tok">⛔ 입력 파이프라인에서 차단 — AI로 전달되지 않음</span>`;
+    $("#di-note").innerHTML =
+      `<b>무방비 경로</b>에서는 위 원본 프롬프트가 <b>그대로</b> AI에 전달됩니다. ` +
+      `가드레일은 AI에 도달하기 전에 요청 자체를 차단했습니다.`;
+  } else if (g.forwarded_prompt != null) {
+    const parts = diffWords(g.original_prompt, g.forwarded_prompt);
+    $("#di-ug").className = "diff-text";
+    $("#di-ug").innerHTML = renderOriginalWithExposure(parts);
+    $("#di-g").className = "diff-text";
+    $("#di-g").innerHTML = renderDiff(parts) || esc(g.forwarded_prompt);
+    const red = redactionSummary(parts);
+    $("#di-note").innerHTML = g.input_modified
+      ? `가드레일이 AI 전달 전에 민감정보 <b>${red.join(", ") || "일부"}</b>를 치환했습니다. ` +
+        `무방비 경로에서는 <b>빨간 표시 부분이 원본 그대로</b> AI에 전달됩니다.`
+      : `이 요청은 마스킹 대상 민감정보가 없어 <b>원문 그대로</b> 전달되었습니다(위험 신호는 별도 탐지).`;
+  }
+
+  // ---- ② response: AI → 사용자 ----
+  if (u) {
+    const r = u.response || {};
+    const txt = r.refused ? "🛑 (AI가 자체적으로 거절)" : r.error ? "오류: " + r.error : r.text || "(빈 응답)";
+    $("#do-ug").className = "diff-text";
+    $("#do-ug").innerHTML = highlightResponse(txt, state.canary);
+  }
+  if (g.blocked_at === "output") {
+    $("#do-g").className = "diff-text";
+    $("#do-g").innerHTML = `<span class="danger-tok">⛔ 출력 파이프라인에서 차단 — 사용자에게 전달되지 않음</span>`;
+    $("#do-note").innerHTML =
+      `AI가 생성한 응답에는 정책 위반(예: 시스템 프롬프트/카나리아 유출)이 있었지만, ` +
+      `<b>출력 가드레일이 사용자 전달을 차단</b>했습니다. 무방비 경로(좌)는 그대로 노출됩니다.`;
+  } else if (g.blocked_at === "input") {
+    $("#do-g").className = "diff-text";
+    $("#do-g").innerHTML = `<span class="danger-tok">⛔ 입력 단계에서 차단되어 응답 자체가 생성되지 않음</span>`;
+  } else if (g.raw_response != null) {
+    const parts = diffWords(g.raw_response, g.delivered_text);
+    $("#do-g").className = "diff-text";
+    $("#do-g").innerHTML = renderDiff(parts) || esc(g.delivered_text);
+    const red = redactionSummary(parts);
+    $("#do-note").innerHTML = g.output_modified
+      ? `AI 응답에서 <b>${red.join(", ") || "민감정보"}</b>를 마스킹한 뒤 전달했습니다.`
+      : `AI 응답에 위반 사항이 없어 <b>변경 없이</b> 전달되었습니다.`;
+  }
 }
 
 function stageEl(s) {
@@ -163,6 +278,7 @@ async function runDemo() {
   const prompt = $("#prompt").value.trim();
   if (!prompt) return;
   state.running = true;
+  state.run = {};
   $("#run").disabled = true;
   $("#conn").textContent = "● 연결됨 (SSE)";
   resetLanes();
@@ -240,6 +356,8 @@ function dispatch(event, d) {
       $("#ug-leaks").innerHTML = leaks
         .map((f) => `<div class="leak-item">⚠️ ${esc(f.message)} <b>[${esc(f.category)}]</b></div>`)
         .join("");
+      state.run.unguarded = d;
+      renderDiffs();
       break;
     }
     case "guarded_start":
@@ -287,6 +405,8 @@ function dispatch(event, d) {
         $("#g-output").classList.add("passed");
         $("#g-delivered").innerHTML = highlightResponse(d.delivered_text || "(빈 응답)", null);
       }
+      state.run.guarded = d;
+      renderDiffs();
       break;
     }
     case "summary":

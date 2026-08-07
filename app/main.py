@@ -143,23 +143,21 @@ async def _run_guarded(
     await emit("input_verdict", {"result": input_result.to_dict()})
 
     if input_result.blocked:
-        await emit(
-            "guarded_done",
-            {
-                "blocked_at": "input",
-                "input": input_result.to_dict(),
-                "output": None,
-                "response": None,
-                "final_action": Action.BLOCK.value,
-            },
-        )
-        return {
+        blocked_payload = {
             "blocked_at": "input",
             "input": input_result.to_dict(),
             "output": None,
             "response": None,
+            "original_prompt": prompt,
+            "forwarded_prompt": None,  # never reached the model
+            "raw_response": None,
+            "delivered_text": None,
+            "input_modified": input_result.modified,
+            "output_modified": False,
             "final_action": Action.BLOCK.value,
         }
+        await emit("guarded_done", blocked_payload)
+        return blocked_payload
 
     # The model receives the sanitized prompt, never the raw one.
     forwarded = input_result.final_text
@@ -200,7 +198,15 @@ async def _run_guarded(
         "input": input_result.to_dict(),
         "output": output_result.to_dict(),
         "response": response.to_dict(),
+        # The three texts the diff view compares: what the user typed, what the
+        # model actually received (sanitized), the model's raw answer, and what
+        # the user finally gets (masked or blocked).
+        "original_prompt": prompt,
+        "forwarded_prompt": forwarded,
+        "raw_response": response.text,
         "delivered_text": delivered,
+        "input_modified": input_result.modified,
+        "output_modified": output_result.blocked or output_result.modified,
         "final_action": final_action,
     }
     await emit("guarded_done", payload)

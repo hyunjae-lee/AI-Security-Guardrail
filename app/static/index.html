@@ -106,6 +106,41 @@
         </div>
       </div>
 
+      <div class="diff-section" id="diff-section">
+        <div class="panel-title">🔀 페이로드 변환 비교 — 가드레일 없음 vs 있음</div>
+        <div class="diff-grid">
+          <div class="diff-block">
+            <div class="diff-head">① 사용자 → <b>AI가 실제로 받는 Payload</b></div>
+            <div class="diff-lane danger">
+              <span class="dl-tag danger">가드레일 없음</span>
+              <div id="di-ug" class="diff-text muted">대기 중…</div>
+            </div>
+            <div class="diff-lane safe">
+              <span class="dl-tag safe">가드레일 통과</span>
+              <div id="di-g" class="diff-text muted">대기 중…</div>
+            </div>
+            <div id="di-note" class="diff-note"></div>
+          </div>
+          <div class="diff-block">
+            <div class="diff-head">② AI → <b>사용자가 실제로 받는 응답</b></div>
+            <div class="diff-lane danger">
+              <span class="dl-tag danger">가드레일 없음</span>
+              <div id="do-ug" class="diff-text muted">대기 중…</div>
+            </div>
+            <div class="diff-lane safe">
+              <span class="dl-tag safe">가드레일 통과</span>
+              <div id="do-g" class="diff-text muted">대기 중…</div>
+            </div>
+            <div id="do-note" class="diff-note"></div>
+          </div>
+        </div>
+        <div class="diff-legend">
+          <span><span class="chip-del">삭제/치환됨</span> 가드레일이 제거한 부분</span>
+          <span><span class="chip-ins">추가됨</span> 마스킹 토큰</span>
+          <span><span class="chip-danger">위험 노출</span> 무방비 경로에서 그대로 전달된 민감 정보</span>
+        </div>
+      </div>
+
       <div class="findings-panel">
         <div class="panel-title">탐지 내역 (Findings)</div>
         <div id="findings" class="findings"><p class="muted">실행하면 각 단계에서 탐지된 항목이 여기에 표시됩니다.</p></div>
