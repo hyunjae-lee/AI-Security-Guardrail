@@ -12,7 +12,7 @@ set -euo pipefail
 
 REPO="hyunjae-lee/AI-Security-Guardrail"
 RUNNER_DIR="${RUNNER_DIR:-$HOME/actions-runner-guardrail}"
-RUNNER_VERSION="${RUNNER_VERSION:-2.321.0}"
+RUNNER_VERSION="${RUNNER_VERSION:-2.336.0}"
 LABELS="guardrail-host"
 
 echo "==> Registering self-hosted runner for $REPO under $RUNNER_DIR"

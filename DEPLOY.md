@@ -9,7 +9,9 @@
 
 ```bash
 cd /home/kaistcert/app/AI-Security-Guardrail
-docker compose up -d --build
+# Presidio + NeMo 탑재 버전 (권장 · CD도 이 버전을 배포)
+docker compose -f docker-compose.full.yml up -d --build
+# 또는 경량 버전(외부 엔진 미포함): docker compose up -d --build
 curl http://127.0.0.1:8088/healthz
 ```
 
