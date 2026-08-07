@@ -14,7 +14,9 @@ class AnalyzeRequest(BaseModel):
     profile: str = Field(default=DEFAULT_PROFILE)
     backend: Literal["mock", "claude"] = Field(default="mock")
     # 요청자 권한 등급 (RAG 접근통제) 및 점수 산정 방식.
-    clearance: Literal["public", "student", "staff", "admin"] = "student"
+    clearance: Literal[
+        "external", "student", "researcher", "professor", "staff", "registrar", "hr"
+    ] = "student"
     scoring: Literal["worst_decay", "sum"] = "worst_decay"
     # When false the demo skips the unguarded lane (useful for API-only use).
     compare: bool = True

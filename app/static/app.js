@@ -145,7 +145,14 @@ function populateSelectors(cfg, samples) {
   });
   sampleSel.addEventListener("change", () => {
     const s = state.samples.find((x) => x.id === sampleSel.value);
-    if (s) $("#prompt").value = s.prompt;
+    if (!s) return;
+    $("#prompt").value = s.prompt;
+    // Selecting a role-scoped sample sets the requester clearance so the
+    // RAG access-control demo reflects that role.
+    if (s.clearance && $("#clearance")) {
+      const opt = Array.from($("#clearance").options).find((o) => o.value === s.clearance);
+      if (opt) $("#clearance").value = s.clearance;
+    }
   });
 }
 

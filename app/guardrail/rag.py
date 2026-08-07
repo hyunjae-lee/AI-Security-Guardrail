@@ -19,19 +19,26 @@ from typing import Any
 
 from .base import BaseDetector, DetectorResult, Finding, Severity, Stage
 
-# 권한 등급 (Clearance Level).  숫자가 클수록 높은 권한.
+# 권한 등급 (Clearance Level).  숫자가 클수록 높은 권한.  KAIST 구성원 역할을
+# 4개 등급(CLR0~3)에 매핑합니다.
 CLEARANCE_LEVELS: dict[str, int] = {
-    "public": 0,   # 외부/비로그인
-    "student": 1,  # 재학생
-    "staff": 2,    # 교직원
-    "admin": 3,    # 학사 관리자
+    "external": 0,    # 외부인/미로그인
+    "student": 1,     # 학생
+    "researcher": 1,  # 연구원(학생연구원 포함)
+    "professor": 2,   # 교수
+    "staff": 2,       # 행정 직원
+    "registrar": 3,   # 학사행정팀 (성적·학적 접근)
+    "hr": 3,          # 인사팀 (인사·급여 접근)
 }
 
 CLEARANCE_LABELS: dict[str, str] = {
-    "public": "외부/비로그인 (CLR0)",
-    "student": "재학생 (CLR1)",
-    "staff": "교직원 (CLR2)",
-    "admin": "학사 관리자 (CLR3)",
+    "external": "외부인 (CLR0)",
+    "student": "학생 (CLR1)",
+    "researcher": "연구원 (CLR1)",
+    "professor": "교수 (CLR2)",
+    "staff": "행정 직원 (CLR2)",
+    "registrar": "학사행정팀 (CLR3)",
+    "hr": "인사팀 (CLR3)",
 }
 
 
@@ -45,40 +52,56 @@ class KBDocument:
     grade: int            # 데이터 분류 등급 (1~5)
 
 
-# 소규모 모의 지식베이스.  실제로는 벡터 검색이지만 데모에서는 키워드 매칭.
+# KAIST 학사·행정 모의 지식베이스.  실제로는 벡터 검색이지만 데모에서는 키워드 매칭.
 KNOWLEDGE_BASE: tuple[KBDocument, ...] = (
     KBDocument(
-        doc_id="acad-cal",
-        title="학사일정 공고",
+        doc_id="campus-notice",
+        title="캠퍼스 공지·학사일정",
         min_clr=0,
-        keywords=("학사일정", "수강신청", "정정", "개강", "종강", "시험", "방학", "일정"),
-        snippet="2학기 수강신청은 8월 셋째 주, 정정 기간은 개강 후 1주간 진행됩니다.",
+        keywords=("학사일정", "수강신청", "정정", "개강", "종강", "시험", "방학", "일정", "공지", "셔틀", "도서관"),
+        snippet="2025 가을학기 수강신청은 8월 셋째 주, 정정 기간은 개강 후 1주간입니다.",
         grade=1,
     ),
     KBDocument(
         doc_id="course-manual",
-        title="수강신청 매뉴얼",
+        title="수강신청·학사규정 매뉴얼",
         min_clr=1,
-        keywords=("수강신청", "매뉴얼", "학점", "최대학점", "신청방법", "장바구니"),
-        snippet="재학생은 학기당 최대 21학점까지 신청할 수 있으며, 장바구니 담기 후 선착순 확정됩니다.",
+        keywords=("수강신청", "학사규정", "졸업요건", "최대학점", "신청방법", "재수강", "학점", "졸업"),
+        snippet="학사과정은 학기당 최대 21학점, 졸업 요건은 총 130학점 이상입니다.",
         grade=2,
+    ),
+    KBDocument(
+        doc_id="research-admin",
+        title="연구비·과제 관리 지침",
+        min_clr=2,
+        keywords=("연구비", "과제", "집행", "정산", "연구과제", "간접비", "인건비", "기자재"),
+        snippet="연구과제 인건비는 참여율 기준으로 집행하며, 기자재 구매는 500만원 이상 시 계약팀 협의.",
+        grade=3,
     ),
     KBDocument(
         doc_id="admin-manual",
         title="행정 내부 처리 매뉴얼 (대외비)",
         min_clr=2,
-        keywords=("행정", "내부", "매뉴얼", "결재", "처리절차", "예산", "품의"),
-        snippet="[대외비] 예산 품의는 3단계 전자결재를 거치며, 500만원 이상은 총장 승인이 필요합니다.",
+        keywords=("행정", "내부", "매뉴얼", "결재", "처리절차", "예산", "품의", "전자결재"),
+        snippet="[대외비] 예산 품의는 3단계 전자결재를 거치며, 500만원 이상은 처장 승인이 필요합니다.",
         grade=4,
     ),
     KBDocument(
         doc_id="student-records",
-        title="학생 성적·인사 기록 DB",
-        # 일반 수강 문의('최대 학점')와 겹치지 않도록 구체적 식별자만 키워드로 둡니다.
-        # 광범위한 '성적' 조회 의도는 아래 _ESCALATION 정규식이 별도로 포착합니다.
+        title="학생 성적·학적 기록 DB",
+        # 일반 학사 문의('최대 학점')와 겹치지 않도록 구체 식별자만 키워드로 둡니다.
+        # 광범위한 '성적 조회' 의도는 아래 _ESCALATION 정규식이 별도로 포착합니다.
         min_clr=3,
-        keywords=("석차", "인사기록", "징계", "장학내역", "타 학생", "다른 학생", "남의 성적", "전체 학생"),
-        snippet="[기밀] 홍길동(20201234) 3.87/4.5, 김철수(20205678) 2.14/4.5, 징계이력 1건.",
+        keywords=("석차", "학적", "징계", "장학내역", "타 학생", "다른 학생", "남의 성적", "전체 학생", "지도학생"),
+        snippet="[기밀] 홍길동(20201234) 3.87/4.3, 김철수(20205678) 2.14/4.3, 징계이력 1건.",
+        grade=4,
+    ),
+    KBDocument(
+        doc_id="personnel-records",
+        title="교직원 인사·급여 기록 DB",
+        min_clr=3,
+        keywords=("인사기록", "급여", "연봉", "호봉", "징계이력", "평정", "인사평가", "교수 급여", "직원 급여"),
+        snippet="[기밀] 이몽룡 교수 호봉 12호, 연봉 9,800만원, 성과평가 A. 박문수 직원 6급 5호봉.",
         grade=4,
     ),
 )
@@ -87,9 +110,10 @@ KNOWLEDGE_BASE: tuple[KBDocument, ...] = (
 _ESCALATION = tuple(
     re.compile(p, re.IGNORECASE)
     for p in (
-        r"(?:다른|타|남의|친구|동기)\s*(?:학생|사람|애)?(?:의|들)?\s*(?:성적|학점|석차|정보|기록)",
-        r"(?:전체|모든)\s*학생\s*(?:의|들)?\s*(?:성적|명단|정보|석차)",
-        r"(?:인사|징계|급여)\s*(?:기록|정보|이력)",
+        r"(?:다른|타|남의|친구|동기|지도)\s*(?:학생|사람|애|교수)?(?:의|들)?\s*(?:성적|학점|석차|정보|기록)",
+        r"(?:전체|모든)\s*(?:학생|교직원)\s*(?:의|들)?\s*(?:성적|명단|정보|석차|급여)",
+        r"(?:인사|징계|급여|연봉|호봉|인사평가)\s*(?:기록|정보|이력|내역)?",
+        r"(?:교수|직원|교직원)\s*(?:의|들)?\s*(?:급여|연봉|호봉|인사)",
         r"성적(?:과|와)?\s*(?:석차)?\s*(?:을|를)?\s*(?:조회|알려|보여|출력)",
     )
 )
@@ -115,12 +139,18 @@ def retrieve(query: str, clearance: str | None) -> RetrievalResult:
     """
     matched = [doc for doc in KNOWLEDGE_BASE if any(k in query for k in doc.keywords)]
 
-    # 명시적 권한초과 의도('다른 학생 성적 조회' 등)는 키워드가 정확히 없어도
-    # 학생 기록 문서를 대상으로 간주해 접근통제가 동작하도록 합니다.
+    def _add(doc_id: str) -> None:
+        doc = next((d for d in KNOWLEDGE_BASE if d.doc_id == doc_id), None)
+        if doc and doc not in matched:
+            matched.append(doc)
+
+    # 명시적 권한초과 의도는 키워드가 정확히 없어도 대상 기록 문서를 대상으로 간주해
+    # 접근통제가 동작하도록 합니다 — 인사/급여 의도는 인사기록, 그 외 성적 의도는 학적.
     if any(p.search(query) for p in _ESCALATION):
-        records = next((d for d in KNOWLEDGE_BASE if d.doc_id == "student-records"), None)
-        if records and records not in matched:
-            matched.append(records)
+        if re.search(r"(?:급여|연봉|호봉|인사|평정)", query):
+            _add("personnel-records")
+        else:
+            _add("student-records")
 
     result = RetrievalResult()
 

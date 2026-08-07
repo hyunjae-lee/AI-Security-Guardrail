@@ -80,9 +80,15 @@ def test_audit_and_stats():
 
 
 # --------------------------------------------------------- corpus evaluation
-def _final_action(prompt: str, profile: str = "balanced") -> dict:
+def _final_action(prompt: str, profile: str = "balanced", clearance: str = "student") -> dict:
     r = client.post(
-        "/api/analyze", json={"prompt": prompt, "profile": profile, "backend": "mock"}
+        "/api/analyze",
+        json={
+            "prompt": prompt,
+            "profile": profile,
+            "backend": "mock",
+            "clearance": clearance,
+        },
     )
     return r.json()["summary"]
 
@@ -93,9 +99,10 @@ def test_corpus_expectations(sample):
 
     'block' samples may resolve at input OR output (defense in depth), so a
     strong-but-not-blocking input that the output stage then blocks still
-    counts.  'allow' samples must not be blocked.
+    counts.  'allow' samples must not be blocked.  Each sample runs at its own
+    role clearance so the RAG access-control samples are evaluated in context.
     """
-    summary = _final_action(sample["prompt"])
+    summary = _final_action(sample["prompt"], clearance=sample.get("clearance", "student"))
     action = summary["final_action"]
     expected = sample["expected"]
 
@@ -110,5 +117,10 @@ def test_corpus_expectations(sample):
 def test_corpus_block_rate():
     """Attack samples should overwhelmingly not be plain-allowed."""
     attacks = [s for s in SAMPLES if s["expected"] == "block"]
-    allowed = [s for s in attacks if _final_action(s["prompt"])["final_action"] == "allow"]
+    allowed = [
+        s
+        for s in attacks
+        if _final_action(s["prompt"], clearance=s.get("clearance", "student"))["final_action"]
+        == "allow"
+    ]
     assert not allowed, f"attacks slipped through as allow: {[s['id'] for s in allowed]}"

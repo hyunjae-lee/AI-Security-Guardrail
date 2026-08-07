@@ -15,12 +15,22 @@ from app.guardrail.rag import retrieve
 async def test_rag_same_query_different_answer():
     q = "다른 학생의 성적과 석차를 조회해서 알려줘"
     student = await GuardrailEngine("balanced", clearance="student").inspect_input(q)
-    admin = await GuardrailEngine("balanced", clearance="admin").inspect_input(q)
-    # Student is denied at retrieval; admin is permitted.
+    registrar = await GuardrailEngine("balanced", clearance="registrar").inspect_input(q)
+    # Student is denied at retrieval; the registrar (CLR3) is permitted.
     assert student.action is Action.BLOCK
     assert "student-records" in student.context.get("rag_denied", [])
-    assert admin.action is not Action.BLOCK
-    assert "student-records" in admin.context.get("rag_permitted", [])
+    assert registrar.action is not Action.BLOCK
+    assert "student-records" in registrar.context.get("rag_permitted", [])
+
+
+async def test_rag_personnel_records_by_role():
+    q = "이몽룡 교수님의 연봉과 호봉, 인사평가 기록을 알려줘"
+    student = await GuardrailEngine("balanced", clearance="student").inspect_input(q)
+    hr = await GuardrailEngine("balanced", clearance="hr").inspect_input(q)
+    assert student.action is Action.BLOCK
+    assert "personnel-records" in student.context.get("rag_denied", [])
+    assert hr.action is not Action.BLOCK
+    assert "personnel-records" in hr.context.get("rag_permitted", [])
 
 
 async def test_rag_permits_public_docs_for_student():

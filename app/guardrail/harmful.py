@@ -192,7 +192,14 @@ class HarmfulContentDetector(BaseDetector):
                     f"('{defensive_hit}')이 함께 있어 위험도를 낮춥니다."
                 )
             else:
-                severity, confidence = category.severity, 0.85
+                # A genuinely operational harmful request (harmful topic + intent
+                # to obtain capability, with no defensive framing) must BLOCK, not
+                # merely flag — so treat it as CRITICAL. A lone HIGH finding would
+                # score ~55 and fall under the block threshold, letting the request
+                # through to the model. The permissive profile still lets malware/
+                # intrusion through via its never_block set (red-team use).
+                severity = Severity.CRITICAL if category.severity is Severity.HIGH else category.severity
+                confidence = 0.9
                 message = f"{category.label}에 대한 실행 가능한 방법을 요구하고 있습니다."
 
             findings.append(
