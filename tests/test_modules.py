@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from app.guardrail import Action, GuardrailEngine, Finding, Severity, compute_risk_score
+from app.guardrail import Action, Finding, GuardrailEngine, Severity, compute_risk_score
 from app.guardrail.classify import classify_grade
 from app.guardrail.rag import retrieve
 
