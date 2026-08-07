@@ -1,0 +1,38 @@
+name: CD (Deploy)
+
+# Deploys to the self-hosted host on every push to main (after CI passes).
+# Requires a self-hosted runner registered to this repo with the label
+# `guardrail-host` (see DEPLOY.md).
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    # Only deploy if the triggering CI run succeeded (or when run manually).
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: [self-hosted, guardrail-host]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and (re)start the container
+        run: |
+          docker compose up -d --build
+
+      - name: Wait for health
+        run: |
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8088/healthz || true)
+            [ "$code" = "200" ] && { echo "healthy"; break; }
+            sleep 2
+          done
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8088/healthz)" = "200"
+
+      - name: Prune old images
+        run: docker image prune -f

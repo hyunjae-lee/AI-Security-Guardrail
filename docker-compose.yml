@@ -1,0 +1,22 @@
+services:
+  guardrail:
+    build: .
+    image: ai-security-guardrail:latest
+    container_name: ai-security-guardrail
+    restart: unless-stopped
+    # 80/443 belong to the SSL Manager on this host; expose on 8088.
+    ports:
+      - "8088:8088"
+    environment:
+      GUARDRAIL_PROFILE: ${GUARDRAIL_PROFILE:-balanced}
+      GUARDRAIL_BACKEND: ${GUARDRAIL_BACKEND:-mock}
+      GUARDRAIL_STAGE_DELAY: ${GUARDRAIL_STAGE_DELAY:-0.28}
+      GUARDRAIL_USE_PRESIDIO: ${GUARDRAIL_USE_PRESIDIO:-0}
+      GUARDRAIL_USE_NEMO: ${GUARDRAIL_USE_NEMO:-0}
+      # Pass through a Claude credential only if you want the real backend.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    volumes:
+      - guardrail-data:/app/data
+
+volumes:
+  guardrail-data:

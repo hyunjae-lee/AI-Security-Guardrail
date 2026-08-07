@@ -1,0 +1,12 @@
+line-length = 100
+target-version = "py312"
+
+[lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = [
+    "E501",  # line length handled by formatter, and Korean strings run long
+    "B008",  # FastAPI Depends() default-arg pattern
+]
+
+[lint.per-file-ignores]
+"tests/*" = ["E402", "F401"]
