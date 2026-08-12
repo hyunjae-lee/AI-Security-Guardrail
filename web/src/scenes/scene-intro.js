@@ -115,17 +115,17 @@ const DEVICES = [
    지시선 문법을 써야 도면 전체가 한 체계로 읽힌다. */
 
 const BUBBLES = [
-  { id: 'si-bubble-1', to: [920, 178], from: 'phone' },
-  { id: 'si-bubble-2', to: [986, 306], from: 'tablet' },
-  { id: 'si-bubble-3', to: [950, 434], from: 'laptop' },
-  { id: 'si-bubble-4', to: [1016, 562], from: 'pc', risky: true },
+  { id: 'si-bubble-1', to: [872, 168], from: 'phone' },
+  { id: 'si-bubble-2', to: [938, 300], from: 'tablet' },
+  { id: 'si-bubble-3', to: [902, 432], from: 'laptop' },
+  { id: 'si-bubble-4', to: [968, 564], from: 'pc', risky: true },
 ]
 
 const bubble = ({ id, to, from, risky }, i) => {
   const [ax, ay] = at(...DEVICE_PLAN[from], 44)
   const [bx, by] = to
-  const w = 292
-  const h = 52
+  const w = 340
+  const h = 60
   const stroke = risky ? '#E25749' : '#3C3E46'
   return `
       <g id="${id}">
@@ -135,7 +135,7 @@ const bubble = ({ id, to, from, risky }, i) => {
         <path d="M ${bx} ${by + h - 12} l -9 8 l 9 4 Z" fill="#1C1E24" stroke="${stroke}"
               stroke-width="1.25" stroke-linejoin="round" />
         <text x="${bx + 18}" y="${by + 32}" class="co-sub"
-              fill="${risky ? '#E25749' : '#ECEAE3'}" font-size="15">${t.bubbles[i]}</text>
+              fill="${risky ? '#E25749' : '#ECEAE3'}" font-size="19">${t.bubbles[i]}</text>
       </g>`
 }
 

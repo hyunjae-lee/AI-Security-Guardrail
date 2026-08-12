@@ -149,12 +149,12 @@ const gradeChip = (plan, letter, label, color) => {
   const [x, y] = at(...plan)
   return `
       <g class="grade-chip">
-        <rect x="${x - 15}" y="${y - 15}" width="30" height="30" rx="5"
+        <rect x="${x - 19}" y="${y - 19}" width="38" height="38" rx="6"
               fill="#131418" stroke="${color}" stroke-width="1.25" />
-        <text x="${x}" y="${y + 6}" text-anchor="middle" fill="${color}"
-              font-size="16" font-weight="700">${letter}</text>
-        <text x="${x}" y="${y + 34}" text-anchor="middle" class="co-sub"
-              font-size="12" letter-spacing="1">${label}</text>
+        <text x="${x}" y="${y + 8}" text-anchor="middle" fill="${color}"
+              font-size="21" font-weight="700">${letter}</text>
+        <text x="${x}" y="${y + 42}" text-anchor="middle" class="co-sub"
+              font-size="16" letter-spacing="1">${label}</text>
       </g>`
 }
 

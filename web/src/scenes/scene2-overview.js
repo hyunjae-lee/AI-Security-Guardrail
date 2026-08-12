@@ -336,7 +336,7 @@ export function scene2Svg() {
       ${callout({
         n: '01',
         from: at(0, 0, 0),
-        to: [300, 70],
+        to: [366, 70],
         side: 'left',
         title: t.campus,
       })}

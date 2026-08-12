@@ -11,7 +11,14 @@ import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
 import MotionPathPlugin from 'gsap/MotionPathPlugin'
 
-import { guideline, placeholderKicker, scenes, site } from './content/strings.js'
+import {
+  guideline,
+  placeholderKicker,
+  revealLabel,
+  reveals,
+  scenes,
+  site,
+} from './content/strings.js'
 import { sceneIntroAnim, sceneIntroSvg } from './scenes/scene-intro.js'
 import { sceneWhyAnim, sceneWhySvg } from './scenes/scene-why.js'
 import { scene2Anim, scene2Svg } from './scenes/scene2-overview.js'
@@ -70,6 +77,19 @@ const refsMarkup = () => `
           <p class="scene__refs-closing">${guideline.finding}</p>
         </aside>`
 
+/** "실제로는" 접이식 패널 — 비유 뒤의 실제 동작을 장면마다 병기한다. */
+const revealMarkup = (scene) => {
+  const body = reveals[scene.id]
+  if (!body) return ''
+  return `
+        <details class="reveal">
+          <summary class="reveal__summary">${revealLabel}</summary>
+          <div class="reveal__body">
+            ${body.map((para) => `<p>${para}</p>`).join('\n            ')}
+          </div>
+        </details>`
+}
+
 const sceneMarkup = (scene) => `
   <section class="scene" id="${scene.id}" aria-labelledby="${scene.id}-title">
     <div class="scene__inner">
@@ -79,15 +99,15 @@ const sceneMarkup = (scene) => `
           <span class="scene__eyebrow-rule"></span>
           <span>${scene.label}</span>
         </p>
-        <h2 class="scene__title" id="${scene.id}-title">${scene.title}</h2>
+        <h2 class="scene__title" id="${scene.id}-title">${scene.title.replace(/\n/g, '<br>')}</h2>
       </header>
       <div class="scene__stage">${
         STAGES[scene.id] ? STAGES[scene.id]() : placeholder(scene)
       }</div>
       <footer class="scene__foot">
-        <p class="scene__caption">${scene.caption}</p>${
-          scene.id === 'why' ? refsMarkup() : ''
-        }${
+        <div class="scene__foot-main">
+          <p class="scene__caption">${scene.caption}</p>${revealMarkup(scene)}
+        </div>${scene.id === 'why' ? refsMarkup() : ''}${
           scene.cta
             ? `
         <a class="scene__cta" href="${scene.cta.href}" target="_blank" rel="noopener">${scene.cta.label}</a>`
@@ -173,7 +193,7 @@ function setupReveals() {
   scenes.forEach((scene) => {
     const section = document.querySelector(`#${scene.id}`)
     const targets = section.querySelectorAll(
-      '.scene__eyebrow, .scene__title, .scene__stage, .scene__caption, .scene__refs, .scene__cta',
+      '.scene__eyebrow, .scene__title, .scene__stage, .scene__caption, .reveal, .scene__refs, .scene__cta',
     )
 
     gsap.from(targets, {

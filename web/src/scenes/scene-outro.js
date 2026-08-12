@@ -151,7 +151,7 @@ export function sceneOutroSvg() {
       ${callout({
         n: '01',
         from: at(120, 200, 0),
-        to: [300, 92],
+        to: [330, 92],
         side: 'left',
         title: t.campus,
         sub: t.campusSub,

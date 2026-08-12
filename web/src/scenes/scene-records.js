@@ -74,11 +74,11 @@ const stamp = `
 
    도면 옆에 붙는 표. 화면좌표로 그려야 표가 반듯하게 읽힌다. */
 
-const LX = 742 // 표 좌측
-const LW = 596 // 표 폭
+const LX = 712 // 표 좌측
+const LW = 640 // 표 폭
 const LY = 118 // 표 상단
-const ROW_H = 62
-const COLS = [0, 124, 316, 456] // 시각 / 유형 / 판정 / 내용(빈칸)
+const ROW_H = 68
+const COLS = [0, 136, 342, 494] // 시각 / 유형 / 판정 / 내용(빈칸)
 
 const VERDICT_COLOR = { 통과: '#7FBF57', 치환: '#F0A63A', 거부: '#E25749' }
 
@@ -93,11 +93,11 @@ const ledger = `
           .map(
             (c, i) =>
               `<text x="${LX + 22 + COLS[i]}" y="${LY + 40}" class="co-sub"
-                     font-size="13" letter-spacing="2">${c}</text>`,
+                     font-size="17" letter-spacing="2">${c}</text>`,
           )
           .join('')}
         <text x="${LX + 22 + COLS[3]}" y="${LY + 40}" class="co-sub"
-              font-size="13" letter-spacing="2" fill="#E25749">${t.colBlank}</text>
+              font-size="17" letter-spacing="2" fill="#E25749">${t.colBlank}</text>
         <path class="hair" d="M ${LX + 16} ${LY + 56} H ${LX + LW - 16}" />
 
         <!-- 내용 칸 전체를 사선으로 지운다 -->
@@ -114,12 +114,12 @@ const ledger = `
             const y = LY + 56 + ROW_H * (i + 1)
             return `
         <g id="sk-row-${i + 1}">
-          <text x="${LX + 22 + COLS[0]}" y="${y}" class="co-sub" font-size="15">${time}</text>
-          <text x="${LX + 22 + COLS[1]}" y="${y}" class="co-sub" font-size="15" fill="#ECEAE3">${kind}</text>
-          <text x="${LX + 22 + COLS[2]}" y="${y}" class="co-title" font-size="15"
+          <text x="${LX + 22 + COLS[0]}" y="${y}" class="co-sub" font-size="19">${time}</text>
+          <text x="${LX + 22 + COLS[1]}" y="${y}" class="co-sub" font-size="19" fill="#ECEAE3">${kind}</text>
+          <text x="${LX + 22 + COLS[2]}" y="${y}" class="co-title" font-size="19"
                 fill="${VERDICT_COLOR[verdict] || '#9C9B93'}">${verdict}</text>
           <text id="sk-blank-${i + 1}" x="${LX + 22 + COLS[3]}" y="${y}" class="co-sub"
-                font-size="12" fill="#E25749" opacity="0.75">${t.blankMark}</text>
+                font-size="16" fill="#E25749" opacity="0.75">${t.blankMark}</text>
         </g>
         ${i < t.rows.length - 1 ? `<path class="hair" d="M ${LX + 16} ${y + 18} H ${LX + LW - 16}" opacity="0.35" />` : ''}`
           })
@@ -137,8 +137,8 @@ export function sceneRecordsSvg() {
       ${callout({
         n: '01',
         from: [stampX, stampY - 118],
-        to: [300, 620],
-        side: 'left',
+        to: [318, 626],
+        side: 'right',
         title: t.stamp,
         sub: t.stampSub,
       })}

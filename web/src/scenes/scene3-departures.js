@@ -258,8 +258,8 @@ const screen = `
                 fill="none" stroke="#E25749" stroke-width="1.75" />
           <path d="M 710 102 H 732 M 710 112 H 728" stroke="#E25749" stroke-width="1.5" />
         </g>
-        <text x="657" y="150" text-anchor="middle" fill="#F0A63A" font-size="12">${t.screenIdCard}</text>
-        <text x="723" y="150" text-anchor="middle" fill="#E25749" font-size="12">${t.screenNote}</text>
+        <text x="646" y="152" text-anchor="middle" fill="#F0A63A" font-size="16">${t.screenIdCard}</text>
+        <text x="740" y="152" text-anchor="middle" fill="#E25749" font-size="16">${t.screenNote}</text>
       </g>`
 
 /* ------------------------------------------------------------------ 조립 */
@@ -292,7 +292,7 @@ export function scene3Svg() {
       ${callout({
         n: '02',
         from: at(64, 164, BELT_Z),
-        to: [172, 340],
+        to: [228, 340],
         side: 'left',
         title: t.conveyor,
         sub: t.conveyorSub,
@@ -300,7 +300,7 @@ export function scene3Svg() {
       ${callout({
         n: '03',
         from: at(153, 138, 110),
-        to: [300, 128],
+        to: [352, 74],
         side: 'left',
         title: t.passport,
         sub: t.passportSub,

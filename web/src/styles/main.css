@@ -202,11 +202,15 @@ body {
 
 .scene__title {
   margin: 0;
-  max-width: 20ch;
+  /* ch(=숫자 0 폭)는 한글에서 실제 글자 폭과 무관하므로 em 으로 잡는다. */
+  max-width: 18em;
   font-size: var(--fs-title);
   font-weight: 900;
   line-height: var(--lh-title);
   letter-spacing: -0.026em;
+  /* 한글은 keep-all 이 없으면 어절 한가운데서 잘린다. 줄 나눔 위치는
+     strings.js 의 개행(\n)으로 직접 지정한다. */
+  word-break: keep-all;
   text-wrap: balance;
 }
 
@@ -222,10 +226,12 @@ body {
   padding: clamp(0.5rem, 1.6vh, 1.5rem) 0;
 }
 
+/* 일러스트는 뷰박스 기준 축소 렌더라, 무대가 낮으면 도면 글씨가 그대로 작아진다.
+   섹션이 100svh 를 넘겨 커지더라도 도면 크기를 우선한다. */
 .scene__stage svg {
   width: 100%;
   height: auto;
-  max-height: 66svh;
+  max-height: 78svh;
   display: block;
 }
 
@@ -241,6 +247,7 @@ body {
 
 .scene__caption {
   margin: 0;
+  word-break: keep-all;
   position: relative;
   padding-left: 1.375rem;
   max-width: 62ch;
@@ -261,8 +268,10 @@ body {
 
 /* 설계 근거 카드 — 도면의 표제란처럼 얇은 괘선으로 묶는다. */
 .scene__refs {
-  flex: 0 1 auto;
-  max-width: 46ch;
+  /* 폭이 모자라면 옆이 아니라 아래로 내려가게 (밀려나 잘리는 것보다 낫다) */
+  flex: 1 1 22rem;
+  word-break: keep-all;
+  max-width: 44ch;
   border-left: 1px solid var(--c-line);
   padding-left: clamp(1rem, 2vw, 1.75rem);
   font-size: 0.875rem;
@@ -389,6 +398,7 @@ body {
 
 .placeholder__note {
   margin: 0;
+  word-break: keep-all;
   max-width: 44ch;
   font-size: 0.9375rem;
 }
@@ -487,12 +497,15 @@ body {
    ========================================================================== */
 
 .illus {
-  overflow: visible;
+  /* 컨테이너보다 커지지 않도록 못 박는다. 도면 내용은 전부 뷰박스 안에 있으므로
+     기본값(hidden)으로 두어 밖으로 새는 것도 막는다. */
+  max-width: 100%;
 }
 
 .illus text {
   font-family: var(--font-sans);
-  fill: var(--c-muted);
+  fill: var(--c-label);
+  font-size: 19px;
 }
 
 /* 아이소메트릭 입체 3면 */
@@ -573,32 +586,32 @@ body {
 /* 콜아웃(지시선 + 번호 배지 + 라벨) */
 .illus .co-leader {
   fill: none;
-  stroke: var(--c-line);
-  stroke-width: 1;
+  stroke: var(--c-leader);
+  stroke-width: 1.25;
 }
 .illus .co-dot {
   fill: var(--c-bag);
 }
 .illus .co-badge {
   fill: none;
-  stroke: var(--c-line);
-  stroke-width: 1;
+  stroke: var(--c-leader);
+  stroke-width: 1.25;
 }
 .illus .co-num {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   fill: var(--c-bag);
 }
 .illus .co-title {
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 700;
   fill: var(--c-text);
   letter-spacing: -0.01em;
 }
 .illus .co-sub {
-  font-size: 13.5px;
-  fill: var(--c-muted);
+  font-size: 18px;
+  fill: var(--c-label);
 }
 .illus .co-title--block {
   fill: var(--c-block);
@@ -615,7 +628,7 @@ body {
   fill: none;
   stroke: var(--c-line);
   stroke-width: 1;
-  opacity: 0.55;
+  opacity: 0.7;
 }
 .illus .hatch {
   stroke: var(--c-line);
@@ -636,4 +649,78 @@ body {
   stroke-width: 1.25;
   stroke-dasharray: 4 6;
   opacity: 0.5;
+}
+
+/* ==========================================================================
+   "실제로는" 접이식 패널 (M5)
+   본문은 비유어, 기술 용어는 여기에만. 기본은 접힌 상태라 흐름을 방해하지 않는다.
+   ========================================================================== */
+
+.scene__foot-main {
+  flex: 1 1 32rem;
+  min-width: 0;
+  max-width: 74ch;
+}
+
+.reveal {
+  margin-top: 1.25rem;
+  max-width: 68ch;
+  word-break: keep-all;
+}
+
+.reveal__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  list-style: none;
+  padding: 0.4rem 0.9rem 0.4rem 0.75rem;
+  border: 1px solid var(--c-line);
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
+  text-transform: uppercase;
+  color: var(--c-gear);
+  transition: border-color 0.2s var(--ease-out), color 0.2s var(--ease-out);
+}
+
+.reveal__summary::-webkit-details-marker {
+  display: none;
+}
+
+.reveal__summary::before {
+  content: '+';
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.reveal[open] .reveal__summary::before {
+  content: '−';
+}
+
+.reveal__summary:hover {
+  border-color: var(--c-gear);
+  color: var(--c-text);
+}
+
+.reveal__body {
+  margin-top: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--c-gear);
+}
+
+.reveal__body p {
+  margin: 0 0 0.7rem;
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: var(--c-label);
+}
+
+.reveal__body p:last-child {
+  margin-bottom: 0;
+}
+
+/* 마지막 문단이 ※ 로 시작하면 주의 문구로 취급 */
+.reveal__body p:last-child:first-letter {
+  font-weight: inherit;
 }
