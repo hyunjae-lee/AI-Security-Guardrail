@@ -1,0 +1,331 @@
+@import './tokens.css';
+
+/* ==========================================================================
+   기본
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* 스크롤 스냅은 쓰지 않는다 — M3 에서 출국층·입국층 장면을 ScrollTrigger 로
+     pin + scrub 할 예정이라, CSS scroll-snap 이 스크럽 구간과 충돌한다. */
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.75rem 1.25rem;
+  background: var(--c-gear);
+  color: var(--c-bg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-gear);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   장면(섹션)
+   ========================================================================== */
+
+.scene {
+  position: relative;
+  min-height: 100svh;
+  padding: clamp(4rem, 9vh, 7rem) var(--pad-x) clamp(3rem, 6vh, 5rem);
+  display: flex;
+  justify-content: center;
+}
+
+.scene__inner {
+  width: 100%;
+  max-width: var(--w-content);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 3vh, 2.5rem);
+}
+
+.scene__eyebrow {
+  margin: 0;
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  color: var(--c-bag);
+  text-transform: uppercase;
+}
+
+.scene__title {
+  margin: 0;
+  max-width: 22ch;
+  font-size: var(--fs-title);
+  font-weight: 900;
+  line-height: var(--lh-title);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+/* 일러스트 자리 — 세로 여유를 전부 가져간다. */
+.scene__stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scene__stage svg {
+  width: 100%;
+  height: auto;
+  max-height: 62svh;
+  display: block;
+}
+
+.scene__caption {
+  margin: 0;
+  padding-top: clamp(1rem, 2vh, 1.75rem);
+  border-top: 1px solid var(--c-line);
+  font-size: var(--fs-caption);
+  color: var(--c-muted);
+  text-wrap: pretty;
+}
+
+/* 아웃트로의 실동작 링크 */
+.scene__cta {
+  align-self: flex-start;
+  display: inline-block;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid var(--c-gear);
+  border-radius: 999px;
+  color: var(--c-gear);
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out);
+}
+
+.scene__cta:hover,
+.scene__cta:focus-visible {
+  background: var(--c-gear);
+  color: var(--c-bg);
+}
+
+/* ==========================================================================
+   일러스트 자리표시 (M4 에서 실제 SVG 로 교체)
+   ========================================================================== */
+
+.placeholder {
+  width: 100%;
+  min-height: clamp(16rem, 42svh, 28rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px dashed var(--c-line);
+  border-radius: 4px;
+  background: var(--c-panel);
+  color: var(--c-muted);
+  text-align: center;
+  padding: 2rem;
+}
+
+.placeholder__label {
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  color: var(--c-line);
+  text-transform: uppercase;
+}
+
+.placeholder__note {
+  margin: 0;
+  max-width: 46ch;
+  font-size: var(--fs-label);
+}
+
+/* ==========================================================================
+   앵커 내비 (우측 점)
+   ========================================================================== */
+
+.dotnav {
+  position: fixed;
+  right: clamp(1rem, 2.5vw, 2.25rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+}
+
+.dotnav__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--nav-gap);
+}
+
+.dotnav__link {
+  position: relative;
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--c-line);
+  background: transparent;
+  transition: background-color 0.25s var(--ease-out),
+    border-color 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+}
+
+.dotnav__link:hover {
+  border-color: var(--c-bag);
+  transform: scale(1.25);
+}
+
+.dotnav__link[aria-current='true'] {
+  background: var(--c-bag);
+  border-color: var(--c-bag);
+}
+
+/* 점 옆에 뜨는 섹션 이름 */
+.dotnav__name {
+  position: absolute;
+  right: calc(100% + 0.85rem);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.06em;
+  color: var(--c-muted);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s var(--ease-out);
+}
+
+.dotnav__link:hover .dotnav__name,
+.dotnav__link:focus-visible .dotnav__name,
+.dotnav__link[aria-current='true'] .dotnav__name {
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .dotnav {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   SVG 공통 (M2 일러스트)
+   ========================================================================== */
+
+.illus {
+  --stroke: var(--c-line);
+}
+
+.illus text {
+  font-family: var(--font-sans);
+  fill: var(--c-muted);
+  font-size: 17px;
+}
+
+.illus .lbl-title {
+  fill: var(--c-text);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.illus .lbl-sub {
+  fill: var(--c-muted);
+  font-size: 15px;
+}
+
+.illus .lbl-block {
+  fill: var(--c-block);
+}
+
+.illus .leader {
+  stroke: var(--c-line);
+  stroke-width: 1;
+  fill: none;
+}
+
+.illus .land {
+  fill: var(--c-panel);
+  stroke: var(--c-line);
+  stroke-width: 1.5;
+}
+
+.illus .land--outer {
+  fill: var(--c-panel-deep);
+}
+
+.illus .bldg {
+  fill: #23262e;
+  stroke: var(--c-line);
+  stroke-width: 1.25;
+}
+
+.illus .gear {
+  fill: none;
+  stroke: var(--c-gear);
+  stroke-width: 2;
+}
+
+.illus .gear-fill {
+  fill: var(--c-gear);
+}
+
+.illus .bag-body {
+  fill: var(--c-bag);
+}
+
+.illus .bag-line {
+  stroke: #8a5c17;
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.illus .route {
+  fill: none;
+  stroke: var(--c-bag);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 7;
+  opacity: 0.55;
+}
+
+.illus .border-line {
+  stroke: var(--c-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 9;
+  stroke-linecap: round;
+  opacity: 0.5;
+  fill: none;
+}

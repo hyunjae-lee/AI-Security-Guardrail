@@ -8,3 +8,5 @@ data/
 .pytest_cache/
 .ruff_cache/
 .DS_Store
+web/node_modules/
+web/dist/

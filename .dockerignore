@@ -9,3 +9,5 @@ tests
 docker-compose*.yml
 .dockerignore
 .gitignore
+web/node_modules/
+web/dist/
