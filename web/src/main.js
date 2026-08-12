@@ -1,25 +1,35 @@
 /**
  * 섹션 등록 + ScrollTrigger 초기화.
  *
- * 7개 장면을 strings.js 로부터 생성하고, 일러스트가 완성된 장면(SCENE 02·03)은
- * 인라인 SVG 를, 나머지는 자리표시자를 넣는다.  M3 에서 장면별 애니메이션 모듈이
- * 여기에 붙는다.
+ * 8개 장면을 strings.js 로부터 생성하고, 일러스트가 완성된 장면은 인라인 SVG 를,
+ * 나머지는 자리표시자를 넣는다.  장면별 애니메이션(M3)은 각 scene 모듈이
+ * `*Anim(root, gsap, ScrollTrigger)` 로 내보내고 여기서 붙인다.
  */
 
 import './styles/main.css'
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
+import MotionPathPlugin from 'gsap/MotionPathPlugin'
 
-import { placeholderKicker, scenes, site } from './content/strings.js'
-import { scene2Svg } from './scenes/scene2-overview.js'
-import { scene3Svg } from './scenes/scene3-departures.js'
+import { guideline, placeholderKicker, scenes, site } from './content/strings.js'
+import { sceneWhyAnim, sceneWhySvg } from './scenes/scene-why.js'
+import { scene2Anim, scene2Svg } from './scenes/scene2-overview.js'
+import { scene3Anim, scene3Svg } from './scenes/scene3-departures.js'
 
-gsap.registerPlugin(ScrollTrigger)
+gsap.registerPlugin(ScrollTrigger, MotionPathPlugin)
 
 /** 일러스트가 완성된 장면. 나머지는 M4 에서 채운다. */
 const STAGES = {
-  'scene-2': scene2Svg,
-  'scene-3': scene3Svg,
+  why: sceneWhySvg,
+  overview: scene2Svg,
+  departures: scene3Svg,
+}
+
+/** 장면별 애니메이션. 없으면 정적으로 둔다. */
+const ANIMS = {
+  why: sceneWhyAnim,
+  overview: scene2Anim,
+  departures: scene3Anim,
 }
 
 const placeholder = (scene) => `
@@ -27,6 +37,18 @@ const placeholder = (scene) => `
           <span class="placeholder__label">${placeholderKicker}</span>
           <p class="placeholder__note">${scene.placeholder}</p>
         </div>`
+
+/** 설계 근거 카드 — '왜 검사대인가' 장면에만 붙는다. */
+const refsMarkup = () => `
+        <aside class="scene__refs">
+          <span class="scene__refs-kicker">${guideline.kicker}</span>
+          <span class="scene__refs-source">${guideline.source}</span>
+          <span class="scene__refs-caveat">${guideline.caveat}</span>
+          <ol>
+            ${guideline.items.map((item) => `<li>${item}</li>`).join('\n            ')}
+          </ol>
+          <p class="scene__refs-closing">${guideline.closing}</p>
+        </aside>`
 
 const sceneMarkup = (scene) => `
   <section class="scene" id="${scene.id}" aria-labelledby="${scene.id}-title">
@@ -44,6 +66,8 @@ const sceneMarkup = (scene) => `
       }</div>
       <footer class="scene__foot">
         <p class="scene__caption">${scene.caption}</p>${
+          scene.id === 'why' ? refsMarkup() : ''
+        }${
           scene.cta
             ? `
         <a class="scene__cta" href="${scene.cta.href}" target="_blank" rel="noopener">${scene.cta.label}</a>`
@@ -124,15 +148,12 @@ function setupProgress() {
   })
 }
 
-/** 장면 진입 시 제목·캡션이 떠오르는 기본 트랜지션 (M3 에서 확장). */
+/** 장면 진입 시 제목·캡션이 떠오르는 기본 트랜지션. */
 function setupReveals() {
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (reduced) return // 정적 상태 그대로 노출한다.
-
   scenes.forEach((scene) => {
     const section = document.querySelector(`#${scene.id}`)
     const targets = section.querySelectorAll(
-      '.scene__eyebrow, .scene__title, .scene__stage, .scene__caption, .scene__cta',
+      '.scene__eyebrow, .scene__title, .scene__stage, .scene__caption, .scene__refs, .scene__cta',
     )
 
     gsap.from(targets, {
@@ -150,7 +171,22 @@ function setupReveals() {
   })
 }
 
+/** 장면별 M3 애니메이션 부착. */
+function setupSceneAnims() {
+  Object.entries(ANIMS).forEach(([id, anim]) => {
+    const svg = document.querySelector(`#${id} .scene__stage svg`)
+    if (svg) anim(svg, gsap, ScrollTrigger)
+  })
+}
+
 render()
 setupNav()
 setupProgress()
-setupReveals()
+
+/* prefers-reduced-motion 이면 움직임 없이 완성된 정지 화면만 보여 준다.
+   장면 애니메이션은 최종 상태가 아니라 '진행 중' 상태를 그리므로 아예 붙이지
+   않고, SVG 는 그린 그대로가 곧 정지 상태다. */
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  setupReveals()
+  setupSceneAnims()
+}

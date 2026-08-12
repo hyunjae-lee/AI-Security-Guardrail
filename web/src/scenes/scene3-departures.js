@@ -7,7 +7,8 @@
  * 로 흐르고, 전략물자·위조 여권이 잡히면 게이트를 건너뛰어 즉시 거부로 빠진다.
  *
  * M3 애니메이션 대상 id:
- *   #s3-bag-1 … #s3-bag-3     컨베이어 위 가방
+ *   #s3-bag-1 … #s3-bag-4     컨베이어 위 가방 (대기열)
+ *   #s3-bag-ov                즉시 거부 연출 전용 가방
  *   #s3-belt-teeth            벨트 무늬 (흐름)
  *   #s3-beam                  X-ray 스캔 빔
  *   #s3-screen-sweep          판독 화면 주사선
@@ -21,8 +22,8 @@ import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
 import { scene3 as t } from '../content/strings.js'
 
-const iso = isoSpace({ ox: 350, oy: 76, s: 1.12 })
-const { at, pt, box, slab, line, plane, grid, cutHatch, curve } = iso
+export const iso = isoSpace({ ox: 350, oy: 76, s: 1.12 })
+const { at, pt, delta, box, slab, line, plane, grid, cutHatch, curve } = iso
 
 const BELT_Z = 32 // 벨트 상면 높이
 const LANES = [
@@ -45,7 +46,7 @@ const shell = `
 
 const beltTeeth = () => {
   const out = []
-  for (let x = 84; x < 700; x += 28) {
+  for (let x = 38; x < 700; x += 28) {
     out.push(
       line(
         [
@@ -62,13 +63,13 @@ const beltTeeth = () => {
 const BELT_FACES = { top: 'belt-top', l: 'belt-l', r: 'belt-r' }
 
 const conveyor = `
-      ${box(70, 116, 630, 48, BELT_Z, BELT_FACES)}
+      ${box(24, 116, 676, 48, BELT_Z, BELT_FACES)}
       ${plane(
         [
-          [70, 136, BELT_Z + 0.4],
+          [24, 136, BELT_Z + 0.4],
           [700, 136, BELT_Z + 0.4],
           [700, 144, BELT_Z + 0.4],
-          [70, 144, BELT_Z + 0.4],
+          [24, 144, BELT_Z + 0.4],
         ],
         '',
         'fill="#F0A63A" opacity="0.5"',
@@ -185,7 +186,7 @@ const override = `
       <g id="s3-override">
         ${curve(
           [
-            [464, 142, 112],
+            [470, 140, 44],
             [620, 96, 250],
             [800, 30, 214],
           ],
@@ -268,10 +269,13 @@ export function scene3Svg() {
       ${shell}
       ${conveyor}
       ${passport}
-      ${bag('s3-bag-1', 110, 140, { z: BELT_Z })}
-      ${bag('s3-bag-2', 240, 140, { z: BELT_Z })}
+      ${bag('s3-bag-1', 60, 140, { z: BELT_Z })}
+      ${bag('s3-bag-2', 160, 140, { z: BELT_Z })}
+      ${bag('s3-bag-3', 260, 140, { z: BELT_Z })}
       ${xray}
-      ${bag('s3-bag-3', 380, 140, { z: BELT_Z })}
+      ${bag('s3-bag-4', 380, 140, { z: BELT_Z })}
+      <!-- 즉시 거부 연출 전용. 정지 상태에서는 보이지 않는다. -->
+      <g id="s3-bag-ov-wrap" opacity="0">${bag('s3-bag-ov', 380, 140, { z: BELT_Z })}</g>
       ${gates}
       ${figure([215, 250])}
       ${figure([610, 262])}
@@ -287,7 +291,7 @@ export function scene3Svg() {
       })}
       ${callout({
         n: '02',
-        from: at(110, 164, BELT_Z),
+        from: at(64, 164, BELT_Z),
         to: [172, 340],
         side: 'left',
         title: t.conveyor,
@@ -350,4 +354,154 @@ export function scene3Svg() {
     desc: t.svgDesc,
     body,
   })
+}
+
+/* ==========================================================================
+   M3 애니메이션 — 출국층 시퀀스.
+
+   이 장면만 pin + scrub 이다.  가방 한 개가 검사대를 통과하는 과정은 "순서"가
+   핵심이라, 사용자가 스크롤 속도로 직접 되감아 볼 수 있어야 한다.
+
+   대기열 4개가 차례로 스캐너에 들어가 네 가지 판정을 하나씩 보여 준다:
+     통과 → 물건만 빼고 통과 → 탑승 거부 → (판정 생략) 즉시 거부
+   ========================================================================== */
+
+const SCAN = [380, 140, BELT_Z] // 스캐너 안 정지 위치
+const JUNCTION = [724, 150, BELT_Z] // 3갈래가 갈라지는 분기점
+const LANE_END = {
+  allow: [856, 82, BELT_Z],
+  mask: [856, 150, BELT_Z],
+  block: [856, 218, BELT_Z],
+}
+
+/** 대기열: [id, 최초 평면위치, 판정] — 앞의 가방이 빠지면 한 칸씩 당긴다. */
+const QUEUE = [
+  ['s3-bag-4', [380, 140, BELT_Z], 'allow'],
+  ['s3-bag-3', [260, 140, BELT_Z], 'mask'],
+  ['s3-bag-2', [160, 140, BELT_Z], 'block'],
+  ['s3-bag-1', [60, 140, BELT_Z], 'override'],
+]
+
+export function scene3Anim(root, gsap, ScrollTrigger) {
+  const q = (sel) => root.querySelector(sel)
+  const lamps = {
+    allow: q('#s3-lamp-allow'),
+    mask: q('#s3-lamp-mask'),
+    block: q('#s3-lamp-block'),
+  }
+
+  // 판정 전에는 표시등이 꺼져 있고, 화면 속 내용물도 아직 안 잡혔다.
+  gsap.set(Object.values(lamps).filter(Boolean), { opacity: 0.18 })
+  gsap.set([q('#s3-xray-idcard'), q('#s3-xray-note')].filter(Boolean), { opacity: 0 })
+  gsap.set(q('#s3-beam'), { opacity: 0 })
+  gsap.set(q('#s3-override'), { opacity: 0 })
+
+  const tl = gsap.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: {
+      trigger: root.closest('.scene'),
+      start: 'center center',
+      end: '+=2800',
+      pin: true,
+      scrub: 0.6,
+      anticipatePin: 1,
+    },
+  })
+
+  const beam = q('#s3-beam')
+  const beamSweep = delta([320, 140, 0], [450, 140, 0])
+
+  /** 스캔 1회: 빔이 가방을 훑고, 판독 화면에 내용물이 뜬다. */
+  const scan = (t0, { idcard = false, note = false }) => {
+    tl.fromTo(beam, { opacity: 0, x: 0, y: 0 }, { opacity: 1, duration: 0.15 }, t0)
+      .to(beam, { x: beamSweep.x, y: beamSweep.y, duration: 0.7 }, t0)
+      .to(beam, { opacity: 0, duration: 0.15 }, t0 + 0.7)
+      .fromTo(
+        q('#s3-screen-sweep'),
+        { attr: { y: 60 } },
+        { attr: { y: 180 }, duration: 0.7 },
+        t0,
+      )
+    if (idcard) tl.to(q('#s3-xray-idcard'), { opacity: 1, duration: 0.25 }, t0 + 0.35)
+    if (note) tl.to(q('#s3-xray-note'), { opacity: 1, duration: 0.25 }, t0 + 0.45)
+    // 다음 가방을 위해 판독 결과를 비운다.
+    tl.to([q('#s3-xray-idcard'), q('#s3-xray-note')], { opacity: 0, duration: 0.2 }, t0 + 1.55)
+  }
+
+  /** 판정 후 분기점을 거쳐 해당 레인 끝까지 보낸다. */
+  const divert = (id, origin, verdict, t0) => {
+    const el = q(`#${id}`)
+    if (!el) return
+    const toJunction = delta(origin, JUNCTION)
+    const toLane = delta(origin, LANE_END[verdict])
+    if (!lamps[verdict]) return
+    tl.to(lamps[verdict], { opacity: 1, duration: 0.2 }, t0)
+      .to(el, { x: toJunction.x, y: toJunction.y, duration: 0.55 }, t0)
+      .to(el, { x: toLane.x, y: toLane.y, duration: 0.5 }, t0 + 0.55)
+      .to(lamps[verdict], { opacity: 0.18, duration: 0.3 }, t0 + 1.2)
+  }
+
+  QUEUE.forEach(([id, origin, verdict], i) => {
+    const t0 = i * 2 // 가방 하나당 두 박자: 스캔 → 판정
+    const scanned = { idcard: verdict !== 'allow', note: verdict === 'block' || verdict === 'override' }
+    scan(t0, scanned)
+
+    if (verdict === 'override') {
+      // 판정 게이트를 아예 건너뛴다. 전용 가방으로 갈아타 경로를 태운다.
+      const ov = q('#s3-bag-ov')
+      tl.to(q('#s3-override'), { opacity: 1, duration: 0.2 }, t0 + 0.8)
+        .to(q(`#${id}`), { opacity: 0, duration: 0.15 }, t0 + 1)
+        .set(q('#s3-bag-ov-wrap'), { opacity: 1 }, t0 + 1)
+        .to(
+          ov,
+          {
+            duration: 1.1,
+            ease: 'power1.in',
+            motionPath: {
+              path: q('#s3-path-override'),
+              align: q('#s3-path-override'),
+              alignOrigin: [0.5, 0.9],
+            },
+          },
+          t0 + 1,
+        )
+        .to(
+          q('#s3-override-outlet'),
+          { scale: 1.18, transformOrigin: '50% 50%', duration: 0.2, yoyo: true, repeat: 3 },
+          t0 + 2,
+        )
+    } else {
+      divert(id, origin, verdict, t0 + 0.9)
+      // 뒤에 남은 가방들을 한 칸씩 당긴다.  x/y 는 최초 위치 기준 절대 변위이므로
+      // '몇 칸 당겼는지' 가 아니라 '지금 몇 번 슬롯인지' 로 목표를 잡아야 한다.
+      QUEUE.slice(i + 1).forEach(([nextId, nextOrigin], k) => {
+        const slot = QUEUE[k][1] // k 번째 슬롯(= 앞에서 k 번째 자리)
+        tl.to(
+          q(`#${nextId}`),
+          { ...delta(nextOrigin, slot), duration: 0.8 },
+          t0 + 1.1,
+        )
+      })
+    }
+  })
+
+  // 벨트 무늬는 스크럽과 무관하게 계속 흐른다 (설비가 살아 있다는 신호).
+  const tooth = delta([0, 140, BELT_Z], [28, 140, BELT_Z])
+  const beltLoop = gsap.to(q('#s3-belt-teeth'), {
+    x: tooth.x,
+    y: tooth.y,
+    duration: 1.1,
+    ease: 'none',
+    repeat: -1,
+  })
+
+  // 화면 밖에서는 루프를 멈춰 둔다.
+  ScrollTrigger.create({
+    trigger: root.closest('.scene'),
+    start: 'top bottom',
+    end: 'bottom top',
+    onToggle: (self) => (self.isActive ? beltLoop.play() : beltLoop.pause()),
+  })
+
+  return tl
 }

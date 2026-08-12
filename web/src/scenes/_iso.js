@@ -23,14 +23,25 @@ export function isoSpace({ ox, oy, s = 1 }) {
   /** 평면좌표 → [screenX, screenY] (콜아웃 앵커용) */
   const at = (x, y, z = 0) => [+sx(x, y).toFixed(1), +sy(x, y, z).toFixed(1)]
 
+  /**
+   * 평면상 A→B 이동을 화면 이동량 {x, y} 로 환산.
+   * 아이소메트릭은 아핀 투영이라, 지면을 미끄러지는 물체는 이 값만큼
+   * translate 하면 정확히 맞는다 (M3 애니메이션이 이걸 쓴다).
+   */
+  const delta = (from, to) => {
+    const a = at(...from)
+    const b = at(...to)
+    return { x: +(b[0] - a[0]).toFixed(2), y: +(b[1] - a[1]).toFixed(2) }
+  }
+
   const poly = (pts, cls) =>
     `<polygon class="${cls}" points="${pts.map((p) => pt(...p)).join(' ')}" />`
 
   /** 평면좌표 배열을 잇는 선 (경로·점선·해칭에 공용) */
-  const line = (pts, cls, close = false) =>
+  const line = (pts, cls, close = false, attrs = '') =>
     `<path class="${cls}" d="M ${pts.map((p) => pt(...p)).join(' L ')}${
       close ? ' Z' : ''
-    }" />`
+    }" ${attrs} />`
 
   /** 곡선 경로 — 평면 위 제어점을 그대로 투영해 잇는다. */
   const curve = (pts, cls, attrs = '') => {
@@ -161,5 +172,19 @@ export function isoSpace({ ox, oy, s = 1 }) {
     return out.join('')
   }
 
-  return { sx, sy, pt, at, poly, line, curve, box, slab, plane, grid, cutHatch }
+  return {
+    sx,
+    sy,
+    pt,
+    at,
+    delta,
+    poly,
+    line,
+    curve,
+    box,
+    slab,
+    plane,
+    grid,
+    cutHatch,
+  }
 }

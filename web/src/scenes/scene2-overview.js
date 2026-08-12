@@ -18,7 +18,7 @@ import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
 import { scene2 as t } from '../content/strings.js'
 
-const iso = isoSpace({ ox: 406, oy: 130, s: 1 })
+export const iso = isoSpace({ ox: 406, oy: 130, s: 1 })
 const { at, box, slab, line, plane, grid, cutHatch, curve } = iso
 
 /* ---------------------------------------------------------------- 캠퍼스 */
@@ -380,4 +380,77 @@ export function scene2Svg() {
     desc: t.svgDesc,
     body,
   })
+}
+
+/* ==========================================================================
+   M3 애니메이션 — 캠퍼스 각지의 가방이 경로를 따라 터미널로 모여든다.
+   MotionPathPlugin 으로 실제 경로(#s2-route-*) 위를 태우므로, 경로를 고치면
+   애니메이션이 따라온다.
+   ========================================================================== */
+
+const BAG_ROUTES = [
+  ['#s2-bag-1', '#s2-route-phone'],
+  ['#s2-bag-2', '#s2-route-tablet'],
+  ['#s2-bag-3', '#s2-route-laptop'],
+  ['#s2-bag-4', '#s2-route-pc'],
+]
+
+export function scene2Anim(root, gsap) {
+  const tl = gsap.timeline({ repeat: -1, defaults: { ease: 'none' } })
+
+  BAG_ROUTES.forEach(([bagSel, pathSel], i) => {
+    const el = root.querySelector(bagSel)
+    const path = root.querySelector(pathSel)
+    if (!el || !path) return
+    const start = i * 1.5
+    tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.9 }, start)
+      .to(
+        el,
+        {
+          duration: 7,
+          motionPath: { path, align: path, alignOrigin: [0.5, 0.86] },
+        },
+        start,
+      )
+      // 터미널 입구에서 사라진다 — 안으로 들어갔다는 뜻.
+      .to(el, { opacity: 0, duration: 0.8 }, start + 6.2)
+  })
+
+  // 터미널에 도착해 대기 중인 가방은 살짝 들썩인다.
+  gsap.to(root.querySelector('#s2-bag-5'), {
+    y: -5,
+    duration: 1.4,
+    ease: 'sine.inOut',
+    repeat: -1,
+    yoyo: true,
+  })
+
+  gsap.to(root.querySelector('#s2-beacon'), {
+    opacity: 0.25,
+    duration: 0.85,
+    ease: 'sine.inOut',
+    repeat: -1,
+    yoyo: true,
+  })
+
+  gsap.to(root.querySelectorAll('[id^="s2-smoke-"]'), {
+    y: -26,
+    opacity: 0,
+    scale: 1.5,
+    transformOrigin: '50% 50%',
+    duration: 4.5,
+    ease: 'sine.out',
+    repeat: -1,
+    stagger: { each: 1.2, repeat: -1 },
+  })
+
+  // 국경을 넘는 항로는 점선이 흘러가는 것으로 방향을 보여 준다.
+  gsap.to(root.querySelector('#s2-flight'), {
+    strokeDashoffset: -36,
+    duration: 2.2,
+    ease: 'none',
+    repeat: -1,
+  })
+
+  return tl
 }
