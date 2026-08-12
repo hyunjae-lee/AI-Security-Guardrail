@@ -1,8 +1,9 @@
 /**
  * 섹션 등록 + ScrollTrigger 초기화.
  *
- * 7개 장면을 strings.js 로부터 생성한다.  일러스트가 완성되기 전까지는 자리표시자를
- * 넣고, 완성된 장면부터 STAGES 에 등록해 인라인 SVG 로 교체한다.
+ * 7개 장면을 strings.js 로부터 생성하고, 일러스트가 완성된 장면(SCENE 02·03)은
+ * 인라인 SVG 를, 나머지는 자리표시자를 넣는다.  M3 에서 장면별 애니메이션 모듈이
+ * 여기에 붙는다.
  */
 
 import './styles/main.css'
@@ -10,11 +11,16 @@ import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
 
 import { placeholderKicker, scenes, site } from './content/strings.js'
+import { scene2Svg } from './scenes/scene2-overview.js'
+import { scene3Svg } from './scenes/scene3-departures.js'
 
 gsap.registerPlugin(ScrollTrigger)
 
-/** 일러스트가 완성된 장면. M2 에서 SCENE 02·03 부터 채운다. */
-const STAGES = {}
+/** 일러스트가 완성된 장면. 나머지는 M4 에서 채운다. */
+const STAGES = {
+  'scene-2': scene2Svg,
+  'scene-3': scene3Svg,
+}
 
 const placeholder = (scene) => `
       <div class="placeholder">

@@ -27,7 +27,6 @@ export const scenes = [
     label: '조감도',
     title: '캠퍼스와 외부 AI 사이, 통로는 하나뿐입니다.',
     caption: '어느 건물에서 보냈든, 모든 질의는 단 하나의 통제 지점을 지납니다.',
-    placeholder: '캠퍼스 영토와 외부 AI 대륙, 그 사이 유일한 통로인 공항 터미널 조감도',
   },
   {
     id: 'scene-3',
@@ -36,7 +35,6 @@ export const scenes = [
     title: '가방은 세 개의 문 중 하나로 나갑니다.',
     caption:
       '여권과 비자를 확인하고, X-ray 로 가방 속을 들여다본 뒤, 통과·제거·거부를 판정합니다.',
-    placeholder: '터미널 위층 단면 — 컨베이어, 여권·비자 확인대, X-ray 스캐너, 3갈래 게이트',
   },
   {
     id: 'scene-4',
