@@ -1,222 +1,351 @@
 /**
- * SCENE 03 · 출국층 단면
+ * SCENE 03 · 출국층 단면 — 아이소메트릭 컷어웨이.
  *
- * 터미널 위층을 잘라 본 단면.  컨베이어에 오른 가방이
- *   [여권·비자 확인] → [X-ray 스캐너] → [게이트 3갈래: 통과 / 물건 제거 후 통과 / 탑승 거부]
- * 순서로 흐르고, 전략물자·위조 여권이 잡히면 게이트를 건너뛰고 즉시 거부 통로로 빠진다.
+ * 바닥 슬래브의 두께가 그대로 절단면이 되고, 먼 쪽 두 벽만 남겨 위층을 잘라
+ * 낸 것처럼 보이게 한다.  컨베이어에 오른 가방이
+ *   [여권·비자 확인] → [X-ray 스캐너] → [게이트 3갈래]
+ * 로 흐르고, 전략물자·위조 여권이 잡히면 게이트를 건너뛰어 즉시 거부로 빠진다.
  *
  * M3 애니메이션 대상 id:
  *   #s3-bag-1 … #s3-bag-3     컨베이어 위 가방
- *   #s3-belt-teeth            벨트 무늬 (좌→우 반복 이동)
- *   #s3-beam / #s3-beam-glow  X-ray 스캔 빔 (상하 스윕)
+ *   #s3-belt-teeth            벨트 무늬 (흐름)
+ *   #s3-beam                  X-ray 스캔 빔
  *   #s3-screen-sweep          판독 화면 주사선
- *   #s3-xray-idcard / #s3-xray-note   화면에 비친 내용물 (적발 시 점멸)
- *   #s3-path-allow|mask|block 게이트 3갈래 모션 경로
+ *   #s3-xray-idcard / #s3-xray-note   화면에 비친 내용물
+ *   #s3-path-allow|mask|block 게이트 3갈래 벨트
  *   #s3-lamp-allow|mask|block 게이트 표시등
  *   #s3-path-override / #s3-override-outlet  즉시 거부 우회로
  */
 
-import { bag, label, leader, person, svgWrap } from './_svg.js'
+import { callout, svgWrap } from './_svg.js'
+import { isoSpace } from './_iso.js'
 import { scene3 as t } from '../content/strings.js'
 
-/* --- 층 기준선 -------------------------------------------------------- */
-const CEIL = 88 // 천장 슬래브 상단
-const FLOOR = 570 // 바닥 슬래브 상단
-const BELT = 452 // 컨베이어 상면
-const PERSON = 1.75 // 층고 대비 사람 배율 (머리가 벨트 위로 올라오도록)
-const BAG = 1.15 // 사람 기준 가방 배율
+const iso = isoSpace({ ox: 350, oy: 76, s: 1.12 })
+const { at, pt, box, slab, line, plane, grid, cutHatch, curve } = iso
 
-/** 단면임을 드러내는 톱니 절단면. */
-const cutEdge = (x) => {
-  const pts = []
-  for (let y = CEIL + 22; y <= FLOOR; y += 26) {
-    pts.push(`${x + (pts.length % 2 ? 7 : -7)} ${y}`)
-  }
-  return `<polyline points="${pts.join(' ')}" fill="none" stroke="#3C3E46"
-              stroke-width="1.25" opacity="0.7" />`
-}
-
-/** 바닥 아래(아래층 방향)가 잘려 나갔음을 나타내는 해칭. */
-const hatch = () => {
-  const lines = []
-  for (let x = 100; x < 1350; x += 22) {
-    lines.push(`<path d="M ${x} 630 L ${x + 20} 598" stroke="#3C3E46"
-                 stroke-width="1" opacity="0.45" />`)
-  }
-  return lines.join('\n        ')
-}
-
-const conveyor = () => {
-  const parts = []
-  for (let x = 300; x <= 1004; x += 236) {
-    parts.push(`<rect class="bldg" x="${x - 4}" y="468" width="8" height="${FLOOR - 468}" />`)
-  }
-  for (let x = 190; x <= 1010; x += 68) {
-    parts.push(`<circle cx="${x}" cy="476" r="6" fill="none" stroke="#3C3E46" stroke-width="1.25" />`)
-  }
-  return parts.join('\n        ')
-}
-
-const beltTeeth = () => {
-  const ticks = []
-  for (let x = 182; x <= 1012; x += 40) {
-    ticks.push(`<path d="M ${x} 456 V 464" stroke="#3C3E46" stroke-width="2" />`)
-  }
-  return `<g id="s3-belt-teeth">
-        ${ticks.join('\n        ')}
-      </g>`
-}
-
-/* --- 게이트 3갈래 ------------------------------------------------------ */
+const BELT_Z = 32 // 벨트 상면 높이
 const LANES = [
-  { key: 'allow', cy: 330, color: '#7FBF57', text: t.gateAllow },
-  { key: 'mask', cy: 460, color: '#F0A63A', text: t.gateMask },
-  { key: 'block', cy: 540, color: '#E25749', text: t.gateBlock },
+  { key: 'allow', y: 60, color: '#7FBF57' },
+  { key: 'mask', y: 128, color: '#F0A63A' },
+  { key: 'block', y: 196, color: '#E25749' },
 ]
 
-const LANE_PATH = {
-  allow: 'M 1020 460 C 1082 460 1104 330 1176 330',
-  mask: 'M 1020 460 L 1176 460',
-  block: 'M 1020 460 C 1082 460 1104 540 1176 540',
+/* --------------------------------------------------------- 바닥 · 남은 벽 */
+
+const shell = `
+      ${box(-10, -10, 910, 10, 54)}
+      ${box(-10, 0, 10, 300, 54)}
+      ${slab(0, 0, 900, 300, 26)}
+      ${grid(0, 0, 900, 300, 60)}
+      ${cutHatch(0, 0, 900, 300, 26, 'l', 30)}
+      ${cutHatch(0, 0, 900, 300, 26, 'r', 30)}`
+
+/* ------------------------------------------------------------- 컨베이어 */
+
+const beltTeeth = () => {
+  const out = []
+  for (let x = 84; x < 700; x += 28) {
+    out.push(
+      line(
+        [
+          [x, 118, BELT_Z],
+          [x, 162, BELT_Z],
+        ],
+        'hatch',
+      ),
+    )
+  }
+  return `<g id="s3-belt-teeth">${out.join('')}</g>`
 }
 
-const gates = () =>
-  LANES.map(
-    ({ key, cy, color, text }) => `
-      <g class="gate gate--${key}">
-        <path d="${LANE_PATH[key]}" fill="none" stroke="#3C3E46" stroke-width="10" stroke-linecap="round" />
-        <path id="s3-path-${key}" d="${LANE_PATH[key]}" fill="none" stroke="${color}"
-              stroke-width="2" stroke-linecap="round" opacity="0.9" />
-        <rect x="1176" y="${cy - 30}" width="68" height="60" rx="4"
-              fill="none" stroke="${color}" stroke-width="2" />
-        <path d="M 1176 ${cy - 30} H 1244" stroke="${color}" stroke-width="5" />
-        <circle id="s3-lamp-${key}" cx="1210" cy="${cy - 12}" r="10" fill="${color}" />
-        <text x="1258" y="${cy + 6}" class="lbl-title" fill="${color}">${text}</text>
-      </g>`,
-  ).join('')
+const BELT_FACES = { top: 'belt-top', l: 'belt-l', r: 'belt-r' }
 
-/* --- 즉시 거부 우회로 (전략물자·위조 여권) ---------------------------- */
+const conveyor = `
+      ${box(70, 116, 630, 48, BELT_Z, BELT_FACES)}
+      ${plane(
+        [
+          [70, 136, BELT_Z + 0.4],
+          [700, 136, BELT_Z + 0.4],
+          [700, 144, BELT_Z + 0.4],
+          [70, 144, BELT_Z + 0.4],
+        ],
+        '',
+        'fill="#F0A63A" opacity="0.5"',
+      )}
+      ${beltTeeth()}`
+
+/* --------------------------------------------------- 여권·비자 확인 포털 */
+
+const passport = `
+      <g id="s3-passport">
+        ${box(146, 96, 14, 14, 96)}
+        ${box(146, 170, 14, 14, 96)}
+        ${box(146, 96, 14, 88, 14, { z: 96 })}
+        ${line(
+          [
+            [146, 96, 110],
+            [146, 184, 110],
+          ],
+          'gear',
+        )}
+        ${plane(
+          [
+            [153, 122, 88],
+            [153, 158, 88],
+            [153, 158, 70],
+            [153, 122, 70],
+          ],
+          'gear-fill',
+          'opacity="0.35"',
+        )}
+      </g>`
+
+/* ------------------------------------------------------- X-ray 스캐너 */
+
+const xrayFrame = (x0) => `
+        ${box(x0, 92, 12, 12, 104)}
+        ${box(x0, 180, 12, 12, 104)}
+        ${box(x0, 92, 12, 100, 12, { z: 104 })}`
+
+const xray = `
+      <g id="s3-xray">
+        ${xrayFrame(300)}
+        ${box(312, 92, 146, 12, 12, { z: 104 })}
+        ${box(312, 180, 146, 12, 12, { z: 104 })}
+        ${xrayFrame(458)}
+        ${line(
+          [
+            [300, 92, 116],
+            [470, 92, 116],
+          ],
+          'gear',
+        )}
+        ${line(
+          [
+            [300, 192, 116],
+            [470, 192, 116],
+          ],
+          'gear',
+        )}
+      </g>
+      <g id="s3-beam">
+        ${plane(
+          [
+            [380, 96, 104],
+            [380, 188, 104],
+            [380, 188, 0],
+            [380, 96, 0],
+          ],
+          'gear-fill',
+          'opacity="0.16"',
+        )}
+        ${line(
+          [
+            [380, 96, 104],
+            [380, 188, 104],
+          ],
+          'gear',
+        )}
+      </g>`
+
+/* ---------------------------------------------------------- 게이트 3갈래 */
+
+const gates = `
+      <g id="s3-gates">
+        ${box(700, 52, 58, 196, BELT_Z, BELT_FACES)}
+        ${LANES.map(
+          ({ key, y, color }) => `
+        ${box(758, y, 112, 44, BELT_Z, { id: `s3-path-${key}`, ...BELT_FACES })}
+        ${plane(
+          [
+            [758, y + 18, BELT_Z + 0.4],
+            [866, y + 18, BELT_Z + 0.4],
+            [866, y + 26, BELT_Z + 0.4],
+            [758, y + 26, BELT_Z + 0.4],
+          ],
+          '',
+          `fill="${color}" opacity="0.75"`,
+        )}
+        ${box(866, y, 12, 12, 68)}
+        ${box(866, y + 32, 12, 12, 68)}
+        ${box(866, y, 12, 44, 12, { z: 68 })}
+        <path d="M ${pt(866, y, 82)} L ${pt(866, y + 44, 82)}"
+              fill="none" stroke="${color}" stroke-width="2" />
+        <circle id="s3-lamp-${key}" cx="${at(872, y + 22, 92)[0]}"
+                cy="${at(872, y + 22, 92)[1]}" r="8" fill="${color}" />`,
+        ).join('')}
+      </g>`
+
+/* ------------------------------------------- 즉시 거부 (전략물자·위조 여권) */
+
+const [outX, outY] = at(830, 24, 206)
+
 const override = `
       <g id="s3-override">
-        <path id="s3-path-override" d="M 752 362 C 796 240 862 194 942 192 L 1140 194"
-              fill="none" stroke="#E25749" stroke-width="2.5"
-              stroke-dasharray="10 8" stroke-linecap="round" />
-        <path d="M 1128 186 L 1144 194 L 1128 202 Z" fill="#E25749" />
-        <g id="s3-override-outlet">
-          <rect x="1146" y="160" width="98" height="68" rx="4"
+        ${curve(
+          [
+            [464, 142, 112],
+            [620, 96, 250],
+            [800, 30, 214],
+          ],
+          'route',
+          'id="s3-path-override" stroke="#E25749" stroke-dasharray="9 7" opacity="0.95"',
+        )}
+        <g id="s3-override-outlet" transform="translate(${outX} ${outY})">
+          <rect x="-34" y="-26" width="68" height="52" rx="3"
                 fill="none" stroke="#E25749" stroke-width="2" />
-          <path d="M 1180 178 L 1210 210 M 1210 178 L 1180 210"
-                stroke="#E25749" stroke-width="3" stroke-linecap="round" />
+          <path d="M -13 -10 L 13 12 M 13 -10 L -13 12"
+                stroke="#E25749" stroke-width="2.5" stroke-linecap="round" />
         </g>
       </g>`
 
-/* --- X-ray 판독 화면 --------------------------------------------------- */
+/* -------------------------------------------------------------- 가방·직원 */
+
+const bag = (id, x, y, { z = 0, w = 22, d = 15, h = 17 } = {}) => {
+  const [hx, hy] = at(x, y, z + h)
+  return `
+      <g id="${id}">
+        ${box(x - w / 2, y - d / 2, w, d, h, {
+          z,
+          top: 'bag-top',
+          l: 'bag-l',
+          r: 'bag-r',
+        })}
+        <path d="M ${hx - 7} ${hy - 1} C ${hx - 7} ${hy - 11} ${hx + 7} ${hy - 11} ${hx + 7} ${hy - 1}"
+              fill="none" stroke="#b97a22" stroke-width="2" />
+      </g>`
+}
+
+/* 사람은 부감 투영에서 뭉개지므로 심볼로 세워 둔다 (설명 다이어그램 관례). */
+const figure = (plan) => {
+  const [x, y] = at(...plan)
+  return `
+      <g class="figure">
+        <polygon points="${x - 13},${y} ${x},${y - 7} ${x + 13},${y} ${x},${y + 7}"
+                 fill="#0f1116" opacity="0.5" />
+        <circle class="gear-fill" cx="${x}" cy="${y - 70}" r="9.5" opacity="0.8" />
+        <rect class="gear-fill" x="${x - 11}" y="${y - 52}" width="22" height="52"
+              rx="10" opacity="0.8" />
+      </g>`
+}
+
+/* ---------------------------------------------------------- 판독 화면 */
+
 const screen = `
       <g id="s3-screen">
-        <path class="leader" d="M 610 318 L 640 362" />
-        <rect x="498" y="168" width="224" height="150" rx="4"
-              fill="#0F1013" stroke="#43BC9C" stroke-width="2" />
-        <rect x="512" y="182" width="196" height="122" fill="#131418" />
-        <rect id="s3-screen-sweep" x="512" y="188" width="196" height="2"
-              fill="#43BC9C" opacity="0.5" />
-        <!-- 화면에 비친 가방과 그 내용물 -->
-        <rect x="540" y="198" width="144" height="90" rx="12"
-              fill="none" stroke="#43BC9C" stroke-width="1.5" opacity="0.55" />
-        <path d="M 596 198 C 596 186 628 186 628 198" fill="none"
-              stroke="#43BC9C" stroke-width="1.5" opacity="0.55" />
+        <path class="co-leader" d="M 604 186 L 581 238" />
+        <rect x="590" y="26" width="240" height="160" rx="3"
+              fill="#0f1116" stroke="#43BC9C" stroke-width="1.75" />
+        <path d="M 590 52 H 830" stroke="#43BC9C" stroke-width="1" opacity="0.6" />
+        <text class="co-sub" x="604" y="45" fill="#43BC9C" letter-spacing="2">${t.screen}</text>
+        <rect id="s3-screen-sweep" x="590" y="60" width="240" height="2"
+              fill="#43BC9C" opacity="0.45" />
+        <!-- 가방 투시 -->
+        <rect x="620" y="76" width="146" height="82" rx="10"
+              fill="none" stroke="#43BC9C" stroke-width="1.5" opacity="0.5" />
+        <path d="M 672 76 C 672 64 714 64 714 76" fill="none"
+              stroke="#43BC9C" stroke-width="1.5" opacity="0.5" />
         <g id="s3-xray-idcard">
-          <rect x="558" y="214" width="48" height="32" rx="3"
+          <rect x="634" y="94" width="46" height="31" rx="2"
                 fill="none" stroke="#F0A63A" stroke-width="1.75" />
-          <circle cx="571" cy="226" r="6" fill="none" stroke="#F0A63A" stroke-width="1.5" />
-          <path d="M 583 222 H 600 M 583 232 H 596" stroke="#F0A63A" stroke-width="1.5" />
+          <circle cx="647" cy="106" r="6" fill="none" stroke="#F0A63A" stroke-width="1.5" />
+          <path d="M 659 102 H 675 M 659 112 H 671" stroke="#F0A63A" stroke-width="1.5" />
         </g>
         <g id="s3-xray-note">
-          <path d="M 628 214 L 664 208 L 670 246 L 634 252 Z"
+          <path d="M 702 92 L 736 86 L 742 124 L 708 130 Z"
                 fill="none" stroke="#E25749" stroke-width="1.75" />
-          <path d="M 636 224 H 660 M 636 234 H 656" stroke="#E25749" stroke-width="1.5" />
+          <path d="M 710 102 H 732 M 710 112 H 728" stroke="#E25749" stroke-width="1.5" />
         </g>
-        <text x="582" y="272" text-anchor="middle" fill="#F0A63A"
-              font-size="13">${t.screenIdCard}</text>
-        <text x="650" y="272" text-anchor="middle" fill="#E25749"
-              font-size="13">${t.screenNote}</text>
+        <text x="657" y="150" text-anchor="middle" fill="#F0A63A" font-size="12">${t.screenIdCard}</text>
+        <text x="723" y="150" text-anchor="middle" fill="#E25749" font-size="12">${t.screenNote}</text>
       </g>`
+
+/* ------------------------------------------------------------------ 조립 */
 
 export function scene3Svg() {
   const body = `
-      <!-- 터미널 껍데기 (컷어웨이) -->
-      <rect class="land" x="90" y="${CEIL}" width="1260" height="22" />
-      <rect class="land" x="90" y="${FLOOR}" width="1260" height="26" />
-      ${hatch()}
-      ${cutEdge(90)}
-      ${cutEdge(1350)}
-
-      <!-- 컨베이어 구조 -->
-      ${conveyor()}
-
-      <!-- 여권·비자 확인대 -->
-      <g id="s3-passport">
-        <path class="gear" d="M 250 452 L 250 344 L 380 344 L 380 452" />
-        <rect class="gear" x="298" y="352" width="34" height="26" rx="3" />
-        <path class="gear" d="M 304 365 H 326" />
-      </g>
-
-      <!-- X-ray 터널 -->
-      <g id="s3-xray">
-        <rect class="land" x="520" y="362" width="240" height="140" rx="6" />
-        <rect class="gear" x="520" y="362" width="240" height="140" rx="6" />
-        <path d="M 526 418 V 452 M 536 418 V 452 M 546 418 V 452"
-              stroke="#3C3E46" stroke-width="2" />
-        <path d="M 734 418 V 452 M 744 418 V 452 M 754 418 V 452"
-              stroke="#3C3E46" stroke-width="2" />
-      </g>
-
-      <!-- 직원 (벨트 뒤에 선다) -->
-      ${person(412, FLOOR, PERSON)}
-      ${person(848, FLOOR, PERSON)}
-
-      <!-- 벨트 -->
-      <rect x="170" y="${BELT}" width="850" height="16" rx="8"
-            fill="#23262E" stroke="#3C3E46" stroke-width="1.25" />
-      ${beltTeeth()}
-
-      <!-- 스캔 빔 -->
-      <rect id="s3-beam-glow" x="634" y="370" width="12" height="124"
-            fill="#43BC9C" opacity="0.14" />
-      <path id="s3-beam" d="M 640 370 V 494" stroke="#43BC9C"
-            stroke-width="2.5" stroke-linecap="round" opacity="0.85" />
-
-      <!-- 가방 -->
-      ${bag('s3-bag-1', 202, BELT, BAG)}
-      ${bag('s3-bag-2', 476, BELT, BAG)}
-      ${bag('s3-bag-3', 640, BELT, BAG)}
-
-      ${screen}
-      ${gates()}
+      ${shell}
+      ${conveyor}
+      ${passport}
+      ${bag('s3-bag-1', 110, 140, { z: BELT_Z })}
+      ${bag('s3-bag-2', 240, 140, { z: BELT_Z })}
+      ${xray}
+      ${bag('s3-bag-3', 380, 140, { z: BELT_Z })}
+      ${gates}
+      ${figure([215, 250])}
+      ${figure([610, 262])}
       ${override}
+      ${screen}
 
-      <!-- 라벨 -->
-      ${label({ x: 110, y: 66, title: t.floor })}
-
-      ${leader('M 172 508 L 196 476')}
-      ${label({ x: 108, y: 528, title: t.conveyor, sub: t.conveyorSub })}
-
-      ${leader('M 315 326 L 315 340')}
-      ${label({ x: 315, y: 294, title: t.passport, sub: t.passportSub, anchor: 'middle' })}
-
-      ${leader('M 640 502 L 640 514')}
-      ${label({ x: 640, y: 534, title: t.xray, sub: t.xraySub, anchor: 'middle' })}
-
-      ${leader('M 452 200 L 498 200')}
-      ${label({ x: 446, y: 204, title: t.screen, anchor: 'end' })}
-
-      ${leader('M 1210 278 L 1210 298')}
-      ${label({ x: 1210, y: 268, title: t.gates, anchor: 'middle' })}
-
-      ${label({ x: 1136, y: 150, title: t.override, sub: t.overrideSub, anchor: 'end', cls: 'lbl-block' })}`
+      ${callout({
+        n: '01',
+        from: at(0, 0, 0),
+        to: [300, 36],
+        side: 'left',
+        title: t.floor,
+      })}
+      ${callout({
+        n: '02',
+        from: at(110, 164, BELT_Z),
+        to: [172, 340],
+        side: 'left',
+        title: t.conveyor,
+        sub: t.conveyorSub,
+      })}
+      ${callout({
+        n: '03',
+        from: at(153, 138, 110),
+        to: [300, 128],
+        side: 'left',
+        title: t.passport,
+        sub: t.passportSub,
+      })}
+      ${callout({
+        n: '04',
+        from: at(464, 192, 104),
+        to: [330, 486],
+        side: 'left',
+        title: t.xray,
+        sub: t.xraySub,
+      })}
+      ${callout({
+        n: '05',
+        from: at(872, 82, 82),
+        to: [1168, 448],
+        side: 'right',
+        title: t.gateAllow,
+        cls: 'co-title--allow',
+      })}
+      ${callout({
+        n: '06',
+        from: at(872, 150, 82),
+        to: [1168, 528],
+        side: 'right',
+        title: t.gateMask,
+        cls: 'co-title--bag',
+      })}
+      ${callout({
+        n: '07',
+        from: at(872, 218, 82),
+        to: [1168, 608],
+        side: 'right',
+        title: t.gateBlock,
+        cls: 'co-title--block',
+      })}
+      ${callout({
+        n: '08',
+        from: [outX + 34, outY - 14],
+        to: [1152, 252],
+        side: 'right',
+        title: t.override,
+        sub: t.overrideSub,
+        cls: 'co-title--block',
+      })}`
 
   return svgWrap({
     id: 's3',
-    viewBox: '0 0 1440 780',
+    viewBox: '0 0 1440 860',
     title: t.svgTitle,
     desc: t.svgDesc,
     body,

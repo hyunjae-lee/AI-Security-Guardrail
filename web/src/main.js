@@ -23,29 +23,45 @@ const STAGES = {
 }
 
 const placeholder = (scene) => `
-      <div class="placeholder">
-        <span class="placeholder__label">${placeholderKicker}</span>
-        <p class="placeholder__note">${scene.placeholder}</p>
-      </div>`
+        <div class="placeholder">
+          <span class="placeholder__label">${placeholderKicker}</span>
+          <p class="placeholder__note">${scene.placeholder}</p>
+        </div>`
 
 const sceneMarkup = (scene) => `
   <section class="scene" id="${scene.id}" aria-labelledby="${scene.id}-title">
     <div class="scene__inner">
-      <p class="scene__eyebrow">SCENE ${scene.num} · ${scene.label}</p>
-      <h2 class="scene__title" id="${scene.id}-title">${scene.title}</h2>
+      <header class="scene__head">
+        <p class="scene__eyebrow">
+          <span class="scene__num">SCENE ${scene.num}</span>
+          <span class="scene__eyebrow-rule"></span>
+          <span>${scene.label}</span>
+        </p>
+        <h2 class="scene__title" id="${scene.id}-title">${scene.title}</h2>
+      </header>
       <div class="scene__stage">${
         STAGES[scene.id] ? STAGES[scene.id]() : placeholder(scene)
-      }</div>${
-        scene.cta
-          ? `
-      <a class="scene__cta" href="${scene.cta.href}" target="_blank" rel="noopener">${scene.cta.label}</a>`
-          : ''
-      }
-      <p class="scene__caption">${scene.caption}</p>
+      }</div>
+      <footer class="scene__foot">
+        <p class="scene__caption">${scene.caption}</p>${
+          scene.cta
+            ? `
+        <a class="scene__cta" href="${scene.cta.href}" target="_blank" rel="noopener">${scene.cta.label}</a>`
+            : ''
+        }
+      </footer>
     </div>
   </section>`
 
-const navMarkup = () => `
+const chromeMarkup = () => `
+  <div class="progress" aria-hidden="true"></div>
+  <div class="topbar">
+    <span class="topbar__mark">${site.title}</span>
+    <span class="topbar__now" aria-live="polite">
+      <b data-now-num>${scenes[0].num}</b> / ${String(scenes.length).padStart(2, '0')}
+      &nbsp;<span data-now-label>${scenes[0].label}</span>
+    </span>
+  </div>
   <nav class="dotnav" aria-label="${site.navLabel}">
     <ul class="dotnav__list">
       ${scenes
@@ -54,6 +70,7 @@ const navMarkup = () => `
         <a class="dotnav__link" href="#${scene.id}" data-target="${scene.id}"
            aria-label="SCENE ${scene.num} ${scene.label}">
           <span class="dotnav__name" aria-hidden="true">${scene.label}</span>
+          <span class="dotnav__tick" aria-hidden="true"></span>
         </a>
       </li>`,
         )
@@ -63,19 +80,22 @@ const navMarkup = () => `
 
 function render() {
   document.querySelector('#app').innerHTML = scenes.map(sceneMarkup).join('\n')
-  document.body.insertAdjacentHTML('beforeend', navMarkup())
+  document.body.insertAdjacentHTML('beforeend', chromeMarkup())
 }
 
-/** 현재 장면에 해당하는 점을 표시. */
+/** 현재 장면을 우측 레일과 상단 바에 동시에 반영. */
 function setupNav() {
   const links = [...document.querySelectorAll('.dotnav__link')]
+  const nowNum = document.querySelector('[data-now-num]')
+  const nowLabel = document.querySelector('[data-now-label]')
 
-  const activate = (id) => {
+  const activate = (scene) => {
     links.forEach((link) => {
-      const on = link.dataset.target === id
-      if (on) link.setAttribute('aria-current', 'true')
+      if (link.dataset.target === scene.id) link.setAttribute('aria-current', 'true')
       else link.removeAttribute('aria-current')
     })
+    nowNum.textContent = scene.num
+    nowLabel.textContent = scene.label
   }
 
   scenes.forEach((scene) => {
@@ -83,11 +103,25 @@ function setupNav() {
       trigger: `#${scene.id}`,
       start: 'top center',
       end: 'bottom center',
-      onToggle: (self) => self.isActive && activate(scene.id),
+      onToggle: (self) => self.isActive && activate(scene),
     })
   })
 
-  activate(scenes[0].id)
+  activate(scenes[0])
+}
+
+/** 전체 스크롤 진행선. */
+function setupProgress() {
+  gsap.to('.progress', {
+    scaleX: 1,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: document.body,
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 0.25,
+    },
+  })
 }
 
 /** 장면 진입 시 제목·캡션이 떠오르는 기본 트랜지션 (M3 에서 확장). */
@@ -98,15 +132,15 @@ function setupReveals() {
   scenes.forEach((scene) => {
     const section = document.querySelector(`#${scene.id}`)
     const targets = section.querySelectorAll(
-      '.scene__eyebrow, .scene__title, .scene__stage, .scene__cta, .scene__caption',
+      '.scene__eyebrow, .scene__title, .scene__stage, .scene__caption, .scene__cta',
     )
 
     gsap.from(targets, {
-      y: 26,
+      y: 24,
       opacity: 0,
       duration: 0.7,
       ease: 'power2.out',
-      stagger: 0.12,
+      stagger: 0.1,
       scrollTrigger: {
         trigger: section,
         start: 'top 72%',
@@ -118,4 +152,5 @@ function setupReveals() {
 
 render()
 setupNav()
+setupProgress()
 setupReveals()

@@ -1,205 +1,381 @@
 /**
- * SCENE 02 · 조감도
+ * SCENE 02 · 조감도 — 아이소메트릭 부감.
  *
- * 왼쪽 = 캠퍼스 영토(건물 실루엣 + 단말 4종), 오른쪽 = 외부 AI 대륙(거대 공장),
- * 그 사이 유일한 통로로 공항 터미널.  캠퍼스 각지에서 출발한 가방들이 하나의
- * 터미널로 모여든다.
+ * 평면좌표계에서 좌상(캠퍼스) → 우하(외부 AI 대륙) 으로 대각선 구성을 잡고,
+ * 그 사이 유일한 통로로 터미널 섬을 놓는다.  캠퍼스 각지의 단말에서 출발한
+ * 가방이 다리 하나로 모여 터미널로 들어간다.
  *
  * M3 애니메이션 대상 id:
- *   #s2-bag-1 … #s2-bag-5   경로를 따라 터미널로 모여드는 가방
- *   #s2-route-phone|tablet|laptop|pc   위 가방들이 탈 모션 경로
- *   #s2-beacon              관제탑 경광등 (점멸)
- *   #s2-flight              국경을 넘는 비행 경로 (stroke-dashoffset)
- *   #s2-smoke-1 … #s2-smoke-3  공장 연기
+ *   #s2-bag-1 … #s2-bag-5        경로를 따라 모여드는 가방
+ *   #s2-route-phone|tablet|laptop|pc   가방이 탈 모션 경로
+ *   #s2-beacon                   관제탑 경광등
+ *   #s2-flight                   국경을 넘는 비행 경로
+ *   #s2-smoke-1 … #s2-smoke-3    공장 연기
+ *   #s2-device-phone|tablet|laptop|pc  단말 심볼
  */
 
-import { bag, label, leader, svgWrap } from './_svg.js'
+import { callout, svgWrap } from './_svg.js'
+import { isoSpace } from './_iso.js'
 import { scene2 as t } from '../content/strings.js'
 
-/** 창문 몇 줄이 들어간 건물 실루엣. */
-const building = (x, baseY, w, h, { roof = false } = {}) => {
-  const top = baseY - h
-  const rows = []
-  for (let wy = top + 16; wy < baseY - 14; wy += 22) {
-    for (let wx = x + 9; wx < x + w - 8; wx += 16) {
-      rows.push(`<rect x="${wx}" y="${wy}" width="6" height="9" fill="#3C3E46" />`)
+const iso = isoSpace({ ox: 406, oy: 130, s: 1 })
+const { at, box, slab, line, plane, grid, cutHatch, curve } = iso
+
+/* ---------------------------------------------------------------- 캠퍼스 */
+
+// (x, y, w, d, h) — 멀리 있는 것(x+y 작은 것)부터 그린다.
+const CAMPUS_BLOCKS = [
+  [30, 40, 46, 46, 92],
+  [100, 24, 40, 56, 132],
+  [46, 150, 46, 52, 116],
+  [178, 60, 52, 46, 74],
+  [24, 268, 42, 44, 84],
+  [132, 168, 58, 50, 150],
+  [224, 150, 44, 48, 96],
+  [120, 282, 50, 46, 108],
+  [210, 268, 46, 50, 130],
+]
+
+/** 건물 +y 면에 창 두 줄. 면 위 평면이라 원근이 흐트러지지 않는다. */
+const windows = (x, y, w, d, h) => {
+  const out = []
+  const fy = y + d
+  for (const z of [h - 26, h - 56]) {
+    if (z < 16) continue
+    for (let wx = x + 8; wx + 10 <= x + w - 8; wx += 18) {
+      out.push(
+        plane(
+          [
+            [wx, fy, z + 12],
+            [wx + 10, fy, z + 12],
+            [wx + 10, fy, z],
+            [wx, fy, z],
+          ],
+          'f-top',
+          'opacity="0.5"',
+        ),
+      )
     }
   }
+  return out.join('')
+}
+
+const campus = `
+      ${slab(0, 0, 300, 400, 16)}
+      ${grid(0, 0, 300, 400, 50)}
+      ${cutHatch(0, 0, 300, 400, 16, 'l')}
+      ${cutHatch(0, 0, 300, 400, 16, 'r')}
+      ${CAMPUS_BLOCKS.map((b) => box(...b) + windows(...b)).join('')}`
+
+/* ------------------------------------------------------------ 단말 4종 */
+
+/* 부감에서 단말을 실제 비율로 두면 안 보인다.  설명 다이어그램 관례대로
+   심볼은 화면좌표로 크게 세워 두고, 발치에만 아이소메트릭 그림자를 깐다. */
+const device = (id, plan, shape) => {
+  const [x, y] = at(...plan)
   return `
-      <g class="bldg-group">
-        ${roof ? `<path class="bldg" d="M ${x - 6} ${top} L ${x + w / 2} ${top - 26} L ${x + w + 6} ${top} Z" />` : ''}
-        <rect class="bldg" x="${x}" y="${top}" width="${w}" height="${h}" rx="2" />
-        ${rows.join('\n        ')}
+      <g id="s2-device-${id}">
+        <polygon points="${x - 15},${y} ${x},${y - 8} ${x + 15},${y} ${x},${y + 8}"
+                 fill="#0f1116" opacity="0.55" />
+        <g transform="translate(${x} ${y})">
+${shape}
+        </g>
       </g>`
 }
 
-/* 단말 4종 — 어느 것에서 띄운 질문이든 가방 한 개가 된다.
-   캠퍼스 각지에 흩어 놓아 경로가 한 지점으로 모이는 게 보이도록 한다.
-   원점은 바닥 중앙, 화면 면은 호박색(질의)으로 칠한다. */
-const device = (id, x, y, shape) => `
-      <g id="s2-device-${id}" transform="translate(${x} ${y}) scale(1.35)">
-${shape}
-      </g>`
-
-const devices = [
+const DEVICES = [
   device(
     'phone',
-    150,
-    640,
-    `        <rect class="bldg" x="-12" y="-40" width="24" height="40" rx="5" />
-        <rect fill="#F0A63A" opacity="0.6" x="-8" y="-35" width="16" height="26" rx="2" />`,
+    [14, 96],
+    `          <rect class="f-top solid" x="-11" y="-40" width="22" height="38" rx="3" />
+          <rect fill="#F0A63A" x="-8" y="-36" width="16" height="27" rx="1" />`,
   ),
   device(
     'tablet',
-    232,
-    678,
-    `        <rect class="bldg" x="-18" y="-46" width="36" height="46" rx="5" />
-        <rect fill="#F0A63A" opacity="0.6" x="-13" y="-41" width="26" height="32" rx="2" />`,
+    [12, 220],
+    `          <rect class="f-top solid" x="-17" y="-46" width="34" height="44" rx="3" />
+          <rect fill="#F0A63A" x="-13" y="-42" width="26" height="33" rx="1" />`,
   ),
   device(
     'laptop',
-    392,
-    660,
-    `        <rect class="bldg" x="-21" y="-38" width="42" height="30" rx="3" />
-        <rect fill="#F0A63A" opacity="0.6" x="-17" y="-34" width="34" height="22" rx="1" />
-        <path class="bldg" d="M -28 0 L 28 0 L 23 -8 L -23 -8 Z" />`,
+    [88, 366],
+    `          <path class="f-l solid" d="M -27 0 L 27 0 L 22 -7 L -22 -7 Z" />
+          <rect class="f-top solid" x="-22" y="-38" width="44" height="31" rx="2" />
+          <rect fill="#F0A63A" x="-18" y="-34" width="36" height="23" />`,
   ),
   device(
     'pc',
-    468,
-    604,
-    `        <rect class="bldg" x="-26" y="-44" width="52" height="36" rx="4" />
-        <rect fill="#F0A63A" opacity="0.6" x="-21" y="-39" width="42" height="26" rx="2" />
-        <path class="bldg" d="M -7 -8 L 7 -8 L 10 0 L -10 0 Z" />
-        <rect class="bldg" x="30" y="-36" width="16" height="36" rx="2" />`,
+    [250, 360],
+    `          <rect class="f-top solid" x="-26" y="-44" width="52" height="35" rx="2" />
+          <rect fill="#F0A63A" x="-22" y="-40" width="44" height="27" />
+          <path class="f-l solid" d="M -7 -9 L 7 -9 L 10 0 L -10 0 Z" />
+          <rect class="f-r solid" x="30" y="-36" width="15" height="36" rx="2" />`,
   ),
 ].join('')
 
-/* 각 단말에서 터미널 입구(약 648,505)로 모여드는 경로.
-   M3 에서 MotionPath 로 가방을 태울 실제 경로이기도 하다. */
-const routes = `
-      <path id="s2-route-phone"  class="route" d="M 150 618 C 330 594 490 534 666 486" />
-      <path id="s2-route-tablet" class="route" d="M 232 656 C 386 648 528 566 668 500" />
-      <path id="s2-route-laptop" class="route" d="M 392 640 C 484 630 588 560 670 512" />
-      <path id="s2-route-pc"     class="route" d="M 468 584 C 540 574 614 536 672 524" />`
+/* ------------------------------------------------------------ 터미널 섬 */
+
+const [beaconX, beaconY] = at(402, 210, 156)
 
 const terminal = `
+      ${slab(380, 90, 160, 220, 16)}
+      ${cutHatch(380, 90, 160, 220, 16, 'l')}
+      ${cutHatch(380, 90, 160, 220, 16, 'r')}
       <g id="s2-terminal">
-        <!-- 관제탑 -->
-        <path class="gear" d="M 706 430 L 710 376" />
-        <path class="gear" d="M 722 430 L 718 376" />
-        <rect class="bldg" x="694" y="350" width="38" height="28" rx="4" />
-        <path class="gear" d="M 694 356 H 732" />
-        <circle id="s2-beacon" class="gear-fill" cx="713" cy="338" r="7" />
-        <!-- 터미널 본동 -->
-        <path class="bldg" d="M 684 502 L 684 454 Q 684 428 712 426 L 850 415 Q 876 413 876 440 L 876 490 Z" />
-        <path class="gear" d="M 684 454 Q 684 428 712 426 L 850 415 Q 876 413 876 440" />
-        <path class="gear" d="M 692 496 H 870" />
-        <g fill="#43BC9C" opacity="0.5">
-          <rect x="704" y="452" width="9" height="16" />
-          <rect x="726" y="450" width="9" height="16" />
-          <rect x="748" y="448" width="9" height="16" />
-          <rect x="770" y="446" width="9" height="16" />
-          <rect x="792" y="444" width="9" height="16" />
-          <rect x="814" y="443" width="9" height="16" />
-          <rect x="836" y="441" width="9" height="16" />
-        </g>
+        <!-- 활주로 (지면이라 가장 먼저) -->
+        ${plane(
+          [
+            [396, 240, 1],
+            [532, 240, 1],
+            [532, 268, 1],
+            [396, 268, 1],
+          ],
+          'f-r',
+        )}
+        ${line(
+          [
+            [404, 254, 2],
+            [524, 254, 2],
+          ],
+          'route',
+        )}
+        <!-- 본동 -->
+        ${box(398, 126, 116, 66, 62)}
+        ${line(
+          [
+            [398, 126, 62],
+            [514, 126, 62],
+            [514, 192, 62],
+            [398, 192, 62],
+          ],
+          'gear',
+          true,
+        )}
         <!-- 가방이 들어오는 입구 -->
-        <path class="gear" d="M 684 476 L 668 478 L 668 494 L 684 492" />
-        <!-- 탑승교 3 -->
-        <path class="gear" d="M 878 440 L 906 434" />
-        <path class="gear" d="M 878 456 L 906 452" />
-        <path class="gear" d="M 878 472 L 906 470" />
-        <!-- 활주로 -->
-        <path class="land" d="M 692 550 L 876 526 L 880 550 L 696 574 Z" />
-        <path d="M 710 556 L 862 536" stroke="#9C9B93" stroke-width="1.5"
-              stroke-dasharray="14 12" opacity="0.55" fill="none" />
+        ${plane(
+          [
+            [416, 192, 30],
+            [446, 192, 30],
+            [446, 192, 0],
+            [416, 192, 0],
+          ],
+          'gear-fill',
+          'opacity="0.28"',
+        )}
+        <!-- 관제탑 -->
+        ${box(392, 200, 20, 20, 130)}
+        ${box(385, 193, 34, 34, 14, { z: 130 })}
+        <circle id="s2-beacon" class="gear-fill" cx="${beaconX}" cy="${beaconY}" r="6" />
+        <!-- 탑승교 -->
+        ${box(514, 134, 30, 7, 5, { z: 30 })}
+        ${box(514, 152, 30, 7, 5, { z: 30 })}
+        ${box(514, 170, 30, 7, 5, { z: 30 })}
       </g>`
 
+/* 캠퍼스와 터미널을 잇는 유일한 다리 */
+const bridge = `
+      ${slab(296, 168, 86, 44, 8)}`
+
+/* -------------------------------------------------------------- 외부 대륙 */
+
+const factoryWindows = () => {
+  const out = []
+  for (const z of [30, 62]) {
+    for (let wx = 750; wx < 950; wx += 34) {
+      out.push(
+        plane(
+          [
+            [wx, 340, z + 16],
+            [wx + 20, 340, z + 16],
+            [wx + 20, 340, z],
+            [wx, 340, z],
+          ],
+          'f-deep',
+        ),
+      )
+    }
+  }
+  return out.join('')
+}
+
+const smoke = ['s2-smoke-1', 's2-smoke-2', 's2-smoke-3']
+  .map((id, i) => {
+    const [cx, cy] = at([772, 833, 890][i], [102, 74, 112][i], [206, 236, 186][i])
+    return `<circle id="${id}" cx="${cx}" cy="${cy}" r="${[13, 17, 11][i]}"
+              fill="#3C3E46" opacity="0.4" />`
+  })
+  .join('')
+
 const factory = `
+      ${slab(700, 0, 300, 400, 16, { id: 's2-outer' })}
+      ${cutHatch(700, 0, 300, 400, 16, 'l')}
+      ${cutHatch(700, 0, 300, 400, 16, 'r')}
       <g id="s2-factory">
-        <!-- 굴뚝 + 연기 -->
-        <rect class="bldg" x="1094" y="322" width="26" height="118" />
-        <rect class="bldg" x="1156" y="306" width="26" height="134" />
-        <rect class="bldg" x="1218" y="330" width="26" height="110" />
-        <circle id="s2-smoke-1" cx="1107" cy="300" r="15" fill="#3C3E46" opacity="0.45" />
-        <circle id="s2-smoke-2" cx="1169" cy="282" r="19" fill="#3C3E46" opacity="0.4" />
-        <circle id="s2-smoke-3" cx="1231" cy="308" r="13" fill="#3C3E46" opacity="0.45" />
+        ${box(730, 40, 240, 300, 92)}
+        ${factoryWindows()}
         <!-- 톱니 지붕 -->
-        <path class="bldg" d="M 1054 440 L 1054 412 L 1094 440 L 1094 412 L 1134 440
-                              L 1134 412 L 1174 440 L 1174 412 L 1214 440 L 1214 412
-                              L 1254 440 L 1254 412 L 1294 440 L 1294 412 L 1330 440 Z" />
-        <!-- 본체 -->
-        <rect class="bldg" x="1054" y="438" width="276" height="176" rx="2" />
-        <g fill="#3C3E46">
-          <rect x="1076" y="470" width="30" height="20" />
-          <rect x="1122" y="470" width="30" height="20" />
-          <rect x="1168" y="470" width="30" height="20" />
-          <rect x="1214" y="470" width="30" height="20" />
-          <rect x="1260" y="470" width="30" height="20" />
-          <rect x="1076" y="516" width="30" height="20" />
-          <rect x="1122" y="516" width="30" height="20" />
-          <rect x="1168" y="516" width="30" height="20" />
-          <rect x="1214" y="516" width="30" height="20" />
-          <rect x="1260" y="516" width="30" height="20" />
-        </g>
-        <rect fill="#F0A63A" opacity="0.18" x="1076" y="562" width="214" height="32" rx="2" />
+        ${[0, 1, 2, 3, 4]
+          .map((i) => box(736 + i * 48, 40, 30, 300, 20, { z: 92 }))
+          .join('')}
+        <!-- 굴뚝 -->
+        ${box(760, 90, 24, 24, 102, { z: 92 })}
+        ${box(820, 62, 26, 26, 132, { z: 92 })}
+        ${box(878, 100, 22, 22, 82, { z: 92 })}
+        ${smoke}
+        <!-- 가동 표시 -->
+        ${plane(
+          [
+            [746, 340, 18],
+            [954, 340, 18],
+            [954, 340, 8],
+            [746, 340, 8],
+          ],
+          'bag-r',
+          'opacity="0.5"',
+        )}
       </g>`
+
+/* ---------------------------------------------------------------- 경로·가방 */
+
+const ROUTES = {
+  phone: [
+    [14, 96],
+    [210, 116],
+    [418, 190],
+  ],
+  tablet: [
+    [12, 220],
+    [212, 198],
+    [420, 192],
+  ],
+  laptop: [
+    [88, 366],
+    [258, 262],
+    [424, 194],
+  ],
+  pc: [
+    [250, 360],
+    [332, 282],
+    [428, 196],
+  ],
+}
+
+const routes = Object.entries(ROUTES)
+  .map(([k, pts]) => curve(pts, 'route', `id="s2-route-${k}"`))
+  .join('')
+
+/** 여행 가방 — 평면 중심 (x, y) 에 놓는 아이소메트릭 상자 + 손잡이. */
+const bag = (id, x, y, { z = 0, w = 22, d = 15, h = 17 } = {}) => {
+  const [hx, hy] = at(x, y, z + h)
+  return `
+      <g id="${id}">
+        ${box(x - w / 2, y - d / 2, w, d, h, {
+          top: 'bag-top',
+          l: 'bag-l',
+          r: 'bag-r',
+        })}
+        <path d="M ${hx - 7} ${hy - 1} C ${hx - 7} ${hy - 11} ${hx + 7} ${hy - 11} ${hx + 7} ${hy - 1}"
+              fill="none" stroke="#b97a22" stroke-width="2" />
+      </g>`
+}
+
+/* ------------------------------------------------------------------ 국경 */
+
+/* 국경 — 실선 하나로는 부감에서 읽히지 않아, 점선 본선에 짧은 경계 눈금을
+   일정 간격으로 붙여 '경계'로 읽히게 한다. */
+const border = `
+      <g id="s2-border">
+        ${line(
+          [
+            [620, -130],
+            [620, 520],
+          ],
+          'border-line',
+        )}
+        ${Array.from({ length: 12 }, (_, i) => {
+          const y = -110 + i * 56
+          // 본선 한쪽으로만 뻗는 짧은 경계 눈금 (교차하면 X 자로 읽힌다).
+          return line(
+            [
+              [620, y],
+              [598, y],
+            ],
+            'hair',
+          )
+        }).join('')}
+      </g>`
+
+/* ------------------------------------------------------------------ 조립 */
 
 export function scene2Svg() {
   const body = `
-      <!-- 우리 영토 -->
-      <path class="land" d="M 70 600 L 104 330 L 470 296 L 566 448 L 500 660 L 118 692 Z" />
-      ${building(142, 596, 52, 118)}
-      ${building(206, 606, 38, 74)}
-      ${building(256, 590, 62, 146, { roof: true })}
-      ${building(332, 580, 42, 92)}
-      ${building(390, 570, 56, 126)}
-      ${building(458, 560, 34, 66)}
-      ${devices}
-
-      <!-- 터미널이 선 섬 -->
-      <path class="land" d="M 640 402 L 880 378 L 900 578 L 662 604 Z" />
+      ${campus}
+      ${DEVICES}
+      ${routes}
+      ${bag('s2-bag-1', 190, 128)}
+      ${bag('s2-bag-2', 168, 216)}
+      ${bag('s2-bag-3', 238, 286)}
+      ${bridge}
+      ${bag('s2-bag-4', 330, 190)}
       ${terminal}
-
-      <!-- 국경 -->
-      <path class="border-line" d="M 926 108 L 926 742" />
-      <text x="926" y="86" text-anchor="middle" class="lbl-sub"
-            letter-spacing="6">${t.border}</text>
-
-      <!-- 외부 AI 대륙 -->
-      <path class="land land--outer" d="M 970 330 L 1390 296 L 1412 664 L 998 694 Z" />
+      ${bag('s2-bag-5', 388, 208)}
+      ${border}
       ${factory}
 
       <!-- 국경을 넘는 비행 경로 (SCENE 04 로 이어짐) -->
-      <path id="s2-flight" d="M 880 528 C 986 470 1074 432 1170 420"
-            stroke="#9C9B93" stroke-width="1.5" stroke-dasharray="8 10"
-            opacity="0.4" fill="none" />
+      ${curve(
+        [
+          [532, 254, 6],
+          [646, 196, 150],
+          [756, 150, 118],
+        ],
+        'route',
+        'id="s2-flight" opacity="0.4"',
+      )}
 
-      <!-- 모여드는 경로와 가방 -->
-      ${routes}
-      ${bag('s2-bag-1', 524, 546, 0.8)}
-      ${bag('s2-bag-2', 566, 592, 0.8)}
-      ${bag('s2-bag-3', 592, 556, 0.8)}
-      ${bag('s2-bag-4', 622, 528, 0.8)}
-      ${bag('s2-bag-5', 652, 500, 0.8)}
-
-      <!-- 라벨 -->
-      ${leader('M 128 244 L 128 300 L 176 330')}
-      ${label({ x: 122, y: 232, title: t.campus })}
-
-      ${leader('M 250 712 L 250 682')}
-      ${label({ x: 244, y: 740, title: t.devices, sub: t.devicesSub })}
-
-      ${leader('M 770 652 L 770 610')}
-      ${label({ x: 770, y: 682, title: t.terminal, sub: t.terminalSub, anchor: 'middle' })}
-
-      ${leader('M 1188 252 L 1188 296')}
-      ${label({ x: 1188, y: 214, title: t.factory, sub: t.factorySub, anchor: 'middle' })}`
+      ${callout({
+        n: '01',
+        from: at(0, 0, 0),
+        to: [300, 70],
+        side: 'left',
+        title: t.campus,
+      })}
+      ${callout({
+        n: '02',
+        from: at(250, 360, 0),
+        to: [420, 600],
+        side: 'right',
+        title: t.devices,
+        sub: t.devicesSub,
+        cls: 'co-title--bag',
+      })}
+      ${callout({
+        n: '03',
+        from: at(456, 159, 62),
+        to: [880, 250],
+        side: 'right',
+        title: t.terminal,
+        sub: t.terminalSub,
+      })}
+      ${callout({
+        n: '04',
+        from: at(620, 20, 0),
+        to: [1140, 196],
+        side: 'right',
+        title: t.border,
+      })}
+      ${callout({
+        n: '05',
+        from: at(833, 75, 224),
+        to: [1140, 320],
+        side: 'right',
+        title: t.factory,
+        sub: t.factorySub,
+      })}`
 
   return svgWrap({
     id: 's2',
-    viewBox: '0 0 1440 780',
+    viewBox: '0 0 1440 880',
     title: t.svgTitle,
     desc: t.svgDesc,
     body,

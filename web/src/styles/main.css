@@ -11,20 +11,31 @@
 }
 
 html {
-  /* 스크롤 스냅은 쓰지 않는다 — M3 에서 출국층·입국층 장면을 ScrollTrigger 로
-     pin + scrub 할 예정이라, CSS scroll-snap 이 스크럽 구간과 충돌한다. */
+  /* 스크롤 스냅은 쓰지 않는다 — M3 에서 단면 장면을 ScrollTrigger 로 pin + scrub
+     할 예정이라, CSS scroll-snap 이 스크럽 구간과 충돌한다. */
   scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  background: var(--c-bg);
   color: var(--c-text);
   font-family: var(--font-sans);
-  font-weight: 400;
   line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+
+  /* 도면 그리드 + 비네트. 정적 배경이라 스크롤 중 재계산 비용이 없다. */
+  background-color: var(--c-bg);
+  background-image:
+    radial-gradient(
+      ellipse 90% 70% at 50% 0%,
+      rgba(67, 188, 156, 0.05),
+      transparent 70%
+    ),
+    linear-gradient(var(--c-hair) 1px, transparent 1px),
+    linear-gradient(90deg, var(--c-hair) 1px, transparent 1px);
+  background-size: 100% 100%, 88px 88px, 88px 88px;
+  background-attachment: fixed;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -51,8 +62,55 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--c-gear);
-  outline-offset: 3px;
+  outline: 1px solid var(--c-gear);
+  outline-offset: 4px;
+}
+
+/* ==========================================================================
+   상단 바 — 워드마크 / 현재 장면 / 스크롤 진행선
+   ========================================================================== */
+
+.topbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 40;
+  height: var(--bar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--pad-x);
+  background: linear-gradient(var(--c-bg) 55%, transparent);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.topbar__mark {
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--c-text);
+}
+
+.topbar__now {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.topbar__now b {
+  color: var(--c-bag);
+  font-weight: 700;
+}
+
+.progress {
+  position: fixed;
+  inset: 0 auto auto 0;
+  z-index: 41;
+  height: 1px;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: var(--c-bag);
 }
 
 /* ==========================================================================
@@ -62,74 +120,163 @@ body {
 .scene {
   position: relative;
   min-height: 100svh;
-  padding: clamp(4rem, 9vh, 7rem) var(--pad-x) clamp(3rem, 6vh, 5rem);
+  padding: calc(var(--bar-h) + clamp(2rem, 5vh, 4rem)) var(--pad-x)
+    clamp(2.5rem, 5vh, 4rem);
   display: flex;
   justify-content: center;
 }
 
+/* 우측 번호 레일이 뜨는 폭에서는 도면 라벨이 그 아래로 들어가지 않게 비워 둔다. */
+@media (min-width: 641px) {
+  .scene {
+    padding-right: calc(var(--pad-x) + 96px);
+  }
+}
+
 .scene__inner {
+  position: relative;
   width: 100%;
   max-width: var(--w-content);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(1.25rem, 2.4vh, 2rem);
+}
+
+/* 프레임 모서리 틱 — 도면 트리밍 마크 */
+.scene__inner::before,
+.scene__inner::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--c-line);
+  pointer-events: none;
+}
+
+.scene__inner::before {
+  top: -14px;
+  left: -18px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.scene__inner::after {
+  bottom: -14px;
+  right: -18px;
+  border-left: 0;
+  border-top: 0;
+}
+
+/* --- 머리 --- */
+
+.scene__head {
   display: flex;
   flex-direction: column;
-  gap: clamp(1.5rem, 3vh, 2.5rem);
+  gap: clamp(0.75rem, 1.6vh, 1.25rem);
 }
 
 .scene__eyebrow {
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
   font-size: var(--fs-eyebrow);
-  font-weight: 700;
   letter-spacing: var(--ls-eyebrow);
-  color: var(--c-bag);
   text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.scene__num {
+  font-family: var(--font-mono);
+  font-size: var(--fs-num);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--c-bag);
+}
+
+.scene__eyebrow-rule {
+  flex: 0 0 clamp(28px, 5vw, 72px);
+  height: 1px;
+  background: var(--c-line);
 }
 
 .scene__title {
   margin: 0;
-  max-width: 22ch;
+  max-width: 20ch;
   font-size: var(--fs-title);
   font-weight: 900;
   line-height: var(--lh-title);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.026em;
   text-wrap: balance;
 }
 
-/* 일러스트 자리 — 세로 여유를 전부 가져간다. */
+/* --- 무대 --- */
+
 .scene__stage {
-  flex: 1 1 auto;
   min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-top: 1px solid var(--c-hair);
+  border-bottom: 1px solid var(--c-hair);
+  padding: clamp(0.5rem, 1.6vh, 1.5rem) 0;
 }
 
 .scene__stage svg {
   width: 100%;
   height: auto;
-  max-height: 62svh;
+  max-height: 66svh;
   display: block;
+}
+
+/* --- 발 --- */
+
+.scene__foot {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .scene__caption {
   margin: 0;
-  padding-top: clamp(1rem, 2vh, 1.75rem);
-  border-top: 1px solid var(--c-line);
+  position: relative;
+  padding-left: 1.375rem;
+  max-width: 62ch;
   font-size: var(--fs-caption);
   color: var(--c-muted);
   text-wrap: pretty;
 }
 
-/* 아웃트로의 실동작 링크 */
+.scene__caption::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.75em;
+  width: 10px;
+  height: 1px;
+  background: var(--c-bag);
+}
+
 .scene__cta {
-  align-self: flex-start;
-  display: inline-block;
-  padding: 0.85rem 1.6rem;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1.5rem;
   border: 1px solid var(--c-gear);
-  border-radius: 999px;
   color: var(--c-gear);
+  font-size: 0.875rem;
   font-weight: 700;
+  letter-spacing: 0.04em;
   text-decoration: none;
   transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out);
+}
+
+.scene__cta::after {
+  content: '↗';
+  font-size: 0.9em;
 }
 
 .scene__cta:hover,
@@ -144,44 +291,47 @@ body {
 
 .placeholder {
   width: 100%;
-  min-height: clamp(16rem, 42svh, 28rem);
+  min-height: clamp(15rem, 40svh, 26rem);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   border: 1px dashed var(--c-line);
-  border-radius: 4px;
-  background: var(--c-panel);
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent 0 10px,
+    rgba(60, 62, 70, 0.16) 10px 11px
+  );
   color: var(--c-muted);
   text-align: center;
   padding: 2rem;
 }
 
 .placeholder__label {
-  font-size: var(--fs-eyebrow);
-  font-weight: 700;
-  letter-spacing: var(--ls-eyebrow);
-  color: var(--c-line);
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
   text-transform: uppercase;
+  color: var(--c-line);
 }
 
 .placeholder__note {
   margin: 0;
-  max-width: 46ch;
-  font-size: var(--fs-label);
+  max-width: 44ch;
+  font-size: 0.9375rem;
 }
 
 /* ==========================================================================
-   앵커 내비 (우측 점)
+   앵커 내비 — 우측 번호 레일
    ========================================================================== */
 
 .dotnav {
   position: fixed;
-  right: clamp(1rem, 2.5vw, 2.25rem);
+  right: clamp(0.75rem, 2vw, 2rem);
   top: 50%;
   transform: translateY(-50%);
-  z-index: 50;
+  z-index: 45;
 }
 
 .dotnav__list {
@@ -190,50 +340,69 @@ body {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: var(--nav-gap);
+  gap: 1.125rem;
 }
 
 .dotnav__link {
-  position: relative;
-  display: block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 1px solid var(--c-line);
-  background: transparent;
-  transition: background-color 0.25s var(--ease-out),
-    border-color 0.25s var(--ease-out), transform 0.25s var(--ease-out);
-}
-
-.dotnav__link:hover {
-  border-color: var(--c-bag);
-  transform: scale(1.25);
-}
-
-.dotnav__link[aria-current='true'] {
-  background: var(--c-bag);
-  border-color: var(--c-bag);
-}
-
-/* 점 옆에 뜨는 섹션 이름 */
-.dotnav__name {
-  position: absolute;
-  right: calc(100% + 0.85rem);
-  top: 50%;
-  transform: translateY(-50%);
-  white-space: nowrap;
-  font-size: var(--fs-eyebrow);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--c-line);
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
   letter-spacing: 0.06em;
+  transition: color 0.25s var(--ease-out);
+}
+
+.dotnav__tick {
+  display: block;
+  width: 18px;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.28s var(--ease-out), background-color 0.28s var(--ease-out);
+}
+
+.dotnav__name {
+  font-family: var(--font-sans);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
   color: var(--c-muted);
   opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s var(--ease-out);
+  transform: translateX(4px);
+  transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+}
+
+.dotnav__link:hover,
+.dotnav__link:focus-visible {
+  color: var(--c-muted);
 }
 
 .dotnav__link:hover .dotnav__name,
-.dotnav__link:focus-visible .dotnav__name,
+.dotnav__link:focus-visible .dotnav__name {
+  opacity: 1;
+  transform: none;
+}
+
+.dotnav__link[aria-current='true'] {
+  color: var(--c-bag);
+}
+
+.dotnav__link[aria-current='true'] .dotnav__tick {
+  width: 34px;
+}
+
 .dotnav__link[aria-current='true'] .dotnav__name {
   opacity: 1;
+  transform: none;
+  color: var(--c-text);
+}
+
+@media (max-width: 900px) {
+  .dotnav__name {
+    display: none;
+  }
 }
 
 @media (max-width: 640px) {
@@ -243,89 +412,146 @@ body {
 }
 
 /* ==========================================================================
-   SVG 공통 (M2 일러스트)
+   일러스트 SVG 공통
    ========================================================================== */
 
 .illus {
-  --stroke: var(--c-line);
+  overflow: visible;
 }
 
 .illus text {
   font-family: var(--font-sans);
   fill: var(--c-muted);
-  font-size: 17px;
 }
 
-.illus .lbl-title {
-  fill: var(--c-text);
-  font-size: 18px;
-  font-weight: 700;
+/* 아이소메트릭 입체 3면 */
+.illus .f-top {
+  fill: var(--c-face-top);
 }
-
-.illus .lbl-sub {
-  fill: var(--c-muted);
-  font-size: 15px;
+.illus .f-l {
+  fill: var(--c-face-l);
 }
-
-.illus .lbl-block {
-  fill: var(--c-block);
+.illus .f-r {
+  fill: var(--c-face-r);
 }
-
-.illus .leader {
-  stroke: var(--c-line);
+.illus .f-deep {
+  fill: var(--c-face-deep);
+}
+.illus .solid {
+  stroke: var(--c-edge);
   stroke-width: 1;
-  fill: none;
+  stroke-linejoin: round;
 }
 
-.illus .land {
-  fill: var(--c-panel);
-  stroke: var(--c-line);
-  stroke-width: 1.5;
+/* 지면 · 대지 */
+.illus .ground-top {
+  fill: #1e2128;
+}
+.illus .ground-l {
+  fill: #191c22;
+}
+.illus .ground-r {
+  fill: #131519;
 }
 
-.illus .land--outer {
-  fill: var(--c-panel-deep);
+/* 컨베이어 — 바닥보다 한 단계 밝게 띄워야 흐름선으로 읽힌다 */
+.illus .belt-top {
+  fill: #3b4150;
+}
+.illus .belt-l {
+  fill: #272b34;
+}
+.illus .belt-r {
+  fill: #1e2128;
 }
 
-.illus .bldg {
-  fill: #23262e;
-  stroke: var(--c-line);
-  stroke-width: 1.25;
-}
-
+/* 설비(청록) */
 .illus .gear {
   fill: none;
   stroke: var(--c-gear);
-  stroke-width: 2;
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
-
 .illus .gear-fill {
   fill: var(--c-gear);
 }
 
-.illus .bag-body {
+/* 가방(호박) */
+.illus .bag-top {
+  fill: #f7bd62;
+}
+.illus .bag-l {
+  fill: #e09a33;
+}
+.illus .bag-r {
+  fill: #b97a22;
+}
+
+/* 콜아웃(지시선 + 번호 배지 + 라벨) */
+.illus .co-leader {
+  fill: none;
+  stroke: var(--c-line);
+  stroke-width: 1;
+}
+.illus .co-dot {
+  fill: var(--c-bag);
+}
+.illus .co-badge {
+  fill: none;
+  stroke: var(--c-line);
+  stroke-width: 1;
+}
+.illus .co-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--c-bag);
+}
+.illus .co-title {
+  font-size: 16px;
+  font-weight: 700;
+  fill: var(--c-text);
+  letter-spacing: -0.01em;
+}
+.illus .co-sub {
+  font-size: 13.5px;
+  fill: var(--c-muted);
+}
+.illus .co-title--block {
+  fill: var(--c-block);
+}
+.illus .co-title--allow {
+  fill: var(--c-allow);
+}
+.illus .co-title--bag {
   fill: var(--c-bag);
 }
 
-.illus .bag-line {
-  stroke: #8a5c17;
-  stroke-width: 1.5;
+/* 도면 보조선 */
+.illus .hair {
   fill: none;
+  stroke: var(--c-line);
+  stroke-width: 1;
+  opacity: 0.55;
 }
-
+.illus .hatch {
+  stroke: var(--c-line);
+  stroke-width: 1;
+  opacity: 0.4;
+}
+.illus .border-line {
+  fill: none;
+  stroke: var(--c-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 9 7;
+  stroke-linecap: butt;
+  opacity: 0.75;
+}
 .illus .route {
   fill: none;
   stroke: var(--c-bag);
-  stroke-width: 1.5;
-  stroke-dasharray: 5 7;
-  opacity: 0.55;
-}
-
-.illus .border-line {
-  stroke: var(--c-muted);
-  stroke-width: 1.5;
-  stroke-dasharray: 2 9;
-  stroke-linecap: round;
+  stroke-width: 1.25;
+  stroke-dasharray: 4 6;
   opacity: 0.5;
-  fill: none;
 }

@@ -1,16 +1,23 @@
-/* 디자인 토큰 — CLAUDE.md '비주얼 디자인 시스템' 확정값.
+/* 디자인 토큰 — CLAUDE.md '비주얼 디자인 시스템' 확정값 + 아이소메트릭 면 음영.
    색·타이포는 전부 여기서만 정의하고, 다른 CSS/JS 는 변수만 참조한다. */
 
 :root {
-  /* --- 표면 (다크 톤) --- */
+  /* --- 표면 (다크 톤, CLAUDE.md 확정) --- */
   --c-bg: #131418;
   --c-panel: #1c1e24;
-  --c-panel-deep: #16181d; /* 국경 바깥(외부 AI) 처럼 한 단계 더 가라앉은 면 */
   --c-line: #3c3e46;
-
-  /* --- 텍스트 --- */
   --c-text: #eceae3;
   --c-muted: #9c9b93;
+
+  /* --- 아이소메트릭 면 음영 --------------------------------------------
+     확정 팔레트(#131418 ~ #3C3E46) 안에서 파생한 3면 명도.
+     윗면이 가장 밝고, 좌면(+y) 중간, 우면(+x) 가장 어둡다. 광원은 좌상단. */
+  --c-face-top: #2b2f38;
+  --c-face-l: #22252c;
+  --c-face-r: #191c22;
+  --c-face-deep: #15171c; /* 국경 바깥(외부 AI) — 한 단계 더 가라앉은 면 */
+  --c-edge: #454954; /* 입체 모서리 하이라이트 */
+  --c-hair: #1f222a; /* 도면 그리드·보조 괘선 */
 
   /* --- 시맨틱 (급식실 비유 자산과 동일 체계) --- */
   --c-bag: #f0a63a; /* 질의 · 여행 가방 */
@@ -21,22 +28,25 @@
   /* --- 타이포 --- */
   --font-sans: 'Noto Sans KR', system-ui, -apple-system, 'Apple SD Gothic Neo',
     sans-serif;
+  /* 번호·치수처럼 도면틱한 요소는 추가 폰트 다운로드 없이 시스템 모노로. */
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
 
-  --fs-eyebrow: 0.8125rem;
-  --fs-title: clamp(2rem, 3.6vw, 3.5rem);
-  --fs-caption: clamp(1rem, 1.25vw, 1.25rem);
-  --fs-label: 0.9375rem;
+  --fs-num: 0.75rem;
+  --fs-eyebrow: 0.75rem;
+  --fs-title: clamp(2.1rem, 3.9vw, 3.9rem);
+  --fs-caption: clamp(1rem, 1.15vw, 1.1875rem);
+  --fs-meta: 0.6875rem;
 
-  --ls-eyebrow: 0.22em;
-  --lh-title: 1.28;
+  --ls-eyebrow: 0.26em;
+  --ls-meta: 0.18em;
+  --lh-title: 1.22;
   --lh-body: 1.7;
 
   /* --- 레이아웃 --- */
-  --w-content: 1440px;
-  --pad-x: clamp(1.5rem, 5vw, 5rem);
-  --nav-gap: 2.25rem;
+  --w-content: 1560px;
+  --pad-x: clamp(1.5rem, 4.5vw, 4.5rem);
+  --bar-h: 52px;
 
   /* --- 모션 --- */
-  --dur-reveal: 0.7s;
   --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
 }

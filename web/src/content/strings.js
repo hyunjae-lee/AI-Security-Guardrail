@@ -112,5 +112,6 @@ export const scene3 = {
   gateMask: '물건만 빼고 통과',
   gateBlock: '탑승 거부',
   override: '즉시 거부',
-  overrideSub: '전략물자·위조 여권은 판정을 기다리지 않습니다',
+  // 콜아웃 부제는 줄 배열로 넘길 수 있다 (긴 문장이 도면 밖으로 넘치지 않게).
+  overrideSub: ['전략물자·위조 여권은', '판정을 기다리지 않습니다'],
 }
