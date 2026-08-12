@@ -536,6 +536,17 @@ body {
   fill: #1e2128;
 }
 
+/* 항공기 — 어두운 지면 위 공중에 뜨므로 한 단계 더 밝게 잡는다 */
+.illus .craft-top {
+  fill: #525a6b;
+}
+.illus .craft-l {
+  fill: #3f4655;
+}
+.illus .craft-r {
+  fill: #2f3542;
+}
+
 /* 설비(청록) */
 .illus .gear {
   fill: none;

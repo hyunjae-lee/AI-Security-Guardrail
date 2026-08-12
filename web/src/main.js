@@ -12,24 +12,39 @@ import ScrollTrigger from 'gsap/ScrollTrigger'
 import MotionPathPlugin from 'gsap/MotionPathPlugin'
 
 import { guideline, placeholderKicker, scenes, site } from './content/strings.js'
+import { sceneIntroAnim, sceneIntroSvg } from './scenes/scene-intro.js'
 import { sceneWhyAnim, sceneWhySvg } from './scenes/scene-why.js'
 import { scene2Anim, scene2Svg } from './scenes/scene2-overview.js'
 import { scene3Anim, scene3Svg } from './scenes/scene3-departures.js'
+import { sceneRunwayAnim, sceneRunwaySvg } from './scenes/scene-runway.js'
+import { sceneArrivalsAnim, sceneArrivalsSvg } from './scenes/scene-arrivals.js'
+import { sceneRecordsAnim, sceneRecordsSvg } from './scenes/scene-records.js'
+import { sceneOutroAnim, sceneOutroSvg } from './scenes/scene-outro.js'
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin)
 
-/** 일러스트가 완성된 장면. 나머지는 M4 에서 채운다. */
+/** 8개 장면 전부 인라인 SVG. */
 const STAGES = {
+  intro: sceneIntroSvg,
   why: sceneWhySvg,
   overview: scene2Svg,
   departures: scene3Svg,
+  runway: sceneRunwaySvg,
+  arrivals: sceneArrivalsSvg,
+  records: sceneRecordsSvg,
+  outro: sceneOutroSvg,
 }
 
 /** 장면별 애니메이션. 없으면 정적으로 둔다. */
 const ANIMS = {
+  intro: sceneIntroAnim,
   why: sceneWhyAnim,
   overview: scene2Anim,
   departures: scene3Anim,
+  runway: sceneRunwayAnim,
+  arrivals: sceneArrivalsAnim,
+  records: sceneRecordsAnim,
+  outro: sceneOutroAnim,
 }
 
 const placeholder = (scene) => `
