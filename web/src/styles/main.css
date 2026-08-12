@@ -286,11 +286,17 @@ body {
   line-height: 1.5;
 }
 
-.scene__refs-caveat {
+.scene__refs-meta {
   display: block;
   margin-top: 0.25rem;
   font-size: var(--fs-meta);
-  color: var(--c-block);
+  letter-spacing: 0.03em;
+  color: var(--c-muted);
+}
+
+.scene__refs b {
+  color: var(--c-gear);
+  font-weight: 700;
 }
 
 .scene__refs ol {

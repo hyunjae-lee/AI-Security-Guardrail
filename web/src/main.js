@@ -43,11 +43,16 @@ const refsMarkup = () => `
         <aside class="scene__refs">
           <span class="scene__refs-kicker">${guideline.kicker}</span>
           <span class="scene__refs-source">${guideline.source}</span>
-          <span class="scene__refs-caveat">${guideline.caveat}</span>
+          <span class="scene__refs-meta">${guideline.sourceMeta}</span>
           <ol>
-            ${guideline.items.map((item) => `<li>${item}</li>`).join('\n            ')}
+            ${guideline.items
+              .map(
+                (item) =>
+                  `<li><b>${item.code}</b> ${item.text}</li>`,
+              )
+              .join('\n            ')}
           </ol>
-          <p class="scene__refs-closing">${guideline.closing}</p>
+          <p class="scene__refs-closing">${guideline.finding}</p>
         </aside>`
 
 const sceneMarkup = (scene) => `

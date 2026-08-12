@@ -139,6 +139,25 @@ const trails = `
         ),
       ).join('')}`
 
+/* -------------------------------------------------------------- 등급 배지
+
+   이 장면의 논거는 "등급이 섞인다" 는 것이다 (N2SF 「위치-주체-객체」 평가에서
+   위치 S · 주체 S · 객체 O).  그래서 두 영역의 등급만은 도면 주기로 표기한다.
+   본문 카피는 비유어로 두고, 무슨 뜻인지는 아래 '설계 근거' 카드가 설명한다. */
+
+const gradeChip = (plan, letter, label, color) => {
+  const [x, y] = at(...plan)
+  return `
+      <g class="grade-chip">
+        <rect x="${x - 15}" y="${y - 15}" width="30" height="30" rx="5"
+              fill="#131418" stroke="${color}" stroke-width="1.25" />
+        <text x="${x}" y="${y + 6}" text-anchor="middle" fill="${color}"
+              font-size="16" font-weight="700">${letter}</text>
+        <text x="${x}" y="${y + 34}" text-anchor="middle" class="co-sub"
+              font-size="12" letter-spacing="1">${label}</text>
+      </g>`
+}
+
 /* ------------------------------------------------------------------ 조립 */
 
 export function sceneWhySvg() {
@@ -157,6 +176,9 @@ export function sceneWhySvg() {
       ${alertRing('sw-alert-2', 548, IN_Y[0], FLY_Z + 9)}
       ${bag('sw-in-2', 392, IN_Y[1], { z: FLY_Z })}
       ${alertRing('sw-alert-3', 392, IN_Y[1], FLY_Z + 9)}
+
+      ${gradeChip([30, 320, 0], t.gradeIn, t.gradeInLabel, '#43BC9C')}
+      ${gradeChip([700, 322, 0], t.gradeOut, t.gradeOutLabel, '#9C9B93')}
 
       <!-- 방향 표시 -->
       <text class="co-sub" x="${at(300, 30, FLY_Z)[0]}" y="${at(300, 30, FLY_Z)[1] - 26}"
