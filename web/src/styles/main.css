@@ -531,6 +531,23 @@ body {
   stroke-linejoin: round;
 }
 
+/* 영토 구분 — 우리 쪽(한색) / 국경 밖(보랏빛 무채색) */
+.illus .home-top { fill: var(--c-home-top); }
+.illus .home-l { fill: var(--c-home-l); }
+.illus .home-r { fill: var(--c-home-r); }
+.illus .home-g-top { fill: var(--c-home-g-top); }
+.illus .home-g-l { fill: var(--c-home-g-l); }
+.illus .home-g-r { fill: var(--c-home-g-r); }
+.illus .solid.home-edge { stroke: var(--c-home-edge); }
+
+.illus .away-top { fill: var(--c-away-top); }
+.illus .away-l { fill: var(--c-away-l); }
+.illus .away-r { fill: var(--c-away-r); }
+.illus .away-g-top { fill: var(--c-away-g-top); }
+.illus .away-g-l { fill: var(--c-away-g-l); }
+.illus .away-g-r { fill: var(--c-away-g-r); }
+.illus .solid.away-edge { stroke: var(--c-away-edge); }
+
 /* 지면 · 대지 */
 .illus .ground-top {
   fill: #1e2128;

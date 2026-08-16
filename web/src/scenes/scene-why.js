@@ -20,6 +20,10 @@ import { sceneWhy as t } from '../content/strings.js'
 export const iso = isoSpace({ ox: 380, oy: 150, s: 0.92 })
 const { at, delta, box, slab, line, plane, grid, cutHatch } = iso
 
+/* 영토 구분 — 우리 쪽은 한색, 국경 밖은 보랏빛 무채색 */
+const HOME = { top: 'home-top', l: 'home-l', r: 'home-r', cls: 'home-edge' }
+const AWAY = { top: 'away-top', l: 'away-l', r: 'away-r', cls: 'away-edge' }
+
 /* ---------------------------------------------------------------- 양쪽 대지 */
 
 const CAMPUS_BLOCKS = [
@@ -33,22 +37,22 @@ const CAMPUS_BLOCKS = [
 ]
 
 const campus = `
-      ${slab(0, 0, 260, 340, 14)}
+      ${slab(0, 0, 260, 340, 14, { tone: 'home' })}
       ${grid(0, 0, 260, 340, 50)}
       ${cutHatch(0, 0, 260, 340, 14, 'l')}
       ${cutHatch(0, 0, 260, 340, 14, 'r')}
-      ${CAMPUS_BLOCKS.map((b) => box(...b)).join('')}`
+      ${CAMPUS_BLOCKS.map((b) => box(...b, HOME)).join('')}`
 
 const factory = `
-      ${slab(620, 0, 280, 340, 14)}
+      ${slab(620, 0, 280, 340, 14, { tone: 'away' })}
       ${cutHatch(620, 0, 280, 340, 14, 'l')}
       ${cutHatch(620, 0, 280, 340, 14, 'r')}
-      ${box(648, 40, 224, 260, 84)}
+      ${box(648, 40, 224, 260, 84, AWAY)}
       ${[0, 1, 2, 3]
-        .map((i) => box(654 + i * 52, 40, 32, 260, 18, { z: 84 }))
+        .map((i) => box(654 + i * 52, 40, 32, 260, 18, { z: 84, ...AWAY }))
         .join('')}
-      ${box(676, 84, 22, 22, 88, { z: 84 })}
-      ${box(736, 60, 24, 24, 110, { z: 84 })}
+      ${box(676, 84, 22, 22, 88, { z: 84, ...AWAY })}
+      ${box(736, 60, 24, 24, 110, { z: 84, ...AWAY })}
       ${plane(
         [
           [664, 300, 16],

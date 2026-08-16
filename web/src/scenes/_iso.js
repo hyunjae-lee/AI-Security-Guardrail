@@ -97,15 +97,21 @@ export function isoSpace({ ox, oy, s = 1 }) {
       </g>`
   }
 
-  /** 대지·바닥 슬래브 — 두께가 그대로 단면(컷어웨이)이 된다. */
-  const slab = (x, y, w, d, thickness, { id = '' } = {}) =>
-    box(x, y, w, d, thickness, {
+  /**
+   * 대지·바닥 슬래브 — 두께가 그대로 단면(컷어웨이)이 된다.
+   * tone: 'ground'(기본) | 'home'(우리 영토) | 'away'(국경 밖)
+   */
+  const slab = (x, y, w, d, thickness, { id = '', tone = 'ground' } = {}) => {
+    const g = tone === 'ground' ? 'ground' : `${tone}-g`
+    return box(x, y, w, d, thickness, {
       z: -thickness,
       id,
-      top: 'ground-top',
-      l: 'ground-l',
-      r: 'ground-r',
+      cls: tone === 'ground' ? '' : `${tone}-edge`,
+      top: `${g}-top`,
+      l: `${g}-l`,
+      r: `${g}-r`,
     })
+  }
 
   /** 임의의 사각 평면 (스캔 빔, 활주로 노면 등) */
   const plane = (pts, cls, attrs = '') =>

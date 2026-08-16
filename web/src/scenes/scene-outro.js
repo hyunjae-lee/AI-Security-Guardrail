@@ -18,6 +18,9 @@ import { sceneOutro as t } from '../content/strings.js'
 export const iso = isoSpace({ ox: 406, oy: 150, s: 1 })
 const { at, box, slab, line, plane, grid, cutHatch, curve } = iso
 
+const HOME = { top: 'home-top', l: 'home-l', r: 'home-r', cls: 'home-edge' }
+const AWAY = { top: 'away-top', l: 'away-l', r: 'away-r', cls: 'away-edge' }
+
 const BLOCKS = [
   [30, 40, 46, 46, 92],
   [100, 24, 40, 56, 132],
@@ -31,15 +34,15 @@ const BLOCKS = [
 ]
 
 const campus = `
-      ${slab(0, 0, 300, 400, 16)}
+      ${slab(0, 0, 300, 400, 16, { tone: 'home' })}
       ${grid(0, 0, 300, 400, 50)}
       ${cutHatch(0, 0, 300, 400, 16, 'l')}
       ${cutHatch(0, 0, 300, 400, 16, 'r')}
-      ${BLOCKS.map((b) => box(...b)).join('')}`
+      ${BLOCKS.map((b) => box(...b, HOME)).join('')}`
 
 /* 터미널이 있던 자리 — 이제는 그냥 땅이다. */
 const ground = `
-      ${slab(296, 90, 244, 220, 16)}
+      ${slab(296, 90, 244, 220, 16, { tone: 'home' })}
       ${grid(296, 90, 244, 220, 50)}
       ${cutHatch(296, 90, 244, 220, 16, 'l')}
       ${cutHatch(296, 90, 244, 220, 16, 'r')}`
@@ -96,10 +99,10 @@ const ghost = `
 
 const factory = `
       <g opacity="0.4">
-        ${slab(700, 0, 300, 400, 16)}
-        ${box(730, 40, 240, 300, 92)}
-        ${[0, 1, 2, 3, 4].map((i) => box(736 + i * 48, 40, 30, 300, 20, { z: 92 })).join('')}
-        ${box(820, 62, 26, 26, 132, { z: 92 })}
+        ${slab(700, 0, 300, 400, 16, { tone: 'away' })}
+        ${box(730, 40, 240, 300, 92, AWAY)}
+        ${[0, 1, 2, 3, 4].map((i) => box(736 + i * 48, 40, 30, 300, 20, { z: 92, ...AWAY })).join('')}
+        ${box(820, 62, 26, 26, 132, { z: 92, ...AWAY })}
       </g>`
 
 const ROUTES = [

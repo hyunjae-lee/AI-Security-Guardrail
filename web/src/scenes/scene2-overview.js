@@ -21,6 +21,10 @@ import { scene2 as t } from '../content/strings.js'
 export const iso = isoSpace({ ox: 406, oy: 130, s: 1 })
 const { at, box, slab, line, plane, grid, cutHatch, curve } = iso
 
+/* 영토 구분 */
+const HOME = { top: 'home-top', l: 'home-l', r: 'home-r', cls: 'home-edge' }
+const AWAY = { top: 'away-top', l: 'away-l', r: 'away-r', cls: 'away-edge' }
+
 /* ---------------------------------------------------------------- 캠퍼스 */
 
 // (x, y, w, d, h) — 멀리 있는 것(x+y 작은 것)부터 그린다.
@@ -61,11 +65,11 @@ const windows = (x, y, w, d, h) => {
 }
 
 const campus = `
-      ${slab(0, 0, 300, 400, 16)}
+      ${slab(0, 0, 300, 400, 16, { tone: 'home' })}
       ${grid(0, 0, 300, 400, 50)}
       ${cutHatch(0, 0, 300, 400, 16, 'l')}
       ${cutHatch(0, 0, 300, 400, 16, 'r')}
-      ${CAMPUS_BLOCKS.map((b) => box(...b) + windows(...b)).join('')}`
+      ${CAMPUS_BLOCKS.map((b) => box(...b, HOME) + windows(...b)).join('')}`
 
 /* ------------------------------------------------------------ 단말 4종 */
 
@@ -118,7 +122,7 @@ const DEVICES = [
 const [beaconX, beaconY] = at(402, 210, 156)
 
 const terminal = `
-      ${slab(380, 90, 160, 220, 16)}
+      ${slab(380, 90, 160, 220, 16, { tone: 'home' })}
       ${cutHatch(380, 90, 160, 220, 16, 'l')}
       ${cutHatch(380, 90, 160, 220, 16, 'r')}
       <g id="s2-terminal">
@@ -140,7 +144,7 @@ const terminal = `
           'route',
         )}
         <!-- 본동 -->
-        ${box(398, 126, 116, 66, 62)}
+        ${box(398, 126, 116, 66, 62, HOME)}
         ${line(
           [
             [398, 126, 62],
@@ -163,8 +167,8 @@ const terminal = `
           'opacity="0.28"',
         )}
         <!-- 관제탑 -->
-        ${box(392, 200, 20, 20, 130)}
-        ${box(385, 193, 34, 34, 14, { z: 130 })}
+        ${box(392, 200, 20, 20, 130, HOME)}
+        ${box(385, 193, 34, 34, 14, { z: 130, ...HOME })}
         <circle id="s2-beacon" class="gear-fill" cx="${beaconX}" cy="${beaconY}" r="6" />
         <!-- 탑승교 -->
         ${box(514, 134, 30, 7, 5, { z: 30 })}
@@ -174,7 +178,7 @@ const terminal = `
 
 /* 캠퍼스와 터미널을 잇는 유일한 다리 */
 const bridge = `
-      ${slab(296, 168, 86, 44, 8)}`
+      ${slab(296, 168, 86, 44, 8, { tone: 'home' })}`
 
 /* -------------------------------------------------------------- 외부 대륙 */
 
@@ -207,20 +211,20 @@ const smoke = ['s2-smoke-1', 's2-smoke-2', 's2-smoke-3']
   .join('')
 
 const factory = `
-      ${slab(700, 0, 300, 400, 16, { id: 's2-outer' })}
+      ${slab(700, 0, 300, 400, 16, { id: 's2-outer', tone: 'away' })}
       ${cutHatch(700, 0, 300, 400, 16, 'l')}
       ${cutHatch(700, 0, 300, 400, 16, 'r')}
       <g id="s2-factory">
-        ${box(730, 40, 240, 300, 92)}
+        ${box(730, 40, 240, 300, 92, AWAY)}
         ${factoryWindows()}
         <!-- 톱니 지붕 -->
         ${[0, 1, 2, 3, 4]
-          .map((i) => box(736 + i * 48, 40, 30, 300, 20, { z: 92 }))
+          .map((i) => box(736 + i * 48, 40, 30, 300, 20, { z: 92, ...AWAY }))
           .join('')}
         <!-- 굴뚝 -->
-        ${box(760, 90, 24, 24, 102, { z: 92 })}
-        ${box(820, 62, 26, 26, 132, { z: 92 })}
-        ${box(878, 100, 22, 22, 82, { z: 92 })}
+        ${box(760, 90, 24, 24, 102, { z: 92, ...AWAY })}
+        ${box(820, 62, 26, 26, 132, { z: 92, ...AWAY })}
+        ${box(878, 100, 22, 22, 82, { z: 92, ...AWAY })}
         ${smoke}
         <!-- 가동 표시 -->
         ${plane(
