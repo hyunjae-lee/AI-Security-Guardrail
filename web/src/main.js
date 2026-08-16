@@ -15,6 +15,7 @@ import {
   cases,
   casesLabel,
   casesNote,
+  glue,
   guideline,
   legend,
   placeholderKicker,
@@ -62,24 +63,24 @@ const ANIMS = {
 const placeholder = (scene) => `
         <div class="placeholder">
           <span class="placeholder__label">${placeholderKicker}</span>
-          <p class="placeholder__note">${scene.placeholder}</p>
+          <p class="placeholder__note">${glue(scene.placeholder)}</p>
         </div>`
 
 /** 설계 근거 카드 — '왜 검사대인가' 장면에만 붙는다. */
 const refsMarkup = () => `
         <aside class="scene__refs">
           <span class="scene__refs-kicker">${guideline.kicker}</span>
-          <span class="scene__refs-source">${guideline.source}</span>
+          <span class="scene__refs-source">${glue(guideline.source)}</span>
           <span class="scene__refs-meta">${guideline.sourceMeta}</span>
           <ol>
             ${guideline.items
               .map(
                 (item) =>
-                  `<li><b>${item.code}</b> ${item.text}</li>`,
+                  `<li><b>${item.code}</b> ${glue(item.text)}</li>`,
               )
               .join('\n            ')}
           </ol>
-          <p class="scene__refs-closing">${guideline.finding}</p>
+          <p class="scene__refs-closing">${glue(guideline.finding)}</p>
         </aside>`
 
 /** "실제로는" 접이식 패널 — 비유 뒤의 실제 동작을 장면마다 병기한다. */
@@ -90,7 +91,7 @@ const revealMarkup = (scene) => {
         <details class="reveal">
           <summary class="reveal__summary">${revealLabel}</summary>
           <div class="reveal__body">
-            ${body.map((para) => `<p>${para}</p>`).join('\n            ')}
+            ${body.map((para) => `<p>${glue(para)}</p>`).join('\n            ')}
           </div>
         </details>`
 }
@@ -106,11 +107,11 @@ const legendMarkup = () => `
             </thead>
             <tbody>
               ${legend.rows
-                .map(([real, meta]) => `<tr><td>${real}</td><td>${meta}</td></tr>`)
+                .map(([real, meta]) => `<tr><td>${glue(real)}</td><td>${glue(meta)}</td></tr>`)
                 .join('\n              ')}
             </tbody>
           </table>
-          <p class="legend__note">${legend.note}</p>
+          <p class="legend__note">${glue(legend.note)}</p>
           </div>
         </details>`
 
@@ -122,7 +123,7 @@ const summaryMarkup = () => `
             ${summary.points
               .map(
                 (p) =>
-                  `<li><b>${p.head}</b><span>${p.body}</span></li>`,
+                  `<li><b>${glue(p.head)}</b><span>${glue(p.body)}</span></li>`,
               )
               .join('\n            ')}
           </ol>
@@ -133,7 +134,7 @@ const casesMarkup = () => `
         <details class="cases reveal">
           <summary class="reveal__summary">${casesLabel}</summary>
           <div class="cases__body">
-            <p class="cases__note">${casesNote}</p>
+            <p class="cases__note">${glue(casesNote)}</p>
             <div class="cases__grid">
               ${cases
                 .map(
@@ -142,21 +143,21 @@ const casesMarkup = () => `
                   <span class="case__verdict">${c.verdict}</span>
                   <span class="case__role">${c.role}</span>
                 </header>
-                <p class="case__prompt">${c.prompt}</p>
+                <p class="case__prompt">${glue(c.prompt)}</p>
                 <dl class="case__rows">
                   <dt>탐지</dt>
                   <dd><ul class="case__hits">${c.detected
                     .map(
                       ([what, sev, note]) =>
-                        `<li><b>${what}</b><em>${sev}</em>${note ? `<span>${note}</span>` : ''}</li>`,
+                        `<li><b>${glue(what)}</b><em>${sev}</em>${note ? `<span>${glue(note)}</span>` : ''}</li>`,
                     )
                     .join('')}</ul></dd>
                   <dt>판정</dt>
-                  <dd>${c.score}</dd>
+                  <dd>${glue(c.score)}</dd>
                   <dt>모델이 받은 것</dt>
                   <dd class="case__fwd">${c.forwarded}</dd>
                 </dl>
-                <p class="case__why">${c.why}</p>
+                <p class="case__why">${glue(c.why)}</p>
               </article>`,
                 )
                 .join('\n              ')}
@@ -173,11 +174,11 @@ const sceneMarkup = (scene) => `
           <span class="scene__eyebrow-rule"></span>
           <span>${scene.label}</span>
         </p>
-        <h2 class="scene__title" id="${scene.id}-title">${scene.title.replace(/\n/g, '<br>')}</h2>${
+        <h2 class="scene__title" id="${scene.id}-title">${glue(scene.title).replace(/\n/g, '<br>')}</h2>${
           scene.lead
             ? `
         <div class="scene__lead">
-          ${scene.lead.map((para) => `<p>${para}</p>`).join('\n          ')}
+          ${scene.lead.map((para) => `<p>${glue(para)}</p>`).join('\n          ')}
         </div>`
             : ''
         }
@@ -187,7 +188,7 @@ const sceneMarkup = (scene) => `
       }</div>
       <footer class="scene__foot">
         <div class="scene__foot-main">
-          <p class="scene__caption">${scene.caption}</p>${revealMarkup(scene)}
+          <p class="scene__caption">${glue(scene.caption)}</p>${revealMarkup(scene)}
         </div>${scene.id === 'why' ? refsMarkup() : ''}${
           scene.id === 'overview' ? legendMarkup() : ''
         }${scene.id === 'outro' ? summaryMarkup() : ''}${

@@ -4,9 +4,12 @@
  * 이 장면만 아이소메트릭이 아니라 납작한 UI 다.  의도한 대비다:
  *   여기(평면) = 이용자에게 보이는 전부,  이후(아이소메트릭) = 그 뒤에서 도는 기계.
  *
- * 채팅창 입력란에 장학금 대상자 명단이 학번·주민등록번호·학점째로 붙여 넣어져
- * 있고, 오른쪽으로 그 값들이 화면 밖으로 빠져나간다.  "무심코 붙여 넣는다" 와
- * "그게 그대로 나간다" 를 한 화면에서 보여 주는 것이 이 장면의 전부다.
+ * ChatGPT·Claude 를 쓸 때 실제로 보는 배치를 그대로 따른다 — 왼쪽 대화 목록,
+ * 상단 모델 선택, 가운데 아래 둥근 입력창, 그 밑 면책 문구.  진입 지점이
+ * 어디인지 한눈에 알아보는 게 이 장면의 목적이라 로고 대신 배치로 재현한다.
+ *
+ * 입력창에는 장학금 대상자 명단이 표째로 붙여 넣어져 있고, 오른쪽으로 그 값들이
+ * 화면 밖으로 빠져나간다.
  *
  * M3 애니메이션 대상 id:
  *   #si-caret        입력 커서
@@ -18,33 +21,89 @@
 import { callout, svgWrap } from './_svg.js'
 import { sceneIntro as t } from '../content/strings.js'
 
-/* 창 좌표 (화면좌표계) */
-const WX = 64
-const WY = 96
-const WW = 812
-const WH = 508
-const BAR = 54 // 제목 표시줄 높이
+/* --- 창 좌표 (화면좌표계) --- */
+const WX = 52
+const WY = 60
+const WW = 952
+const WH = 616
+const SIDE = 236 // 사이드바 폭
+const MX = WX + SIDE // 본문 영역 시작
+const MW = WW - SIDE
 
-/* 한글 1em, ASCII 0.52em 로 잡은 폭 추정. 강조 사각형을 글자에 맞추는 데만 쓴다. */
 const isWide = (c) => /[^\x00-\x7F]/.test(c)
-const runWidth = (s, f) => [...s].reduce((a, c) => a + f * (isWide(c) ? 1 : 0.52), 0)
+const runWidth = (s, f) => [...s].reduce((a, c) => a + f * (isWide(c) ? 1 : 0.55), 0)
 
-/* ------------------------------------------------------------- 붙여 넣은 글
+/* ------------------------------------------------------------- 사이드바 */
 
-   표 데이터라 흐름 배치 대신 고정 열로 놓는다.  폭을 추정해 흘리면 강조 구간이
-   서로 붙어 버려서, 열 위치를 못 박는 편이 정확하고 '붙여 넣은 표' 처럼 읽힌다. */
+const sidebar = `
+      <rect x="${WX}" y="${WY}" width="${SIDE}" height="${WH}" rx="12" fill="#101216" />
+      <rect x="${WX + SIDE - 12}" y="${WY}" width="12" height="${WH}" fill="#101216" />
+      <path d="M ${MX} ${WY} V ${WY + WH}" stroke="#2a2d35" stroke-width="1.25" />
 
-const FS = 19
-const HEAD_Y = 420
-const ROW_Y = [488, 526]
+      <!-- 새 채팅 -->
+      <rect x="${WX + 16}" y="${WY + 20}" width="${SIDE - 32}" height="38" rx="10"
+            fill="none" stroke="#3C3E46" stroke-width="1.25" />
+      <path d="M ${WX + 34} ${WY + 39} h 14 M ${WX + 41} ${WY + 32} v 14"
+            stroke="#9C9B93" stroke-width="1.6" stroke-linecap="round" />
+      <text x="${WX + 58}" y="${WY + 45}" font-size="15" fill="#ECEAE3">${t.newChat}</text>
+
+      <text x="${WX + 20}" y="${WY + 90}" font-size="12" fill="#5A5F6B"
+            letter-spacing="2">${t.historyLabel}</text>
+
+      <!-- 대화 목록. 첫 항목이 지금 열려 있는 대화다. -->
+      ${t.history
+        .map((label, i) => {
+          const y = WY + 104 + i * 34
+          const on = i === 0
+          return `${
+            on
+              ? `<rect x="${WX + 12}" y="${y}" width="${SIDE - 24}" height="30" rx="8"
+                       fill="#1C1E24" />`
+              : ''
+          }
+      <text x="${WX + 24}" y="${y + 20}" font-size="14"
+            fill="${on ? '#ECEAE3' : '#8b8a83'}">${label}</text>`
+        })
+        .join('')}
+
+      <!-- 하단 계정 -->
+      <path d="M ${WX + 16} ${WY + WH - 56} H ${WX + SIDE - 16}"
+            stroke="#2a2d35" stroke-width="1.25" />
+      <circle cx="${WX + 34}" cy="${WY + WH - 30}" r="12" fill="#3C3E46" />
+      <text x="${WX + 54}" y="${WY + WH - 25}" font-size="14" fill="#9C9B93">${t.account}</text>`
+
+/* ----------------------------------------------------- 상단 모델 선택 */
+
+const modelBar = `
+      <rect x="${MX + 20}" y="${WY + 18}" width="132" height="34" rx="9"
+            fill="#1C1E24" stroke="#3C3E46" stroke-width="1.25" />
+      <text x="${MX + 36}" y="${WY + 40}" font-size="15" font-weight="700"
+            fill="#ECEAE3">${t.models[0]}</text>
+      <path d="M ${MX + 126} ${WY + 32} l 6 7 l 6 -7" stroke="#9C9B93" stroke-width="1.6"
+            fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      <!-- 다른 서비스도 배치는 같다 -->
+      <text x="${MX + 172}" y="${WY + 40}" font-size="14" fill="#5A5F6B">/ ${t.models[1]}</text>`
+
+/* --------------------------------------------------------- 붙여 넣은 표
+
+   폭을 추정해 흘리면 강조 구간이 서로 붙는다. 고정 열로 못 박아야 정확하고
+   '붙여 넣은 표' 처럼도 읽힌다. */
+
+const FS = 18
+const BOX_X = MX + 34
+const BOX_W = MW - 68
+const BOX_Y = 396
+const HEAD_Y = BOX_Y + 42
+const COLHDR_Y = BOX_Y + 76
+const ROW_Y = [BOX_Y + 104, BOX_Y + 140]
+
 // [열 x, 예상 폭, 강조 종류]
 const COLS = [
-  [WX + 44, 60, ''],
-  [WX + 168, 92, 'warm'],
-  [WX + 328, 162, 'hot'],
-  [WX + 566, 48, 'warm'],
+  [BOX_X + 26, 58, ''],
+  [BOX_X + 140, 88, 'warm'],
+  [BOX_X + 292, 154, 'hot'],
+  [BOX_X + 518, 46, 'warm'],
 ]
-
 const TONE = { hot: '#E25749', warm: '#F0A63A' }
 
 const cell = (x, w, kind, text, y) => {
@@ -52,103 +111,91 @@ const cell = (x, w, kind, text, y) => {
   const mark = kind
     ? `<rect x="${x - 5}" y="${y - FS + 1}" width="${w + 10}" height="${FS + 8}" rx="3"
              fill="${color}" opacity="0.14" />
-       <rect x="${x - 5}" y="${y + 10}" width="${w + 10}" height="1.5" fill="${color}" />`
+       <rect x="${x - 5}" y="${y + 9}" width="${w + 10}" height="1.5" fill="${color}" />`
     : ''
   return `${mark}<text x="${x}" y="${y}" font-size="${FS}" fill="${color || '#ECEAE3'}"${
     kind ? ' font-weight="700"' : ''
   }>${text}</text>`
 }
 
-const promptBody = `
-        <text x="${WX + 44}" y="${HEAD_Y}" font-size="${FS}" fill="#ECEAE3">${t.promptHead}</text>
-        ${t.promptCols
-          .map(
-            (c, i) =>
-              `<text x="${COLS[i][0]}" y="${ROW_Y[0] - 26}" font-size="13"
-                     fill="#5A5F6B" letter-spacing="1">${c}</text>`,
-          )
-          .join('')}
-        ${t.promptRows
-          .map((row, r) =>
-            row
-              .map((v, i) => cell(COLS[i][0], COLS[i][1], COLS[i][2], v, ROW_Y[r]))
-              .join(''),
-          )
-          .join('')}`
+const composer = `
+      <!-- 입력창 -->
+      <rect x="${BOX_X}" y="${BOX_Y}" width="${BOX_W}" height="210" rx="16"
+            fill="#1C1E24" stroke="#454954" stroke-width="1.5" />
+      <text x="${BOX_X + 26}" y="${HEAD_Y}" font-size="${FS}" fill="#ECEAE3">${t.promptHead}</text>
+      ${t.promptCols
+        .map(
+          (c, i) =>
+            `<text x="${COLS[i][0]}" y="${COLHDR_Y}" font-size="12" fill="#5A5F6B"
+                   letter-spacing="1">${c}</text>`,
+        )
+        .join('')}
+      ${t.promptRows
+        .map((row, r) =>
+          row.map((v, i) => cell(COLS[i][0], COLS[i][1], COLS[i][2], v, ROW_Y[r])).join(''),
+        )
+        .join('')}
+      <rect id="si-caret" x="${COLS[3][0] + COLS[3][1] + 10}" y="${ROW_Y[1] - FS + 2}"
+            width="2" height="${FS + 4}" fill="#F0A63A" />
 
-const caretX = COLS[3][0] + COLS[3][1] + 10
+      <!-- 첨부 / 전송 -->
+      <circle cx="${BOX_X + 30}" cy="${BOX_Y + 180}" r="14" fill="none"
+              stroke="#5A5F6B" stroke-width="1.4" />
+      <path d="M ${BOX_X + 23} ${BOX_Y + 180} h 14 M ${BOX_X + 30} ${BOX_Y + 173} v 14"
+            stroke="#9C9B93" stroke-width="1.5" stroke-linecap="round" />
+      <g id="si-send">
+        <circle cx="${BOX_X + BOX_W - 34}" cy="${BOX_Y + 174}" r="19" fill="#ECEAE3" />
+        <path d="M ${BOX_X + BOX_W - 34} ${BOX_Y + 183} v -17 m -7 7 l 7 -7 l 7 7"
+              stroke="#131418" stroke-width="2.2" fill="none"
+              stroke-linecap="round" stroke-linejoin="round" />
+      </g>
 
-/* ----------------------------------------------------------------- 채팅창 */
+      <!-- 면책 문구 -->
+      <text x="${MX + MW / 2}" y="${BOX_Y + 244}" text-anchor="middle" font-size="12"
+            fill="#5A5F6B">${t.disclaimer}</text>`
+
+/* 대화 영역은 아직 비어 있다 — 보내기 직전의 순간이다. */
+const emptyState = `
+      <text x="${MX + MW / 2}" y="${WY + 210}" text-anchor="middle" font-size="24"
+            fill="#3C3E46">${t.placeholder}</text>`
 
 const chatWindow = `
       <g id="si-window">
-        <rect x="${WX}" y="${WY}" width="${WW}" height="${WH}" rx="10"
-              fill="#1C1E24" stroke="#3C3E46" stroke-width="1.5" />
-        <path d="M ${WX} ${WY + BAR} H ${WX + WW}" stroke="#3C3E46" stroke-width="1.25" />
-        ${[0, 1, 2]
-          .map(
-            (i) =>
-              `<circle cx="${WX + 26 + i * 18}" cy="${WY + BAR / 2}" r="5" fill="#3C3E46" />`,
-          )
-          .join('')}
-        <text x="${WX + 92}" y="${WY + BAR / 2 + 6}" font-size="16" fill="#9C9B93">${t.windowTitle}</text>
-        <!-- 서비스 탭 — 어느 서비스를 쓰든 화면은 똑같이 생겼다 -->
-        ${t.services
-          .map((name, i) => {
-            const w = 108
-            const x = WX + WW - 24 - (t.services.length - i) * (w + 8)
-            const on = i === 0
-            return `<rect x="${x}" y="${WY + 12}" width="${w}" height="30" rx="15"
-                          fill="${on ? '#43BC9C' : 'none'}" fill-opacity="${on ? 0.16 : 0}"
-                          stroke="${on ? '#43BC9C' : '#3C3E46'}" stroke-width="1.25" />
-                    <text x="${x + w / 2}" y="${WY + 32}" text-anchor="middle" font-size="15"
-                          fill="${on ? '#43BC9C' : '#9C9B93'}">${name}</text>`
-          })
-          .join('')}
-        <text x="${WX + WW / 2}" y="${WY + 190}" text-anchor="middle" font-size="20"
-              fill="#3C3E46">${t.placeholder}</text>
-        <!-- 입력란 -->
-        <rect x="${WX + 28}" y="392" width="${WW - 56}" height="164" rx="8"
-              fill="#131418" stroke="#454954" stroke-width="1.25" />
-        ${promptBody}
-        <rect id="si-caret" x="${caretX}" y="${ROW_Y[1] - FS + 2}"
-              width="2" height="${FS + 4}" fill="#F0A63A" />
-        <g id="si-send">
-          <circle cx="${WX + WW - 62}" cy="518" r="21" fill="#43BC9C" />
-          <path d="M ${WX + WW - 70} 518 h 16 m -6 -6 l 6 6 l -6 6"
-                stroke="#131418" stroke-width="2.2" fill="none"
-                stroke-linecap="round" stroke-linejoin="round" />
-        </g>
+        <rect x="${WX}" y="${WY}" width="${WW}" height="${WH}" rx="12"
+              fill="#17191f" stroke="#3C3E46" stroke-width="1.5" />
+        ${sidebar}
+        ${modelBar}
+        ${emptyState}
+        ${composer}
       </g>`
 
 /* ------------------------------------------------- 화면 밖으로 나가는 자료 */
 
-const LEAK_Y = [190, 300, 410]
+const LEAK_Y = [188, 296, 404]
+const LX0 = WX + WW + 16
 
 const leaks = t.leaks
   .map((label, i) => {
     const y = LEAK_Y[i]
-    const x0 = WX + WW + 18
-    const w = runWidth(label, 16) + 34
+    const w = runWidth(label, 15) + 32
     return `
-      <path id="si-trail-${i + 1}" d="M ${x0} ${y} H ${x0 + 300}"
+      <path id="si-trail-${i + 1}" d="M ${LX0} ${y} H ${LX0 + 286}"
             stroke="#E25749" stroke-width="1.25" stroke-dasharray="6 7"
             opacity="0.4" fill="none" />
       <g id="si-leak-${i + 1}">
-        <rect x="${x0 + 34}" y="${y - 17}" width="${w.toFixed(1)}" height="34" rx="17"
+        <rect x="${LX0 + 30}" y="${y - 16}" width="${w.toFixed(1)}" height="32" rx="16"
               fill="#131418" stroke="#E25749" stroke-width="1.25" />
-        <text x="${(x0 + 34 + w / 2).toFixed(1)}" y="${y + 6}" text-anchor="middle"
-              font-size="16" fill="#E25749">${label}</text>
+        <text x="${(LX0 + 30 + w / 2).toFixed(1)}" y="${y + 5}" text-anchor="middle"
+              font-size="15" fill="#E25749">${label}</text>
       </g>`
   })
   .join('')
 
-/* 화면 경계 — 여기부터가 학교 밖 */
-const OUT_X = WX + WW + 176
+const OUT_X = LX0 + 168
 const outside = `
-      <path d="M ${OUT_X} 128 V 576" stroke="#9C9B93" stroke-width="1.25"
+      <path d="M ${OUT_X} 96 V 620" stroke="#9C9B93" stroke-width="1.25"
             stroke-dasharray="9 7" opacity="0.5" fill="none" />
-      <text x="${OUT_X + 14}" y="600" font-size="16" fill="#9C9B93"
+      <text x="${OUT_X + 12}" y="646" font-size="15" fill="#9C9B93"
             letter-spacing="2">${t.outside}</text>`
 
 /* ------------------------------------------------------------------ 조립 */
@@ -161,8 +208,8 @@ export function sceneIntroSvg() {
 
       ${callout({
         n: '01',
-        from: [COLS[2][0] + 60, ROW_Y[1] + 16],
-        to: [WX + 96, 664],
+        from: [COLS[2][0] + 70, ROW_Y[1] + 16],
+        to: [MX + 40, 728],
         side: 'right',
         title: t.paste,
         sub: t.pasteSub,
@@ -170,16 +217,16 @@ export function sceneIntroSvg() {
       })}
       ${callout({
         n: '02',
-        from: [WX + WW, WY + BAR],
-        to: [WX + WW + 88, 74],
+        from: [WX + WW, WY + 92],
+        to: [WX + WW + 74, 60],
         side: 'right',
         title: t.visible,
         sub: t.visibleSub,
       })}
       ${callout({
         n: '03',
-        from: [WX + WW + 250, LEAK_Y[2]],
-        to: [WX + WW + 150, 640],
+        from: [LX0 + 232, LEAK_Y[2]],
+        to: [LX0 + 56, 700],
         side: 'right',
         title: t.leaving,
         sub: t.leavingSub,
@@ -188,7 +235,7 @@ export function sceneIntroSvg() {
 
   return svgWrap({
     id: 'si',
-    viewBox: '0 0 1440 720',
+    viewBox: '0 0 1440 780',
     title: t.svgTitle,
     desc: t.svgDesc,
     body,
@@ -210,7 +257,7 @@ export function sceneIntroAnim(root, gsap) {
   })
 
   gsap.to(root.querySelector('#si-send'), {
-    scale: 1.09,
+    scale: 1.08,
     transformOrigin: '50% 50%',
     duration: 1.1,
     ease: 'sine.inOut',
@@ -222,8 +269,8 @@ export function sceneIntroAnim(root, gsap) {
   t.leaks.forEach((_, i) => {
     const el = root.querySelector(`#si-leak-${i + 1}`)
     if (!el) return
-    tl.fromTo(el, { x: -46, opacity: 0 }, { x: 0, opacity: 1, duration: 1 }, i * 1.3)
-      .to(el, { x: 128, duration: 3.4 }, i * 1.3 + 1)
+    tl.fromTo(el, { x: -44, opacity: 0 }, { x: 0, opacity: 1, duration: 1 }, i * 1.3)
+      .to(el, { x: 122, duration: 3.4 }, i * 1.3 + 1)
       .to(el, { opacity: 0, duration: 0.8 }, i * 1.3 + 3.6)
   })
 
