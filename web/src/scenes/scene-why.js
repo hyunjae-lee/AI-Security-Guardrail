@@ -151,10 +151,10 @@ const gradeChip = (plan, letter, label, color) => {
       <g class="grade-chip">
         <rect x="${x - 19}" y="${y - 19}" width="38" height="38" rx="6"
               fill="#131418" stroke="${color}" stroke-width="1.25" />
-        <text x="${x}" y="${y + 8}" text-anchor="middle" fill="${color}"
-              font-size="21" font-weight="700">${letter}</text>
+        <text x="${x}" y="${y + 8}" text-anchor="middle"
+              font-weight="700" style="fill:${color};font-size:21px">${letter}</text>
         <text x="${x}" y="${y + 42}" text-anchor="middle" class="co-sub"
-              font-size="16" letter-spacing="1">${label}</text>
+              letter-spacing="1" style="font-size:16px">${label}</text>
       </g>`
 }
 
@@ -184,7 +184,7 @@ export function sceneWhySvg() {
       <text class="co-sub" x="${at(300, 30, FLY_Z)[0]}" y="${at(300, 30, FLY_Z)[1] - 26}"
             text-anchor="middle" letter-spacing="2">${t.outbound} →</text>
       <text class="co-sub" x="${at(470, 356, FLY_Z)[0]}" y="${at(470, 356, FLY_Z)[1] + 34}"
-            text-anchor="middle" letter-spacing="2" fill="#E25749">← ${t.inbound}</text>
+            text-anchor="middle" letter-spacing="2" style="fill:#E25749">← ${t.inbound}</text>
 
       ${callout({
         n: '01',

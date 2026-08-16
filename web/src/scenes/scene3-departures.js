@@ -239,7 +239,7 @@ const screen = `
         <rect x="590" y="26" width="240" height="160" rx="3"
               fill="#0f1116" stroke="#43BC9C" stroke-width="1.75" />
         <path d="M 590 52 H 830" stroke="#43BC9C" stroke-width="1" opacity="0.6" />
-        <text class="co-sub" x="604" y="45" fill="#43BC9C" letter-spacing="2">${t.screen}</text>
+        <text class="co-sub" x="604" y="45" letter-spacing="2" style="fill:#43BC9C">${t.screen}</text>
         <rect id="s3-screen-sweep" x="590" y="60" width="240" height="2"
               fill="#43BC9C" opacity="0.45" />
         <!-- 가방 투시 -->
@@ -258,8 +258,8 @@ const screen = `
                 fill="none" stroke="#E25749" stroke-width="1.75" />
           <path d="M 710 102 H 732 M 710 112 H 728" stroke="#E25749" stroke-width="1.5" />
         </g>
-        <text x="646" y="152" text-anchor="middle" fill="#F0A63A" font-size="16">${t.screenIdCard}</text>
-        <text x="740" y="152" text-anchor="middle" fill="#E25749" font-size="16">${t.screenNote}</text>
+        <text x="646" y="152" text-anchor="middle" style="fill:#F0A63A;font-size:16px">${t.screenIdCard}</text>
+        <text x="740" y="152" text-anchor="middle" style="fill:#E25749;font-size:16px">${t.screenNote}</text>
       </g>`
 
 /* ------------------------------------------------------------------ 조립 */

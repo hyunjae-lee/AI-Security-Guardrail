@@ -93,11 +93,11 @@ const ledger = `
           .map(
             (c, i) =>
               `<text x="${LX + 22 + COLS[i]}" y="${LY + 40}" class="co-sub"
-                     font-size="17" letter-spacing="2">${c}</text>`,
+                     letter-spacing="2" style="font-size:17px">${c}</text>`,
           )
           .join('')}
         <text x="${LX + 22 + COLS[3]}" y="${LY + 40}" class="co-sub"
-              font-size="17" letter-spacing="2" fill="#E25749">${t.colBlank}</text>
+              letter-spacing="2" style="font-size:17px;fill:#E25749">${t.colBlank}</text>
         <path class="hair" d="M ${LX + 16} ${LY + 56} H ${LX + LW - 16}" />
 
         <!-- 내용 칸 전체를 사선으로 지운다 -->
@@ -114,12 +114,11 @@ const ledger = `
             const y = LY + 56 + ROW_H * (i + 1)
             return `
         <g id="sk-row-${i + 1}">
-          <text x="${LX + 22 + COLS[0]}" y="${y}" class="co-sub" font-size="19">${time}</text>
-          <text x="${LX + 22 + COLS[1]}" y="${y}" class="co-sub" font-size="19" fill="#ECEAE3">${kind}</text>
-          <text x="${LX + 22 + COLS[2]}" y="${y}" class="co-title" font-size="19"
-                fill="${VERDICT_COLOR[verdict] || '#9C9B93'}">${verdict}</text>
+          <text x="${LX + 22 + COLS[0]}" y="${y}" class="co-sub" style="font-size:19px">${time}</text>
+          <text x="${LX + 22 + COLS[1]}" y="${y}" class="co-sub" style="font-size:19px;fill:#ECEAE3">${kind}</text>
+          <text x="${LX + 22 + COLS[2]}" y="${y}" class="co-title" style="font-size:19px;fill:${VERDICT_COLOR[verdict] || '#9C9B93'}">${verdict}</text>
           <text id="sk-blank-${i + 1}" x="${LX + 22 + COLS[3]}" y="${y}" class="co-sub"
-                font-size="16" fill="#E25749" opacity="0.75">${t.blankMark}</text>
+                opacity="0.75" style="font-size:16px;fill:#E25749">${t.blankMark}</text>
         </g>
         ${i < t.rows.length - 1 ? `<path class="hair" d="M ${LX + 16} ${y + 18} H ${LX + LW - 16}" opacity="0.35" />` : ''}`
           })
