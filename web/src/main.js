@@ -27,6 +27,7 @@ import {
 } from './content/strings.js'
 import { sceneIntroAnim, sceneIntroSvg } from './scenes/scene-intro.js'
 import { sceneWhyAnim, sceneWhySvg } from './scenes/scene-why.js'
+import { sceneBasisAnim, sceneBasisSvg } from './scenes/scene-basis.js'
 import { scene2Anim, scene2Svg } from './scenes/scene2-overview.js'
 import { scene3Anim, scene3Svg } from './scenes/scene3-departures.js'
 import { sceneRunwayAnim, sceneRunwaySvg } from './scenes/scene-runway.js'
@@ -40,6 +41,7 @@ gsap.registerPlugin(ScrollTrigger, MotionPathPlugin)
 const STAGES = {
   intro: sceneIntroSvg,
   why: sceneWhySvg,
+  basis: sceneBasisSvg,
   overview: scene2Svg,
   departures: scene3Svg,
   runway: sceneRunwaySvg,
@@ -52,6 +54,7 @@ const STAGES = {
 const ANIMS = {
   intro: sceneIntroAnim,
   why: sceneWhyAnim,
+  basis: sceneBasisAnim,
   overview: scene2Anim,
   departures: scene3Anim,
   runway: sceneRunwayAnim,
@@ -189,7 +192,7 @@ const sceneMarkup = (scene) => `
       <footer class="scene__foot">
         <div class="scene__foot-main">
           <p class="scene__caption">${glue(scene.caption)}</p>${revealMarkup(scene)}
-        </div>${scene.id === 'why' ? refsMarkup() : ''}${
+        </div>${
           scene.id === 'overview' ? legendMarkup() : ''
         }${scene.id === 'outro' ? summaryMarkup() : ''}${
           scene.cta
@@ -197,7 +200,9 @@ const sceneMarkup = (scene) => `
         <a class="scene__cta" href="${scene.cta.href}" target="_blank" rel="noopener">${scene.cta.label}</a>`
             : ''
         }
-      </footer>${scene.id === 'departures' ? casesMarkup() : ''}
+      </footer>${scene.id === 'basis' ? refsMarkup() : ''}${
+        scene.id === 'departures' ? casesMarkup() : ''
+      }
     </div>
   </section>`
 
