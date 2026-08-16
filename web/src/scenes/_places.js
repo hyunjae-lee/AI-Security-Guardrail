@@ -207,20 +207,22 @@ export function campus(iso, X, Y, W, D, { pond = true, detail = true } = {}) {
 /* ==========================================================================
    국경 밖 — 지구본
    --------------------------------------------------------------------------
-   앞선 판은 평면 채색이라 '공' 이 아니라 와이어프레임 구체로 보였다. 진짜
-   지구본으로 읽히려면 네 가지가 필요하다:
+   책상 위 지구본이 아니라 우주에 떠 있는 지구다. 받침·기둥·자오선 고리 같은
+   기구는 두지 않고, 구체로 읽히는 데 필요한 것만 남긴다:
      1. 구면 음영 — 좌상단에서 빛이 오는 방사 그라디언트. 이게 없으면 원이다.
-     2. 기울어진 축 — 23.5° 기울기와 위아래 축 꼭지.
-     3. 자오선 고리 + 받침 — 책상 위 지구본의 그 형태.
-     4. 도는 대륙 — 구에 클립한 지도 띠를 가로로 굴린다. 대륙이 옆으로 흘러가면
+     2. 대기광 — 가장자리에 얇게 도는 빛. 필터 없이 방사 그라디언트로 만들어
+        비용이 들지 않는다. 떠 있는 행성으로 보이게 하는 결정적 한 겹.
+     3. 도는 대륙 — 구에 클립한 지도 띠를 가로로 굴린다. 대륙이 옆으로 흘러가면
         회전으로 읽힌다 (경선 rx 를 흔드는 것보다 훨씬 자연스럽다).
+   자전축 기울기(23.5°)는 유지하되 축이나 꼭지를 그리지는 않는다.
    ========================================================================== */
 
 const SEA_LIT = '#3a3450'
 const SEA_MID = '#2a2537'
 const SEA_DARK = '#14121c'
 const LANDMASS = '#4a4460'
-const RING = '#6b6070'
+const GRID = '#8a80a0'
+const ATMO = '#8fa2d8' // 대기광 — 차가운 빛이라야 떠 있는 행성으로 읽힌다
 
 /** 지도 띠 한 장 — 폭 2r 이 한 바퀴다. 대륙처럼 보이도록 굴곡을 준다. */
 const mapBand = (r) => {
@@ -275,7 +277,7 @@ const servers = (r) =>
  */
 export function globe(iso, plan, r, { id = 'globe', datacenter = true } = {}) {
   const [gx, gyGround] = iso.at(...plan)
-  const cy = gyGround - r * 1.42 // 받침 높이만큼 띄운다
+  const cy = gyGround - r * 1.02 // 지면보다 살짝 띄워 떠 있게
   const TILT = -23.5
 
   return `
@@ -286,25 +288,20 @@ export function globe(iso, plan, r, { id = 'globe', datacenter = true } = {}) {
             <stop offset="52%" stop-color="${SEA_MID}" />
             <stop offset="100%" stop-color="${SEA_DARK}" />
           </radialGradient>
+          <!-- 대기광: 안쪽은 투명, 가장자리에서만 옅게 빛난다 (필터 없음) -->
+          <radialGradient id="${id}-atm">
+            <stop offset="78%" stop-color="${ATMO}" stop-opacity="0" />
+            <stop offset="93%" stop-color="${ATMO}" stop-opacity="0.3" />
+            <stop offset="100%" stop-color="${ATMO}" stop-opacity="0" />
+          </radialGradient>
           <clipPath id="${id}-clip">
             <circle cx="0" cy="0" r="${r}" />
           </clipPath>
         </defs>
 
-        <!-- 받침 -->
-        <ellipse cx="0" cy="${(r * 1.42).toFixed(1)}" rx="${(r * 0.46).toFixed(1)}"
-                 ry="${(r * 0.14).toFixed(1)}" fill="var(--c-away-l)"
-                 stroke="${RING}" stroke-width="1.25" />
-        <rect x="${(-r * 0.05).toFixed(1)}" y="${(r * 1.02).toFixed(1)}"
-              width="${(r * 0.1).toFixed(1)}" height="${(r * 0.4).toFixed(1)}"
-              fill="var(--c-away-top)" stroke="${RING}" stroke-width="1" />
+        <circle cx="0" cy="0" r="${(r * 1.13).toFixed(1)}" fill="url(#${id}-atm)" />
 
         <g transform="rotate(${TILT})">
-          <!-- 자오선 고리 (구 뒤쪽 절반) -->
-          <path d="M 0 ${(-r * 1.14).toFixed(1)} A ${(r * 1.14).toFixed(1)} ${(r * 1.14).toFixed(1)} 0 0 0 0 ${(r * 1.14).toFixed(1)}"
-                fill="none" stroke="${RING}" stroke-width="2.5" opacity="0.55" />
-
-          <!-- 바다 (구면 음영) -->
           <circle cx="0" cy="0" r="${r}" fill="url(#${id}-sea)" />
 
           <!-- 도는 지도 띠 — 한 바퀴(2r)를 두 장 이어 붙여 끊김 없이 흐르게 한다 -->
@@ -315,25 +312,21 @@ export function globe(iso, plan, r, { id = 'globe', datacenter = true } = {}) {
             </g>
           </g>
 
-          <!-- 위선 — 극으로 갈수록 짧아진다 -->
-          <g clip-path="url(#${id}-clip)" opacity="0.35">
+          <!-- 위선 — 지구로 읽히게만 하고 도면처럼 보이지 않게 아주 옅게 -->
+          <g clip-path="url(#${id}-clip)" opacity="0.16">
             ${[-0.66, -0.34, 0, 0.34, 0.66]
               .map((k) => {
                 const rx = r * Math.sqrt(Math.max(0, 1 - k * k))
                 return `<ellipse cx="0" cy="${(r * k).toFixed(1)}" rx="${rx.toFixed(1)}"
                                  ry="${(r * 0.13).toFixed(1)}" fill="none"
-                                 stroke="${RING}" stroke-width="1" />`
+                                 stroke="${GRID}" stroke-width="1" />`
               })
               .join('')}
           </g>
 
-          <!-- 가장자리 테와 앞쪽 고리 -->
-          <circle cx="0" cy="0" r="${r}" fill="none" stroke="${RING}" stroke-width="1.25" opacity="0.7" />
-          <path d="M 0 ${(-r * 1.14).toFixed(1)} A ${(r * 1.14).toFixed(1)} ${(r * 1.14).toFixed(1)} 0 0 1 0 ${(r * 1.14).toFixed(1)}"
-                fill="none" stroke="${RING}" stroke-width="2.5" />
-          <!-- 축 꼭지 -->
-          <circle cx="0" cy="${(-r * 1.14).toFixed(1)}" r="${(r * 0.045).toFixed(1)}" fill="${RING}" />
-          <circle cx="0" cy="${(r * 1.14).toFixed(1)}" r="${(r * 0.045).toFixed(1)}" fill="${RING}" />
+          <!-- 밝은 쪽 가장자리에만 얇게 도는 테 -->
+          <circle cx="0" cy="0" r="${r}" fill="none" stroke="${ATMO}"
+                  stroke-width="1" opacity="0.35" />
         </g>
       </g>`
 }
