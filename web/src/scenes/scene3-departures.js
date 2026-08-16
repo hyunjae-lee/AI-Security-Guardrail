@@ -12,7 +12,7 @@
  *   #s3-belt-teeth            벨트 무늬 (흐름)
  *   #s3-beam                  X-ray 스캔 빔
  *   #s3-screen-sweep          판독 화면 주사선
- *   #s3-xray-idcard / #s3-xray-note / #s3-xray-clean   화면에 비친 내용물
+ *   #s3-xray-idcard / #s3-xray-note   화면에 비친 내용물
  *   #s3-sample-allow|mask|block|override   가방마다 다른 입력 원문
  *   #s3-path-allow|mask|block 게이트 3갈래 벨트
  *   #s3-lamp-allow|mask|block 게이트 표시등
@@ -243,12 +243,18 @@ const figure = (plan) => {
    갈리는지 보이게 하는 것이 이 장면의 목적이다. */
 
 const PX = 400 // 패널 좌측
-const PW = 580
+const PW = 940
 const PY = 16
 const PH = 212
-const DIV = PX + 226 // 두 칸을 가르는 세로선
-/** 오른쪽 칸(입력 원문)이 쓸 수 있는 폭 — 카피를 여기 맞춰 줄 나눈다. */
-export const SAMPLE_W = PX + PW - 16 - (DIV + 18)
+const DIV = PX + 226 // 가방 투시 | 입력 원문
+const DIV2 = PX + 566 // 입력 원문 | 판독 결과
+/* 패널은 아래(스캐너)가 아니라 오른쪽 빈 하늘로 넓힌다 — 아래로 키우면
+   설명 대상인 X-ray 장비를 제 설명 패널이 덮어 버린다. */
+/** 각 칸이 쓸 수 있는 폭·줄 수 — 카피를 여기 맞춰 나눈다 (samplefit 검사기가 본다). */
+export const SAMPLE_W = DIV2 - 20 - (DIV + 18)
+export const READOUT_W = PX + PW - 18 - (DIV2 + 18)
+export const MAX_LINES = 5
+export const MAX_DETECTED = 3
 
 const SFS = 15
 
@@ -272,6 +278,11 @@ const CHIP = { ok: '#7FBF57', warm: '#F0A63A', hot: '#E25749' }
 /** 기본으로 켜 두는 판정 — 애니메이션이 없을 때(정지·reduced-motion) 보이는 화면. */
 const DEFAULT_KEY = 'mask'
 
+/* 정지 상태(애니메이션 없음·reduced-motion)에서는 기본 가방의 투시 결과만 켠다.
+   둘 다 켜 두면 마스킹 가방에 '숨은 쪽지' 까지 든 것처럼 보인다. */
+const xrayOff = (icon) =>
+  t.screenSamples[DEFAULT_KEY].xray.includes(icon) ? '' : ' opacity="0"'
+
 /** 라벨 칸과 값 칸의 고정 x — 값이 항상 같은 세로줄에서 시작해 눈이 따라가기 쉽다. */
 const COL_LABEL = DIV + 18
 const COL_VALUE_OFF = 130
@@ -283,10 +294,63 @@ const mark = (x, y, text, color) =>
   `<rect x="${(x - 4).toFixed(1)}" y="${y - SFS + 1}" width="${(runW(text, SFS) + 8).toFixed(1)}"
                  height="${SFS + 7}" rx="2" fill="${color}" opacity="0.16" />`
 
+/* 심각도 색 — 초록(정보)에서 빨강(치명)으로.  '탐지됨' 과 '위험함' 은 다르다는
+   것이 이 화면의 요점이라, 탐지되었어도 정보 등급이면 초록으로 둔다. */
+const SEV = { 정보: '#7FBF57', 보통: '#9C9B93', 높음: '#F0A63A', 치명: '#E25749' }
+
+/* 판독 결과 칸의 세로 배치.  아래쪽 셋(구분선·점수·판정칩)은 자리를 고정해
+   가방이 바뀌어도 눈이 같은 곳에서 결론을 읽게 하고, 탐지 목록만 위에서
+   늘어난다.  ROW_H 는 비고 한 줄이 딸리는지로 갈린다. */
+const RD_TOP = 76
+const RD_RULE = 154
+const RD_SCORE = 170
+const RD_CHIP = 180
+const rowH = (note) => (note ? 32 : 22)
+export const READOUT_ROOM = RD_RULE - RD_TOP
+
+/** 판독 결과 칸 — 무엇이 걸렸고, 얼마나 위험하고, 그래서 어떻게 판정했는지. */
+const readout = (s) => {
+  const x = DIV2 + 18
+  const right = PX + PW - 18
+  let y = PY + RD_TOP
+  const rows = s.detected
+    .map(([what, sev, note]) => {
+      const color = SEV[sev] || '#9C9B93'
+      const sw = runW(sev, 12) + 16
+      const row = `
+          <rect x="${right - sw}" y="${y - 12}" width="${sw.toFixed(1)}" height="17" rx="3"
+                fill="${color}" opacity="0.18" />
+          <text x="${right - sw / 2}" y="${y}" text-anchor="middle"
+                style="font-size:12px;fill:${color}" font-weight="700">${sev}</text>
+          <text x="${x}" y="${y}" style="font-size:14px;fill:#ECEAE3">${what}</text>${
+            note
+              ? `
+          <text x="${x}" y="${y + 15}" style="font-size:12px;fill:#5A5F6B">${note}</text>`
+              : ''
+          }`
+      y += rowH(note)
+      return row
+    })
+    .join('')
+
+  const tone = CHIP[s.tone]
+  return `
+          <text x="${x}" y="${PY + 60}" style="font-size:12px;fill:#5A5F6B"
+                letter-spacing="1">${t.screenDetectedLabel}</text>
+          ${rows}
+          <path d="M ${x} ${PY + RD_RULE} H ${right}" stroke="#43BC9C"
+                stroke-width="1" opacity="0.25" />
+          <text x="${x}" y="${PY + RD_SCORE}" style="font-size:13px;fill:#9C9B93">${s.score}</text>
+          <rect x="${x}" y="${PY + RD_CHIP}" width="${(runW(s.verdict, 13) + 30).toFixed(1)}"
+                height="26" rx="13" fill="none" stroke="${tone}" stroke-width="1.25" opacity="0.8" />
+          <text x="${x + 15}" y="${PY + RD_CHIP + 18}"
+                style="font-size:13px;fill:${tone}" font-weight="700">${s.verdict}</text>`
+}
+
 const sampleBlock = (key, s) => {
   const lines = s.lines
     .map((ln, li) => {
-      const y = PY + 88 + li * 28
+      const y = PY + 82 + li * 24
       const color = TONE3[ln.kind]
       if (ln.label !== undefined) {
         return `
@@ -304,19 +368,24 @@ const sampleBlock = (key, s) => {
     })
     .join('')
 
-  const tone = CHIP[s.tone]
-  const chipW = runW(s.verdict, 13) + 30
+  // 가방에서 실물이 안 나온 경우 — 빈 화면 대신 '없음' 을 명시한다.
+  // allow 와 block 이 여기서 똑같이 보이는 것이 이 장면의 요점이다
+  // (같은 깨끗한 가방인데 하나는 통과하고 하나는 비자 때문에 막힌다).
+  const empty = s.xray.length
+    ? ''
+    : `
+          <text x="${PX + 112}" y="${PY + 126}" text-anchor="middle"
+                style="font-size:14px;fill:#7FBF57">${t.screenNothing}</text>`
+
   return `
         <g id="s3-sample-${key}"${key === DEFAULT_KEY ? '' : ' opacity="0"'}>
-          <text x="${PX + PW - 16}" y="${PY + 60}" text-anchor="end"
+          <text x="${DIV2 - 20}" y="${PY + 60}" text-anchor="end"
                 style="font-size:12px;fill:#5A5F6B" letter-spacing="1">${
                   t.screenRoleLabel
                 } · ${s.role}</text>
+          ${empty}
           ${lines}
-          <rect x="${DIV + 16}" y="${PY + 168}" width="${chipW.toFixed(1)}" height="26" rx="13"
-                fill="none" stroke="${tone}" stroke-width="1.25" opacity="0.8" />
-          <text x="${DIV + 31}" y="${PY + 186}"
-                style="font-size:13px;fill:${tone}">${s.verdict}</text>
+          ${readout(s)}
         </g>`
 }
 
@@ -334,8 +403,8 @@ const screen = `
         <circle cx="${PX + PW - 22}" cy="${PY + 17}" r="4" fill="#43BC9C" opacity="0.9" />
         <rect id="s3-screen-sweep" x="${PX}" y="${PY + 40}" width="${PW}" height="2"
               fill="#43BC9C" opacity="0.45" />
-        <path d="M ${DIV} ${PY + 42} V ${PY + PH - 12}" stroke="#43BC9C"
-              stroke-width="1" opacity="0.3" />
+        <path d="M ${DIV} ${PY + 42} V ${PY + PH - 12} M ${DIV2} ${PY + 42} V ${PY + PH - 12}"
+              stroke="#43BC9C" stroke-width="1" opacity="0.3" />
 
         <!-- 왼쪽: 가방 투시 -->
         <text x="${PX + 16}" y="${PY + 60}" style="font-size:12px;fill:#5A5F6B"
@@ -344,7 +413,7 @@ const screen = `
               fill="none" stroke="#43BC9C" stroke-width="1.5" opacity="0.5" />
         <path d="M ${PX + 90} ${PY + 72} C ${PX + 90} ${PY + 60} ${PX + 134} ${PY + 60} ${PX + 134} ${PY + 72}"
               fill="none" stroke="#43BC9C" stroke-width="1.5" opacity="0.5" />
-        <g id="s3-xray-idcard">
+        <g id="s3-xray-idcard"${xrayOff('idcard')}>
           <rect x="${PX + 38}" y="${PY + 92}" width="52" height="34" rx="2"
                 fill="none" stroke="#F0A63A" stroke-width="1.75" />
           <circle cx="${PX + 53}" cy="${PY + 106}" r="6.5" fill="none" stroke="#F0A63A" stroke-width="1.5" />
@@ -353,7 +422,7 @@ const screen = `
           <text x="${PX + 64}" y="${PY + 152}" text-anchor="middle"
                 style="font-size:13px;fill:#F0A63A">${t.screenIdCard}</text>
         </g>
-        <g id="s3-xray-note">
+        <g id="s3-xray-note"${xrayOff('note')}>
           <path d="M ${PX + 112} ${PY + 90} L ${PX + 150} ${PY + 84} L ${PX + 157} ${PY + 126} L ${PX + 119} ${PY + 132} Z"
                 fill="none" stroke="#E25749" stroke-width="1.75" />
           <path d="M ${PX + 121} ${PY + 101} H ${PX + 146} M ${PX + 121} ${PY + 112} H ${PX + 142}"
@@ -361,11 +430,7 @@ const screen = `
           <text x="${PX + 142}" y="${PY + 152}" text-anchor="middle"
                 style="font-size:13px;fill:#E25749">${t.screenNote}</text>
         </g>
-        <!-- 아무것도 안 걸린 가방 — 투시 아이콘이 하나도 없을 때 이 자리를 채운다. -->
-        <text id="s3-xray-clean" x="${PX + 112}" y="${PY + 126}" text-anchor="middle" opacity="0"
-              style="font-size:14px;fill:#7FBF57">${t.screenClean}</text>
-
-        <!-- 오른쪽: 실제로 들어온 입력 (가방마다 다르다) -->
+        <!-- 가운데: 실제로 들어온 입력 / 오른쪽: 판독 결과 (둘 다 가방마다 다르다) -->
         <text x="${DIV + 18}" y="${PY + 60}" style="font-size:12px;fill:#5A5F6B"
               letter-spacing="1">${t.screenTextLabel}</text>
         ${samples}
@@ -545,14 +610,8 @@ export function scene3Anim(root, gsap, ScrollTrigger) {
       )
     if (xray.includes('idcard')) tl.to(q('#s3-xray-idcard'), { opacity: 1, duration: 0.25 }, t0 + 0.35)
     if (xray.includes('note')) tl.to(q('#s3-xray-note'), { opacity: 1, duration: 0.25 }, t0 + 0.45)
-    // 아무것도 안 걸린 가방도 '스캔했지만 깨끗하다' 를 보여 줘야 한다.
-    if (!xray.length) tl.to(q('#s3-xray-clean'), { opacity: 1, duration: 0.25 }, t0 + 0.45)
     // 다음 가방을 위해 투시 결과만 비운다 (원문은 다음 스캔에서 갈아 끼운다).
-    tl.to(
-      [q('#s3-xray-idcard'), q('#s3-xray-note'), q('#s3-xray-clean')],
-      { opacity: 0, duration: 0.2 },
-      t0 + 1.55,
-    )
+    tl.to([q('#s3-xray-idcard'), q('#s3-xray-note')], { opacity: 0, duration: 0.2 }, t0 + 1.55)
   }
 
   /** 판정 후 분기점을 거쳐 해당 레인 끝까지 보낸다. */
