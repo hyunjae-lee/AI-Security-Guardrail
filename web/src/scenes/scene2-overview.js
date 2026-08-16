@@ -301,7 +301,7 @@ export function scene2Svg() {
 
   return svgWrap({
     id: 's2',
-    viewBox: '0 0 1440 880',
+    viewBox: '0 0 1440 742',
     title: t.svgTitle,
     desc: t.svgDesc,
     body,

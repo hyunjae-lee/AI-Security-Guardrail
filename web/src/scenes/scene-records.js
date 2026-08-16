@@ -153,7 +153,7 @@ export function sceneRecordsSvg() {
 
   return svgWrap({
     id: 'sk',
-    viewBox: '0 0 1440 760',
+    viewBox: '0 0 1440 684',
     title: t.svgTitle,
     desc: t.svgDesc,
     body,

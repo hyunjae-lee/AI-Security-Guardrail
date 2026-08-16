@@ -153,7 +153,7 @@ export function sceneOutroSvg() {
 
   return svgWrap({
     id: 'so',
-    viewBox: '0 0 1440 860',
+    viewBox: '0 0 1440 706',
     title: t.svgTitle,
     desc: t.svgDesc,
     body,

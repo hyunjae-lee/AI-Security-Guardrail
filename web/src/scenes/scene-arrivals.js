@@ -252,7 +252,7 @@ export function sceneArrivalsSvg() {
 
   return svgWrap({
     id: 'sa',
-    viewBox: '0 0 1440 860',
+    viewBox: '0 0 1440 812',
     title: t.svgTitle,
     desc: t.svgDesc,
     body,

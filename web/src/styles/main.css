@@ -217,13 +217,20 @@ body {
 /* --- 무대 --- */
 
 .scene__stage {
+  /* 남는 세로 공간에서 늘어나지 않게 — 늘어나면 판만 커지고 그림은 그대로라
+     그림이 빈 상자 안에 떠 있는 꼴이 된다. */
+  align-self: center;
+  /* 도면은 본문 단보다 넓게 — 가로 폭이 렌더 배율을 정하므로 폭이 곧 글씨 크기다.
+     오른쪽 번호 레일(96px) 자리까지 일부 되찾는다. */
+  margin-inline: calc(var(--pad-x) * -0.55) calc(var(--pad-x) * -0.55 - 48px);
   min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-top: 1px solid var(--c-hair);
-  border-bottom: 1px solid var(--c-hair);
-  padding: clamp(0.5rem, 1.6vh, 1.5rem) 0;
+  border: 1px solid var(--c-line);
+  border-radius: 3px;
+  background: var(--c-stage);
+  padding: clamp(0.75rem, 1.8vh, 1.5rem) clamp(0.75rem, 1.4vw, 1.5rem);
 }
 
 /* 일러스트는 뷰박스 기준 축소 렌더라, 무대가 낮으면 도면 글씨가 그대로 작아진다.
@@ -231,7 +238,7 @@ body {
 .scene__stage svg {
   width: 100%;
   height: auto;
-  max-height: 78svh;
+  max-height: 84svh;
   display: block;
 }
 
@@ -278,7 +285,7 @@ body {
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.014);
   word-break: keep-all;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   color: var(--c-muted);
 }
 
@@ -550,7 +557,7 @@ body {
 .illus text {
   font-family: var(--font-sans);
   fill: var(--c-label);
-  font-size: 19px;
+  font-size: 20px;
 }
 
 /* 아이소메트릭 입체 3면 */
@@ -568,7 +575,7 @@ body {
 }
 .illus .solid {
   stroke: var(--c-edge);
-  stroke-width: 1;
+  stroke-width: 1.15;
   stroke-linejoin: round;
 }
 
@@ -597,35 +604,35 @@ body {
 
 /* 지면 · 대지 */
 .illus .ground-top {
-  fill: #1e2128;
+  fill: #282c34;
 }
 .illus .ground-l {
-  fill: #191c22;
+  fill: #22252c;
 }
 .illus .ground-r {
-  fill: #131519;
+  fill: #1a1d22;
 }
 
 /* 컨베이어 — 바닥보다 한 단계 밝게 띄워야 흐름선으로 읽힌다 */
 .illus .belt-top {
-  fill: #3b4150;
+  fill: #4b5265;
 }
 .illus .belt-l {
-  fill: #272b34;
+  fill: #333846;
 }
 .illus .belt-r {
-  fill: #1e2128;
+  fill: #272b34;
 }
 
 /* 항공기 — 어두운 지면 위 공중에 뜨므로 한 단계 더 밝게 잡는다 */
 .illus .craft-top {
-  fill: #525a6b;
+  fill: #626b7e;
 }
 .illus .craft-l {
-  fill: #3f4655;
+  fill: #4d5466;
 }
 .illus .craft-r {
-  fill: #2f3542;
+  fill: #3a4150;
 }
 
 /* 설비(청록) */
@@ -655,30 +662,31 @@ body {
 .illus .co-leader {
   fill: none;
   stroke: var(--c-leader);
-  stroke-width: 1.25;
+  stroke-width: 1.4;
 }
 .illus .co-dot {
   fill: var(--c-bag);
 }
 .illus .co-badge {
-  fill: none;
-  stroke: var(--c-leader);
-  stroke-width: 1.25;
+  /* 판 색으로 채워 지시선이 배지를 뚫고 지나가지 않게 한다. */
+  fill: var(--c-stage);
+  stroke: var(--c-bag);
+  stroke-width: 1.4;
 }
 .illus .co-num {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   fill: var(--c-bag);
 }
 .illus .co-title {
-  font-size: 22px;
+  font-size: 25px;
   font-weight: 700;
   fill: var(--c-text);
   letter-spacing: -0.01em;
 }
 .illus .co-sub {
-  font-size: 18px;
+  font-size: 19px;
   fill: var(--c-label);
 }
 .illus .co-title--block {
@@ -784,7 +792,7 @@ body {
   text-wrap: balance;
   margin: 0;
   max-width: 42em;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   line-height: 1.75;
   color: var(--c-label);
 }
@@ -814,8 +822,8 @@ body {
 .scene__lead p {
   margin: 0;
   max-width: 40em;
-  font-size: clamp(1rem, 1.05vw, 1.125rem);
-  line-height: 1.8;
+  font-size: clamp(1.0625rem, 1.22vw, 1.1875rem);
+  line-height: 1.78;
   color: var(--c-label);
   text-wrap: balance;
 }

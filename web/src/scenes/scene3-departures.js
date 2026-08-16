@@ -325,7 +325,7 @@ const readout = (s) => {
           <text x="${x}" y="${y}" style="font-size:14px;fill:#ECEAE3">${what}</text>${
             note
               ? `
-          <text x="${x}" y="${y + 15}" style="font-size:12px;fill:#5A5F6B">${note}</text>`
+          <text x="${x}" y="${y + 15}" style="font-size:12px;fill:#8A8F9C">${note}</text>`
               : ''
           }`
       y += rowH(note)
@@ -335,7 +335,7 @@ const readout = (s) => {
 
   const tone = CHIP[s.tone]
   return `
-          <text x="${x}" y="${PY + 60}" style="font-size:12px;fill:#5A5F6B"
+          <text x="${x}" y="${PY + 60}" style="font-size:12px;fill:#8A8F9C"
                 letter-spacing="1">${t.screenDetectedLabel}</text>
           ${rows}
           <path d="M ${x} ${PY + RD_RULE} H ${right}" stroke="#43BC9C"
@@ -380,7 +380,7 @@ const sampleBlock = (key, s) => {
   return `
         <g id="s3-sample-${key}"${key === DEFAULT_KEY ? '' : ' opacity="0"'}>
           <text x="${DIV2 - 20}" y="${PY + 60}" text-anchor="end"
-                style="font-size:12px;fill:#5A5F6B" letter-spacing="1">${
+                style="font-size:12px;fill:#8A8F9C" letter-spacing="1">${
                   t.screenRoleLabel
                 } · ${s.role}</text>
           ${empty}
@@ -407,7 +407,7 @@ const screen = `
               stroke="#43BC9C" stroke-width="1" opacity="0.3" />
 
         <!-- 왼쪽: 가방 투시 -->
-        <text x="${PX + 16}" y="${PY + 60}" style="font-size:12px;fill:#5A5F6B"
+        <text x="${PX + 16}" y="${PY + 60}" style="font-size:12px;fill:#8A8F9C"
               letter-spacing="1">${t.screenXrayLabel}</text>
         <rect x="${PX + 22}" y="${PY + 72}" width="180" height="94" rx="10"
               fill="none" stroke="#43BC9C" stroke-width="1.5" opacity="0.5" />
@@ -431,7 +431,7 @@ const screen = `
                 style="font-size:13px;fill:#E25749">${t.screenNote}</text>
         </g>
         <!-- 가운데: 실제로 들어온 입력 / 오른쪽: 판독 결과 (둘 다 가방마다 다르다) -->
-        <text x="${DIV + 18}" y="${PY + 60}" style="font-size:12px;fill:#5A5F6B"
+        <text x="${DIV + 18}" y="${PY + 60}" style="font-size:12px;fill:#8A8F9C"
               letter-spacing="1">${t.screenTextLabel}</text>
         ${samples}
       </g>`
