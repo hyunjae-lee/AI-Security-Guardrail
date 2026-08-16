@@ -16,60 +16,22 @@
 
 import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
+import { campus, globe, HOME_FACE } from './_places.js'
 import { scene2 as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 406, oy: 130, s: 1 })
 const { at, box, slab, line, plane, grid, cutHatch, curve } = iso
 
-/* 영토 구분 */
-const HOME = { top: 'home-top', l: 'home-l', r: 'home-r', cls: 'home-edge' }
-const AWAY = { top: 'away-top', l: 'away-l', r: 'away-r', cls: 'away-edge' }
+const HOME = HOME_FACE
 
 /* ---------------------------------------------------------------- 캠퍼스 */
 
-// (x, y, w, d, h) — 멀리 있는 것(x+y 작은 것)부터 그린다.
-const CAMPUS_BLOCKS = [
-  [30, 40, 46, 46, 92],
-  [100, 24, 40, 56, 132],
-  [46, 150, 46, 52, 116],
-  [178, 60, 52, 46, 74],
-  [24, 268, 42, 44, 84],
-  [132, 168, 58, 50, 150],
-  [224, 150, 44, 48, 96],
-  [120, 282, 50, 46, 108],
-  [210, 268, 46, 50, 130],
-]
-
-/** 건물 +y 면에 창 두 줄. 면 위 평면이라 원근이 흐트러지지 않는다. */
-const windows = (x, y, w, d, h) => {
-  const out = []
-  const fy = y + d
-  for (const z of [h - 26, h - 56]) {
-    if (z < 16) continue
-    for (let wx = x + 8; wx + 10 <= x + w - 8; wx += 18) {
-      out.push(
-        plane(
-          [
-            [wx, fy, z + 12],
-            [wx + 10, fy, z + 12],
-            [wx + 10, fy, z],
-            [wx, fy, z],
-          ],
-          'f-top',
-          'opacity="0.5"',
-        ),
-      )
-    }
-  }
-  return out.join('')
-}
-
-const campus = `
+const homeland = `
       ${slab(0, 0, 300, 400, 16, { tone: 'home' })}
       ${grid(0, 0, 300, 400, 50)}
       ${cutHatch(0, 0, 300, 400, 16, 'l')}
       ${cutHatch(0, 0, 300, 400, 16, 'r')}
-      ${CAMPUS_BLOCKS.map((b) => box(...b, HOME) + windows(...b)).join('')}`
+      ${campus(iso, 0, 0, 300, 400)}`
 
 /* ------------------------------------------------------------ 단말 4종 */
 
@@ -182,62 +144,7 @@ const bridge = `
 
 /* -------------------------------------------------------------- 외부 대륙 */
 
-const factoryWindows = () => {
-  const out = []
-  for (const z of [30, 62]) {
-    for (let wx = 750; wx < 950; wx += 34) {
-      out.push(
-        plane(
-          [
-            [wx, 340, z + 16],
-            [wx + 20, 340, z + 16],
-            [wx + 20, 340, z],
-            [wx, 340, z],
-          ],
-          'f-deep',
-        ),
-      )
-    }
-  }
-  return out.join('')
-}
-
-const smoke = ['s2-smoke-1', 's2-smoke-2', 's2-smoke-3']
-  .map((id, i) => {
-    const [cx, cy] = at([772, 833, 890][i], [102, 74, 112][i], [206, 236, 186][i])
-    return `<circle id="${id}" cx="${cx}" cy="${cy}" r="${[13, 17, 11][i]}"
-              fill="#3C3E46" opacity="0.4" />`
-  })
-  .join('')
-
-const factory = `
-      ${slab(700, 0, 300, 400, 16, { id: 's2-outer', tone: 'away' })}
-      ${cutHatch(700, 0, 300, 400, 16, 'l')}
-      ${cutHatch(700, 0, 300, 400, 16, 'r')}
-      <g id="s2-factory">
-        ${box(730, 40, 240, 300, 92, AWAY)}
-        ${factoryWindows()}
-        <!-- 톱니 지붕 -->
-        ${[0, 1, 2, 3, 4]
-          .map((i) => box(736 + i * 48, 40, 30, 300, 20, { z: 92, ...AWAY }))
-          .join('')}
-        <!-- 굴뚝 -->
-        ${box(760, 90, 24, 24, 102, { z: 92, ...AWAY })}
-        ${box(820, 62, 26, 26, 132, { z: 92, ...AWAY })}
-        ${box(878, 100, 22, 22, 82, { z: 92, ...AWAY })}
-        ${smoke}
-        <!-- 가동 표시 -->
-        ${plane(
-          [
-            [746, 340, 18],
-            [954, 340, 18],
-            [954, 340, 8],
-            [746, 340, 8],
-          ],
-          'bag-r',
-          'opacity="0.5"',
-        )}
-      </g>`
+const outland = globe(iso, [880, 200], 150, { id: 's2-globe' })
 
 /* ---------------------------------------------------------------- 경로·가방 */
 
@@ -313,7 +220,7 @@ const border = `
 
 export function scene2Svg() {
   const body = `
-      ${campus}
+      ${homeland}
       ${DEVICES}
       ${routes}
       ${bag('s2-bag-1', 190, 128)}
@@ -324,7 +231,7 @@ export function scene2Svg() {
       ${terminal}
       ${bag('s2-bag-5', 388, 208)}
       ${border}
-      ${factory}
+      ${outland}
 
       <!-- 국경을 넘는 비행 경로 (SCENE 04 로 이어짐) -->
       ${curve(

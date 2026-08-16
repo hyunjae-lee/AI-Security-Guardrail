@@ -15,54 +15,22 @@
 
 import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
+import { campus, globe } from './_places.js'
 import { sceneWhy as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 380, oy: 150, s: 0.92 })
 const { at, delta, box, slab, line, plane, grid, cutHatch } = iso
 
-/* 영토 구분 — 우리 쪽은 한색, 국경 밖은 보랏빛 무채색 */
-const HOME = { top: 'home-top', l: 'home-l', r: 'home-r', cls: 'home-edge' }
-const AWAY = { top: 'away-top', l: 'away-l', r: 'away-r', cls: 'away-edge' }
+/* 우리 쪽은 캠퍼스, 국경 밖은 지구본. 색만이 아니라 형태로 가른다. */
 
-/* ---------------------------------------------------------------- 양쪽 대지 */
-
-const CAMPUS_BLOCKS = [
-  [24, 34, 40, 40, 78],
-  [92, 22, 36, 48, 112],
-  [40, 132, 40, 46, 96],
-  [156, 56, 44, 40, 66],
-  [110, 148, 50, 44, 128],
-  [30, 240, 38, 40, 72],
-  [136, 250, 44, 42, 92],
-]
-
-const campus = `
+const homeland = `
       ${slab(0, 0, 260, 340, 14, { tone: 'home' })}
-      ${grid(0, 0, 260, 340, 50)}
+      ${grid(0, 0, 260, 340, 60)}
       ${cutHatch(0, 0, 260, 340, 14, 'l')}
       ${cutHatch(0, 0, 260, 340, 14, 'r')}
-      ${CAMPUS_BLOCKS.map((b) => box(...b, HOME)).join('')}`
+      ${campus(iso, 0, 0, 260, 340)}`
 
-const factory = `
-      ${slab(620, 0, 280, 340, 14, { tone: 'away' })}
-      ${cutHatch(620, 0, 280, 340, 14, 'l')}
-      ${cutHatch(620, 0, 280, 340, 14, 'r')}
-      ${box(648, 40, 224, 260, 84, AWAY)}
-      ${[0, 1, 2, 3]
-        .map((i) => box(654 + i * 52, 40, 32, 260, 18, { z: 84, ...AWAY }))
-        .join('')}
-      ${box(676, 84, 22, 22, 88, { z: 84, ...AWAY })}
-      ${box(736, 60, 24, 24, 110, { z: 84, ...AWAY })}
-      ${plane(
-        [
-          [664, 300, 16],
-          [856, 300, 16],
-          [856, 300, 7],
-          [664, 300, 7],
-        ],
-        'bag-r',
-        'opacity="0.45"',
-      )}`
+const outland = globe(iso, [760, 170], 138, { id: 'sw-globe' })
 
 /* ------------------------------------------------------------------ 국경 */
 
@@ -166,9 +134,9 @@ const gradeChip = (plan, letter, label, color) => {
 
 export function sceneWhySvg() {
   const body = `
-      ${campus}
+      ${homeland}
       ${border}
-      ${factory}
+      ${outland}
       ${trails}
 
       ${bag('sw-out-1', 320, OUT_Y[0], { z: FLY_Z })}
@@ -182,7 +150,7 @@ export function sceneWhySvg() {
       ${alertRing('sw-alert-3', 392, IN_Y[1], FLY_Z + 9)}
 
       ${gradeChip([30, 320, 0], t.gradeIn, t.gradeInLabel, '#43BC9C')}
-      ${gradeChip([700, 322, 0], t.gradeOut, t.gradeOutLabel, '#9C9B93')}
+      ${gradeChip([806, 216, 0], t.gradeOut, t.gradeOutLabel, '#9C9B93')}
 
       <!-- 방향 표시 -->
       <text class="co-sub" x="${at(300, 30, FLY_Z)[0]}" y="${at(300, 30, FLY_Z)[1] - 26}"
@@ -219,7 +187,7 @@ export function sceneWhySvg() {
       })}
       ${callout({
         n: '04',
-        from: at(548, IN_Y[0], FLY_Z + 18),
+        from: at(600, IN_Y[0], FLY_Z + 18),
         to: [1000, 622],
         side: 'right',
         title: t.risk3,

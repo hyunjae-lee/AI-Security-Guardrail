@@ -13,6 +13,7 @@
 
 import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
+import { globe } from './_places.js'
 import { sceneRunway as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 330, oy: 130, s: 1 })
@@ -61,14 +62,7 @@ const terminal = `
 
 /* ------------------------------------------------------------ 저쪽 */
 
-const factory = `
-      ${slab(560, 0, 260, 320, 16, { tone: 'away' })}
-      ${cutHatch(560, 0, 260, 320, 16, 'l')}
-      ${cutHatch(560, 0, 260, 320, 16, 'r')}
-      ${box(590, 40, 200, 240, 80, AWAY)}
-      ${[0, 1, 2, 3].map((i) => box(596 + i * 46, 40, 28, 240, 16, { z: 80, ...AWAY })).join('')}
-      ${box(616, 80, 20, 20, 84, { z: 80, ...AWAY })}
-      ${box(672, 58, 22, 22, 104, { z: 80, ...AWAY })}`
+const outland = globe(iso, [700, 150], 116, { id: 'sr-globe' })
 
 /* ------------------------------------------------------------ 항공기 */
 
@@ -171,7 +165,7 @@ export function sceneRunwaySvg() {
         'id="sr-arc-in" stroke="#43BC9C" opacity="0.45"',
       )}
 
-      ${factory}
+      ${outland}
       ${veil}
       ${border}
       <text x="${at(380, -180, 0)[0]}" y="${at(380, -180, 0)[1] - 14}"
@@ -207,7 +201,7 @@ export function sceneRunwaySvg() {
       })}
       ${callout({
         n: '03',
-        from: at(690, 160, 96),
+        from: at(700, 150, 150),
         to: [1080, 560],
         side: 'right',
         title: t.outside,

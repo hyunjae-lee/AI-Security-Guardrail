@@ -13,32 +13,20 @@
 
 import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
+import { campus, globe, HOME_FACE } from './_places.js'
 import { sceneOutro as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 406, oy: 150, s: 1 })
 const { at, box, slab, line, plane, grid, cutHatch, curve } = iso
 
-const HOME = { top: 'home-top', l: 'home-l', r: 'home-r', cls: 'home-edge' }
-const AWAY = { top: 'away-top', l: 'away-l', r: 'away-r', cls: 'away-edge' }
+const HOME = HOME_FACE
 
-const BLOCKS = [
-  [30, 40, 46, 46, 92],
-  [100, 24, 40, 56, 132],
-  [46, 150, 46, 52, 116],
-  [178, 60, 52, 46, 74],
-  [24, 268, 42, 44, 84],
-  [132, 168, 58, 50, 150],
-  [224, 150, 44, 48, 96],
-  [120, 282, 50, 46, 108],
-  [210, 268, 46, 50, 130],
-]
-
-const campus = `
+const homeland = `
       ${slab(0, 0, 300, 400, 16, { tone: 'home' })}
       ${grid(0, 0, 300, 400, 50)}
       ${cutHatch(0, 0, 300, 400, 16, 'l')}
       ${cutHatch(0, 0, 300, 400, 16, 'r')}
-      ${BLOCKS.map((b) => box(...b, HOME)).join('')}`
+      ${campus(iso, 0, 0, 300, 400, { detail: true })}`
 
 /* 터미널이 있던 자리 — 이제는 그냥 땅이다. */
 const ground = `
@@ -97,13 +85,7 @@ const ghost = `
       <circle id="so-pulse" cx="${at(410, 108, -4)[0]}" cy="${at(410, 108, -4)[1]}"
               r="7" class="gear-fill" opacity="0.6" />`
 
-const factory = `
-      <g opacity="0.4">
-        ${slab(700, 0, 300, 400, 16, { tone: 'away' })}
-        ${box(730, 40, 240, 300, 92, AWAY)}
-        ${[0, 1, 2, 3, 4].map((i) => box(736 + i * 48, 40, 30, 300, 20, { z: 92, ...AWAY })).join('')}
-        ${box(820, 62, 26, 26, 132, { z: 92, ...AWAY })}
-      </g>`
+const outland = `<g opacity="0.45">${globe(iso, [860, 190], 112, { id: 'so-globe' })}</g>`
 
 const ROUTES = [
   [
@@ -142,14 +124,14 @@ const bag = (id, x, y, { z = 0, w = 22, d = 15, h = 17 } = {}) => {
 
 export function sceneOutroSvg() {
   const body = `
-      ${campus}
+      ${homeland}
       ${ghost}
       ${ground}
       ${ROUTES.map((pts, i) => curve(pts, 'route', `id="so-route-${i + 1}"`)).join('')}
       ${bag('so-bag-1', 200, 130)}
       ${bag('so-bag-2', 268, 258)}
       ${bag('so-bag-3', 352, 246)}
-      ${factory}
+      ${outland}
 
       ${callout({
         n: '01',
