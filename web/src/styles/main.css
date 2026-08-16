@@ -248,12 +248,12 @@ body {
 .scene__caption {
   margin: 0;
   word-break: keep-all;
+  text-wrap: balance;
   position: relative;
   padding-left: 1.375rem;
   max-width: 40em;
   font-size: var(--fs-caption);
   color: var(--c-muted);
-  text-wrap: pretty;
 }
 
 .scene__caption::before {
@@ -318,6 +318,7 @@ body {
 }
 
 .scene__refs li {
+  text-wrap: balance;
   counter-increment: ref;
   position: relative;
   padding-left: 1.75rem;
@@ -401,6 +402,7 @@ body {
 .placeholder__note {
   margin: 0;
   word-break: keep-all;
+  text-wrap: balance;
   max-width: 30em;
   font-size: 0.9375rem;
 }
@@ -712,7 +714,7 @@ body {
 }
 
 .reveal__body p {
-  text-wrap: pretty;
+  text-wrap: balance;
   margin: 0 0 0.7rem;
   font-size: 0.9375rem;
   line-height: 1.75;
@@ -743,7 +745,7 @@ body {
   font-size: clamp(1rem, 1.05vw, 1.125rem);
   line-height: 1.8;
   color: var(--c-label);
-  text-wrap: pretty;
+  text-wrap: balance;
 }
 
 .scene__lead p:last-child {
@@ -882,6 +884,7 @@ body {
 }
 
 .summary__list span {
+  text-wrap: balance;
   display: block;
   margin-top: 0.2rem;
   font-size: 0.875rem;
@@ -964,6 +967,7 @@ body {
 
 /* 실제 입력한 문장 — 인용부호 대신 왼쪽 괘선으로 구분 */
 .case__prompt {
+  text-wrap: balance;
   margin: 0 0 0.85rem;
   padding-left: 0.75rem;
   border-left: 2px solid var(--c-line);
@@ -1037,7 +1041,7 @@ body {
 }
 
 .case__why {
-  text-wrap: pretty;
+  text-wrap: balance;
   margin: 0.9rem 0 0;
   padding-top: 0.75rem;
   border-top: 1px solid var(--c-hair);
