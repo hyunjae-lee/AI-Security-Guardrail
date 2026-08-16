@@ -1,166 +1,194 @@
 /**
- * SCENE 01 · 인트로 — 캠퍼스의 밤.
+ * SCENE 01 · 인트로 — 사용자가 실제로 보는 화면.
  *
- * 사용자가 실제로 보는 것은 채팅창뿐이라는 걸 먼저 보여 준다.  불 켜진 캠퍼스
- * 위로 단말 4종이 서 있고, 각 단말에서 질문 말풍선이 하나씩 떠오른다.
- * 마지막 말풍선만 위험한 요청이라 뒤 장면의 실마리가 된다.
+ * 이 장면만 아이소메트릭이 아니라 납작한 UI 다.  의도한 대비다:
+ *   여기(평면) = 이용자에게 보이는 전부,  이후(아이소메트릭) = 그 뒤에서 도는 기계.
+ *
+ * 채팅창 입력란에 장학금 대상자 명단이 학번·주민등록번호·학점째로 붙여 넣어져
+ * 있고, 오른쪽으로 그 값들이 화면 밖으로 빠져나간다.  "무심코 붙여 넣는다" 와
+ * "그게 그대로 나간다" 를 한 화면에서 보여 주는 것이 이 장면의 전부다.
  *
  * M3 애니메이션 대상 id:
- *   #si-bubble-1 … #si-bubble-4   차례로 떠오르는 질문
- *   #si-caret                     깜빡이는 커서
- *   #si-win-*                     야간 창문 불빛
+ *   #si-caret        입력 커서
+ *   #si-send         전송 버튼
+ *   #si-leak-1 … 3   화면 밖으로 빠져나가는 자료
+ *   #si-trail-1 … 3  그 궤적
  */
 
 import { callout, svgWrap } from './_svg.js'
-import { isoSpace } from './_iso.js'
 import { sceneIntro as t } from '../content/strings.js'
 
-export const iso = isoSpace({ ox: 470, oy: 150, s: 1.4 })
-const { at, box, slab, grid, cutHatch } = iso
+/* 창 좌표 (화면좌표계) */
+const WX = 64
+const WY = 96
+const WW = 812
+const WH = 508
+const BAR = 54 // 제목 표시줄 높이
 
-/* 야간이라 창문에 불이 들어온다. 일부만 켜져야 '밤' 으로 읽힌다. */
-const BLOCKS = [
-  [24, 30, 44, 44, 96],
-  [96, 20, 38, 52, 138],
-  [40, 132, 44, 48, 108],
-  [168, 52, 46, 42, 74],
-  [116, 150, 52, 46, 158],
-  [232, 130, 42, 46, 92],
-  [28, 246, 40, 42, 82],
-  [126, 262, 46, 44, 116],
-  [216, 250, 44, 46, 124],
+/* 한글 1em, ASCII 0.52em 로 잡은 폭 추정. 강조 사각형을 글자에 맞추는 데만 쓴다. */
+const isWide = (c) => /[^\x00-\x7F]/.test(c)
+const runWidth = (s, f) => [...s].reduce((a, c) => a + f * (isWide(c) ? 1 : 0.52), 0)
+
+/* ------------------------------------------------------------- 붙여 넣은 글
+
+   표 데이터라 흐름 배치 대신 고정 열로 놓는다.  폭을 추정해 흘리면 강조 구간이
+   서로 붙어 버려서, 열 위치를 못 박는 편이 정확하고 '붙여 넣은 표' 처럼 읽힌다. */
+
+const FS = 19
+const HEAD_Y = 420
+const ROW_Y = [488, 526]
+// [열 x, 예상 폭, 강조 종류]
+const COLS = [
+  [WX + 44, 60, ''],
+  [WX + 168, 92, 'warm'],
+  [WX + 328, 162, 'hot'],
+  [WX + 566, 48, 'warm'],
 ]
 
-let winSeq = 0
-const litWindows = (x, y, w, d, h) => {
-  const out = []
-  const fy = y + d
-  for (let z = h - 24; z > 14; z -= 30) {
-    for (let wx = x + 8; wx + 9 <= x + w - 8; wx += 17) {
-      winSeq += 1
-      // 결정적 패턴으로 절반쯤만 켠다 (렌더마다 달라지면 안 된다).
-      const lit = winSeq % 3 !== 0
-      out.push(
-        `<polygon id="si-win-${winSeq}" class="${lit ? '' : 'f-r'}" points="${[
-          [wx, fy, z + 11],
-          [wx + 9, fy, z + 11],
-          [wx + 9, fy, z],
-          [wx, fy, z],
-        ]
-          .map((p) => iso.pt(...p))
-          .join(' ')}" ${lit ? 'fill="#F0A63A" opacity="0.55"' : 'opacity="0.9"'} />`,
-      )
-    }
-  }
-  return out.join('')
+const TONE = { hot: '#E25749', warm: '#F0A63A' }
+
+const cell = (x, w, kind, text, y) => {
+  const color = TONE[kind]
+  const mark = kind
+    ? `<rect x="${x - 5}" y="${y - FS + 1}" width="${w + 10}" height="${FS + 8}" rx="3"
+             fill="${color}" opacity="0.14" />
+       <rect x="${x - 5}" y="${y + 10}" width="${w + 10}" height="1.5" fill="${color}" />`
+    : ''
+  return `${mark}<text x="${x}" y="${y}" font-size="${FS}" fill="${color || '#ECEAE3'}"${
+    kind ? ' font-weight="700"' : ''
+  }>${text}</text>`
 }
 
-const campus = `
-      ${slab(0, 0, 290, 340, 16)}
-      ${grid(0, 0, 290, 340, 60)}
-      ${cutHatch(0, 0, 290, 340, 16, 'l')}
-      ${cutHatch(0, 0, 290, 340, 16, 'r')}
-      ${BLOCKS.map((b) => box(...b) + litWindows(...b)).join('')}`
+const promptBody = `
+        <text x="${WX + 44}" y="${HEAD_Y}" font-size="${FS}" fill="#ECEAE3">${t.promptHead}</text>
+        ${t.promptCols
+          .map(
+            (c, i) =>
+              `<text x="${COLS[i][0]}" y="${ROW_Y[0] - 26}" font-size="13"
+                     fill="#5A5F6B" letter-spacing="1">${c}</text>`,
+          )
+          .join('')}
+        ${t.promptRows
+          .map((row, r) =>
+            row
+              .map((v, i) => cell(COLS[i][0], COLS[i][1], COLS[i][2], v, ROW_Y[r]))
+              .join(''),
+          )
+          .join('')}`
 
-/* ------------------------------------------------------------ 단말 4종 */
+const caretX = COLS[3][0] + COLS[3][1] + 10
 
-const DEVICE_PLAN = {
-  phone: [10, 300],
-  tablet: [160, 336],
-  laptop: [280, 214],
-  pc: [258, 40],
-}
+/* ----------------------------------------------------------------- 채팅창 */
 
-const device = (id, shape) => {
-  const [x, y] = at(...DEVICE_PLAN[id])
-  return `
-      <g id="si-device-${id}">
-        <polygon points="${x - 17},${y} ${x},${y - 9} ${x + 17},${y} ${x},${y + 9}"
-                 fill="#0f1116" opacity="0.6" />
-        <g transform="translate(${x} ${y})">
-${shape}
+const chatWindow = `
+      <g id="si-window">
+        <rect x="${WX}" y="${WY}" width="${WW}" height="${WH}" rx="10"
+              fill="#1C1E24" stroke="#3C3E46" stroke-width="1.5" />
+        <path d="M ${WX} ${WY + BAR} H ${WX + WW}" stroke="#3C3E46" stroke-width="1.25" />
+        ${[0, 1, 2]
+          .map(
+            (i) =>
+              `<circle cx="${WX + 26 + i * 18}" cy="${WY + BAR / 2}" r="5" fill="#3C3E46" />`,
+          )
+          .join('')}
+        <text x="${WX + 92}" y="${WY + BAR / 2 + 6}" font-size="16" fill="#9C9B93">${t.windowTitle}</text>
+        <!-- 서비스 탭 — 어느 서비스를 쓰든 화면은 똑같이 생겼다 -->
+        ${t.services
+          .map((name, i) => {
+            const w = 108
+            const x = WX + WW - 24 - (t.services.length - i) * (w + 8)
+            const on = i === 0
+            return `<rect x="${x}" y="${WY + 12}" width="${w}" height="30" rx="15"
+                          fill="${on ? '#43BC9C' : 'none'}" fill-opacity="${on ? 0.16 : 0}"
+                          stroke="${on ? '#43BC9C' : '#3C3E46'}" stroke-width="1.25" />
+                    <text x="${x + w / 2}" y="${WY + 32}" text-anchor="middle" font-size="15"
+                          fill="${on ? '#43BC9C' : '#9C9B93'}">${name}</text>`
+          })
+          .join('')}
+        <text x="${WX + WW / 2}" y="${WY + 190}" text-anchor="middle" font-size="20"
+              fill="#3C3E46">${t.placeholder}</text>
+        <!-- 입력란 -->
+        <rect x="${WX + 28}" y="392" width="${WW - 56}" height="164" rx="8"
+              fill="#131418" stroke="#454954" stroke-width="1.25" />
+        ${promptBody}
+        <rect id="si-caret" x="${caretX}" y="${ROW_Y[1] - FS + 2}"
+              width="2" height="${FS + 4}" fill="#F0A63A" />
+        <g id="si-send">
+          <circle cx="${WX + WW - 62}" cy="518" r="21" fill="#43BC9C" />
+          <path d="M ${WX + WW - 70} 518 h 16 m -6 -6 l 6 6 l -6 6"
+                stroke="#131418" stroke-width="2.2" fill="none"
+                stroke-linecap="round" stroke-linejoin="round" />
         </g>
       </g>`
-}
 
-const DEVICES = [
-  device(
-    'phone',
-    `          <rect class="f-top solid" x="-12" y="-44" width="24" height="42" rx="4" />
-          <rect fill="#F0A63A" opacity="0.85" x="-9" y="-40" width="18" height="30" rx="1" />`,
-  ),
-  device(
-    'tablet',
-    `          <rect class="f-top solid" x="-19" y="-50" width="38" height="48" rx="4" />
-          <rect fill="#F0A63A" opacity="0.85" x="-15" y="-46" width="30" height="36" rx="1" />`,
-  ),
-  device(
-    'laptop',
-    `          <path class="f-l solid" d="M -30 0 L 30 0 L 24 -8 L -24 -8 Z" />
-          <rect class="f-top solid" x="-24" y="-42" width="48" height="34" rx="2" />
-          <rect fill="#F0A63A" opacity="0.85" x="-20" y="-38" width="40" height="26" />`,
-  ),
-  device(
-    'pc',
-    `          <rect class="f-top solid" x="-28" y="-48" width="56" height="38" rx="2" />
-          <rect fill="#F0A63A" opacity="0.85" x="-24" y="-44" width="48" height="30" />
-          <path class="f-l solid" d="M -8 -10 L 8 -10 L 11 0 L -11 0 Z" />
-          <rect class="f-r solid" x="32" y="-40" width="16" height="40" rx="2" />`,
-  ),
-].join('')
+/* ------------------------------------------------- 화면 밖으로 나가는 자료 */
 
-/* ----------------------------------------------------------- 질문 말풍선
+const LEAK_Y = [190, 300, 410]
 
-   오른쪽에 세로로 쌓고 각 단말까지 얇은 지시선을 잇는다.  콜아웃과 같은
-   지시선 문법을 써야 도면 전체가 한 체계로 읽힌다. */
-
-const BUBBLES = [
-  { id: 'si-bubble-1', to: [872, 168], from: 'phone' },
-  { id: 'si-bubble-2', to: [938, 300], from: 'tablet' },
-  { id: 'si-bubble-3', to: [902, 432], from: 'laptop' },
-  { id: 'si-bubble-4', to: [968, 564], from: 'pc', risky: true },
-]
-
-const bubble = ({ id, to, from, risky }, i) => {
-  const [ax, ay] = at(...DEVICE_PLAN[from], 44)
-  const [bx, by] = to
-  const w = 340
-  const h = 60
-  const stroke = risky ? '#E25749' : '#3C3E46'
-  return `
-      <g id="${id}">
-        <path class="co-leader" d="M ${ax} ${ay} L ${bx - 26} ${by + h / 2} L ${bx} ${by + h / 2}" />
-        <rect x="${bx}" y="${by}" width="${w}" height="${h}" rx="6"
-              fill="#1C1E24" stroke="${stroke}" stroke-width="1.25" />
-        <path d="M ${bx} ${by + h - 12} l -9 8 l 9 4 Z" fill="#1C1E24" stroke="${stroke}"
-              stroke-width="1.25" stroke-linejoin="round" />
-        <text x="${bx + 18}" y="${by + 32}" class="co-sub"
-              fill="${risky ? '#E25749' : '#ECEAE3'}" font-size="19">${t.bubbles[i]}</text>
+const leaks = t.leaks
+  .map((label, i) => {
+    const y = LEAK_Y[i]
+    const x0 = WX + WW + 18
+    const w = runWidth(label, 16) + 34
+    return `
+      <path id="si-trail-${i + 1}" d="M ${x0} ${y} H ${x0 + 300}"
+            stroke="#E25749" stroke-width="1.25" stroke-dasharray="6 7"
+            opacity="0.4" fill="none" />
+      <g id="si-leak-${i + 1}">
+        <rect x="${x0 + 34}" y="${y - 17}" width="${w.toFixed(1)}" height="34" rx="17"
+              fill="#131418" stroke="#E25749" stroke-width="1.25" />
+        <text x="${(x0 + 34 + w / 2).toFixed(1)}" y="${y + 6}" text-anchor="middle"
+              font-size="16" fill="#E25749">${label}</text>
       </g>`
-}
+  })
+  .join('')
+
+/* 화면 경계 — 여기부터가 학교 밖 */
+const OUT_X = WX + WW + 176
+const outside = `
+      <path d="M ${OUT_X} 128 V 576" stroke="#9C9B93" stroke-width="1.25"
+            stroke-dasharray="9 7" opacity="0.5" fill="none" />
+      <text x="${OUT_X + 14}" y="600" font-size="16" fill="#9C9B93"
+            letter-spacing="2">${t.outside}</text>`
 
 /* ------------------------------------------------------------------ 조립 */
 
 export function sceneIntroSvg() {
-  const [cx, cy] = at(...DEVICE_PLAN.laptop, 44)
   const body = `
-      ${campus}
-      ${DEVICES}
-      ${BUBBLES.map(bubble).join('')}
-      <rect id="si-caret" x="${cx + 2}" y="${cy - 12}" width="2" height="16" fill="#F0A63A" />
+      ${outside}
+      ${leaks}
+      ${chatWindow}
 
       ${callout({
         n: '01',
-        from: at(...DEVICE_PLAN.tablet, 60),
-        to: [330, 700],
+        from: [COLS[2][0] + 60, ROW_Y[1] + 16],
+        to: [WX + 96, 664],
         side: 'right',
-        title: t.here,
-        sub: t.hereSub,
+        title: t.paste,
+        sub: t.pasteSub,
+        cls: 'co-title--block',
+      })}
+      ${callout({
+        n: '02',
+        from: [WX + WW, WY + BAR],
+        to: [WX + WW + 88, 74],
+        side: 'right',
+        title: t.visible,
+        sub: t.visibleSub,
+      })}
+      ${callout({
+        n: '03',
+        from: [WX + WW + 250, LEAK_Y[2]],
+        to: [WX + WW + 150, 640],
+        side: 'right',
+        title: t.leaving,
+        sub: t.leavingSub,
+        cls: 'co-title--block',
       })}`
 
   return svgWrap({
     id: 'si',
-    viewBox: '0 0 1440 800',
+    viewBox: '0 0 1440 720',
     title: t.svgTitle,
     desc: t.svgDesc,
     body,
@@ -168,23 +196,11 @@ export function sceneIntroSvg() {
 }
 
 /* ==========================================================================
-   M3 — 질문이 하나씩 떠오르고, 커서가 깜빡이고, 창문 불빛이 미세하게 흔들린다.
+   M3 — 커서가 깜빡이고 전송 버튼이 맥동하는 사이,
+   자료는 계속 화면 밖으로 흘러 나간다.
    ========================================================================== */
 
 export function sceneIntroAnim(root, gsap) {
-  const tl = gsap.timeline({ repeat: -1, repeatDelay: 1.6 })
-
-  BUBBLES.forEach(({ id }, i) => {
-    const el = root.querySelector(`#${id}`)
-    if (!el) return
-    tl.fromTo(
-      el,
-      { opacity: 0, y: 18 },
-      { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' },
-      i * 0.9,
-    ).to(el, { opacity: 0, duration: 0.6 }, 4.6 + i * 0.25)
-  })
-
   gsap.to(root.querySelector('#si-caret'), {
     opacity: 0,
     duration: 0.5,
@@ -193,14 +209,29 @@ export function sceneIntroAnim(root, gsap) {
     ease: 'steps(1)',
   })
 
-  // 창문 불빛은 아주 약하게만 흔든다 (밤 풍경의 기척 정도).
-  gsap.to(root.querySelectorAll('[id^="si-win-"]'), {
-    opacity: 0.32,
-    duration: 2.6,
+  gsap.to(root.querySelector('#si-send'), {
+    scale: 1.09,
+    transformOrigin: '50% 50%',
+    duration: 1.1,
     ease: 'sine.inOut',
     repeat: -1,
     yoyo: true,
-    stagger: { each: 0.06, from: 'random' },
+  })
+
+  const tl = gsap.timeline({ repeat: -1, defaults: { ease: 'none' } })
+  t.leaks.forEach((_, i) => {
+    const el = root.querySelector(`#si-leak-${i + 1}`)
+    if (!el) return
+    tl.fromTo(el, { x: -46, opacity: 0 }, { x: 0, opacity: 1, duration: 1 }, i * 1.3)
+      .to(el, { x: 128, duration: 3.4 }, i * 1.3 + 1)
+      .to(el, { opacity: 0, duration: 0.8 }, i * 1.3 + 3.6)
+  })
+
+  gsap.to(root.querySelectorAll('[id^="si-trail-"]'), {
+    strokeDashoffset: -26,
+    duration: 1.6,
+    ease: 'none',
+    repeat: -1,
   })
 
   return tl
