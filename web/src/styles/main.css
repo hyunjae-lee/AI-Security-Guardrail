@@ -763,10 +763,16 @@ body {
 .legend {
   flex: 2 1 28rem;
   min-width: 0;
-  max-width: 42rem;
+  max-width: 46rem;
+  margin-top: 0;
   word-break: keep-all;
-  border-left: 1px solid var(--c-line);
-  padding-left: clamp(1rem, 2vw, 1.75rem);
+}
+
+.legend__body,
+.cases__body {
+  margin-top: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--c-gear);
 }
 
 .legend__kicker,
@@ -879,5 +885,161 @@ body {
   margin-top: 0.2rem;
   font-size: 0.875rem;
   line-height: 1.65;
+  color: var(--c-muted);
+}
+
+/* ==========================================================================
+   판정 사례 카드 (SCENE 04)
+   실제 엔진 출력을 그대로 싣는다. 무엇이 걸렸고 왜 그 판정인지를 한 카드에서
+   끝까지 따라갈 수 있어야 한다 — 질문 → 탐지 → 판정 → 모델이 받은 것 → 왜.
+   ========================================================================== */
+
+/* foot 의 flex 배치에 기대면 캡션 옆에서 한 칸으로 눌린다. 그래서 .scene__inner
+   그리드의 별도 행으로 두어 항상 전체 폭을 쓰게 한다. */
+.cases {
+  min-width: 0;
+  word-break: keep-all;
+}
+
+.cases__note {
+  margin: 0 0 1.1rem;
+  font-size: var(--fs-meta);
+  color: var(--c-muted);
+}
+
+.cases__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(26rem, 1fr));
+  gap: 1rem;
+}
+
+.case {
+  border: 1px solid var(--c-line);
+  border-top-width: 2px;
+  padding: 1rem 1.1rem 1.15rem;
+  background: var(--c-panel);
+}
+
+.case--allow {
+  border-top-color: var(--c-allow);
+}
+.case--mask {
+  border-top-color: var(--c-bag);
+}
+.case--block {
+  border-top-color: var(--c-block);
+}
+
+.case__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.case__verdict {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.case--allow .case__verdict {
+  color: var(--c-allow);
+}
+.case--mask .case__verdict {
+  color: var(--c-bag);
+}
+.case--block .case__verdict {
+  color: var(--c-block);
+}
+
+.case__role {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.04em;
+  color: var(--c-muted);
+  white-space: nowrap;
+}
+
+/* 실제 입력한 문장 — 인용부호 대신 왼쪽 괘선으로 구분 */
+.case__prompt {
+  margin: 0 0 0.85rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--c-line);
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--c-text);
+}
+
+.case__rows {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.case__rows dt {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.04em;
+  color: var(--c-muted);
+  padding-top: 0.1rem;
+}
+
+.case__rows dd {
+  margin: 0;
+  color: var(--c-label);
+  line-height: 1.6;
+}
+
+.case__hits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.case__hits li {
+  margin-bottom: 0.25rem;
+}
+
+.case__hits b {
+  color: var(--c-text);
+  font-weight: 700;
+}
+
+/* 심각도 배지 */
+.case__hits em {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0 0.35rem;
+  border: 1px solid var(--c-line);
+  font-size: 0.6875rem;
+  font-style: normal;
+  color: var(--c-muted);
+  vertical-align: 1px;
+}
+
+.case__hits span {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--c-muted);
+}
+
+/* 모델이 실제로 받은 문자열 — 마스킹이 '삭제가 아닌 변환' 임을 보여 주는 자리 */
+.case__fwd {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: var(--c-gear);
+  word-break: break-all;
+}
+
+.case__why {
+  margin: 0.9rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--c-hair);
+  font-size: 0.8125rem;
+  line-height: 1.7;
   color: var(--c-muted);
 }

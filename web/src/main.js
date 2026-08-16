@@ -12,6 +12,9 @@ import ScrollTrigger from 'gsap/ScrollTrigger'
 import MotionPathPlugin from 'gsap/MotionPathPlugin'
 
 import {
+  cases,
+  casesLabel,
+  casesNote,
   guideline,
   legend,
   placeholderKicker,
@@ -94,9 +97,9 @@ const revealMarkup = (scene) => {
 
 /** 비유 대조표 — 그림을 읽는 열쇠. 조감도에만 붙는다. */
 const legendMarkup = () => `
-        <aside class="legend">
-          <span class="legend__kicker">${legend.kicker}</span>
-          <p class="legend__title">${legend.title}</p>
+        <details class="legend reveal">
+          <summary class="reveal__summary">${legend.kicker} · ${legend.title}</summary>
+          <div class="legend__body">
           <table class="legend__table">
             <thead>
               <tr><th>${legend.cols[0]}</th><th>${legend.cols[1]}</th></tr>
@@ -108,7 +111,8 @@ const legendMarkup = () => `
             </tbody>
           </table>
           <p class="legend__note">${legend.note}</p>
-        </aside>`
+          </div>
+        </details>`
 
 /** 발표 마무리 세 줄 정리 — 아웃트로에만 붙는다. */
 const summaryMarkup = () => `
@@ -123,6 +127,42 @@ const summaryMarkup = () => `
               .join('\n            ')}
           </ol>
         </aside>`
+
+/** 판정 사례 — 실제 엔진 출력. 출국층 장면에만 붙는다. */
+const casesMarkup = () => `
+        <details class="cases reveal">
+          <summary class="reveal__summary">${casesLabel}</summary>
+          <div class="cases__body">
+            <p class="cases__note">${casesNote}</p>
+            <div class="cases__grid">
+              ${cases
+                .map(
+                  (c) => `<article class="case case--${c.tone}">
+                <header class="case__head">
+                  <span class="case__verdict">${c.verdict}</span>
+                  <span class="case__role">${c.role}</span>
+                </header>
+                <p class="case__prompt">${c.prompt}</p>
+                <dl class="case__rows">
+                  <dt>탐지</dt>
+                  <dd><ul class="case__hits">${c.detected
+                    .map(
+                      ([what, sev, note]) =>
+                        `<li><b>${what}</b><em>${sev}</em>${note ? `<span>${note}</span>` : ''}</li>`,
+                    )
+                    .join('')}</ul></dd>
+                  <dt>판정</dt>
+                  <dd>${c.score}</dd>
+                  <dt>모델이 받은 것</dt>
+                  <dd class="case__fwd">${c.forwarded}</dd>
+                </dl>
+                <p class="case__why">${c.why}</p>
+              </article>`,
+                )
+                .join('\n              ')}
+            </div>
+          </div>
+        </details>`
 
 const sceneMarkup = (scene) => `
   <section class="scene" id="${scene.id}" aria-labelledby="${scene.id}-title">
@@ -156,7 +196,7 @@ const sceneMarkup = (scene) => `
         <a class="scene__cta" href="${scene.cta.href}" target="_blank" rel="noopener">${scene.cta.label}</a>`
             : ''
         }
-      </footer>
+      </footer>${scene.id === 'departures' ? casesMarkup() : ''}
     </div>
   </section>`
 
@@ -236,7 +276,7 @@ function setupReveals() {
   scenes.forEach((scene) => {
     const section = document.querySelector(`#${scene.id}`)
     const targets = section.querySelectorAll(
-      '.scene__eyebrow, .scene__title, .scene__lead, .scene__stage, .scene__caption, .reveal, .scene__refs, .legend, .summary, .scene__cta',
+      '.scene__eyebrow, .scene__title, .scene__lead, .scene__stage, .scene__caption, .reveal, .scene__refs, .legend, .cases, .summary, .scene__cta',
     )
 
     gsap.from(targets, {
