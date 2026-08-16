@@ -251,7 +251,7 @@ body {
   text-wrap: balance;
   position: relative;
   padding-left: 1.375rem;
-  max-width: 40em;
+  max-width: 56em;
   font-size: var(--fs-caption);
   color: var(--c-muted);
 }
@@ -312,22 +312,27 @@ body {
   font-weight: 700;
 }
 
+.scene__refs-note {
+  margin: 0.9rem 0 0;
+  font-size: var(--fs-meta);
+  letter-spacing: 0.02em;
+  color: var(--c-bag);
+}
+
 .scene__refs ol {
   margin: 1.1rem 0 0;
   padding: 0;
   list-style: none;
   counter-reset: ref;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
-  gap: 1rem clamp(1.25rem, 2.5vw, 2.25rem);
+  grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr));
+  gap: 1.5rem clamp(1.5rem, 3vw, 2.75rem);
 }
 
 .scene__refs li {
-  text-wrap: balance;
   counter-increment: ref;
   position: relative;
-  padding-left: 1.75rem;
-  margin-top: 0;
+  padding-left: 1.9rem;
   line-height: 1.6;
 }
 
@@ -335,9 +340,38 @@ body {
   content: counter(ref, decimal-leading-zero);
   position: absolute;
   left: 0;
+  top: 0.1em;
   font-family: var(--font-mono);
   font-size: var(--fs-meta);
   color: var(--c-bag);
+}
+
+.scene__refs-code {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 700;
+  color: var(--c-gear);
+}
+
+/* 원문 인용 — 요약과 눈으로 구분되도록 괘선을 붙이고 살짝 눕힌다. */
+.scene__refs blockquote {
+  margin: 0;
+  padding-left: 0.875rem;
+  border-left: 2px solid var(--c-line);
+  font-style: italic;
+  text-wrap: pretty;
+  color: var(--c-label);
+}
+
+.scene__refs cite {
+  display: block;
+  margin-top: 0.45rem;
+  padding-left: 0.875rem;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: var(--fs-meta);
+  letter-spacing: 0.03em;
+  color: var(--c-muted);
 }
 
 .scene__refs-closing {
@@ -693,12 +727,10 @@ body {
 .scene__foot-main {
   flex: 1 1 24rem;
   min-width: 0;
-  max-width: 40em;
 }
 
 .reveal {
   margin-top: 1.25rem;
-  max-width: 44em;
   word-break: keep-all;
 }
 
@@ -741,18 +773,20 @@ body {
   margin-top: 1rem;
   padding-left: 1rem;
   border-left: 1px solid var(--c-gear);
+  /* 리드와 같은 두 단 구성 — 접었다 폈을 때 본문 폭이 달라지지 않게. */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(28rem, 1fr));
+  gap: 0.7rem clamp(2rem, 4vw, 4rem);
+  align-items: start;
 }
 
 .reveal__body p {
   text-wrap: balance;
-  margin: 0 0 0.7rem;
+  margin: 0;
+  max-width: 42em;
   font-size: 0.9375rem;
   line-height: 1.75;
   color: var(--c-label);
-}
-
-.reveal__body p:last-child {
-  margin-bottom: 0;
 }
 
 /* 마지막 문단이 ※ 로 시작하면 주의 문구로 취급 */
@@ -765,21 +799,25 @@ body {
    장면마다 앞 장면을 받아 잇는 문장으로 시작해 흐름이 끊기지 않게 한다.
    ========================================================================== */
 
+/* 한 줄이 너무 길면 한글은 읽는 눈이 되돌아올 자리를 잃는다.  그래서 폭을
+   늘리는 대신 단을 나눈다 — 데스크톱에서는 두 단으로 화면을 꽉 채우고,
+   좁아지면 자동으로 한 단으로 접힌다 (minmax 의 auto-fit).
+   문단 자체를 그리드 아이템으로 두어 문단 중간이 단을 넘어가지 않게 했다. */
 .scene__lead {
-  max-width: 42em;
   word-break: keep-all;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
+  gap: 0.6rem clamp(2rem, 4vw, 4rem);
+  align-items: start;
 }
 
 .scene__lead p {
-  margin: 0 0 0.6rem;
+  margin: 0;
+  max-width: 40em;
   font-size: clamp(1rem, 1.05vw, 1.125rem);
   line-height: 1.8;
   color: var(--c-label);
   text-wrap: balance;
-}
-
-.scene__lead p:last-child {
-  margin-bottom: 0;
 }
 
 .scene__lead b {

@@ -1,7 +1,7 @@
 /**
  * 섹션 등록 + ScrollTrigger 초기화.
  *
- * 8개 장면을 strings.js 로부터 생성하고, 일러스트가 완성된 장면은 인라인 SVG 를,
+ * 10개 장면을 strings.js 로부터 생성하고, 일러스트가 완성된 장면은 인라인 SVG 를,
  * 나머지는 자리표시자를 넣는다.  장면별 애니메이션(M3)은 각 scene 모듈이
  * `*Anim(root, gsap, ScrollTrigger)` 로 내보내고 여기서 붙인다.
  */
@@ -33,11 +33,12 @@ import { scene3Anim, scene3Svg } from './scenes/scene3-departures.js'
 import { sceneRunwayAnim, sceneRunwaySvg } from './scenes/scene-runway.js'
 import { sceneArrivalsAnim, sceneArrivalsSvg } from './scenes/scene-arrivals.js'
 import { sceneRecordsAnim, sceneRecordsSvg } from './scenes/scene-records.js'
+import { sceneSharedAnim, sceneSharedSvg } from './scenes/scene-shared.js'
 import { sceneOutroAnim, sceneOutroSvg } from './scenes/scene-outro.js'
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin)
 
-/** 8개 장면 전부 인라인 SVG. */
+/** 10개 장면 전부 인라인 SVG. */
 const STAGES = {
   intro: sceneIntroSvg,
   why: sceneWhySvg,
@@ -47,6 +48,7 @@ const STAGES = {
   runway: sceneRunwaySvg,
   arrivals: sceneArrivalsSvg,
   records: sceneRecordsSvg,
+  shared: sceneSharedSvg,
   outro: sceneOutroSvg,
 }
 
@@ -60,6 +62,7 @@ const ANIMS = {
   runway: sceneRunwayAnim,
   arrivals: sceneArrivalsAnim,
   records: sceneRecordsAnim,
+  shared: sceneSharedAnim,
   outro: sceneOutroAnim,
 }
 
@@ -69,17 +72,22 @@ const placeholder = (scene) => `
           <p class="placeholder__note">${glue(scene.placeholder)}</p>
         </div>`
 
-/** 설계 근거 카드 — '왜 검사대인가' 장면에만 붙는다. */
+/** 설계 근거 카드 — 원문 인용. '설계 근거' 장면에만 붙는다. */
 const refsMarkup = () => `
         <aside class="scene__refs">
           <span class="scene__refs-kicker">${guideline.kicker}</span>
           <span class="scene__refs-source">${glue(guideline.source)}</span>
           <span class="scene__refs-meta">${guideline.sourceMeta}</span>
+          <p class="scene__refs-note">${glue(guideline.quoteNote)}</p>
           <ol>
             ${guideline.items
               .map(
                 (item) =>
-                  `<li><b>${item.code}</b> ${glue(item.text)}</li>`,
+                  `<li>
+              <span class="scene__refs-code">${item.code}</span>
+              <blockquote>${glue(item.quote)}</blockquote>
+              <cite>${item.cite}</cite>
+            </li>`,
               )
               .join('\n            ')}
           </ol>
