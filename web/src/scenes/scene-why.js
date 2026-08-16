@@ -15,7 +15,7 @@
 
 import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
-import { campus, globe } from './_places.js'
+import { campus, globe, globeAnim } from './_places.js'
 import { sceneWhy as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 380, oy: 150, s: 0.92 })
@@ -211,6 +211,8 @@ export function sceneWhySvg() {
    ========================================================================== */
 
 export function sceneWhyAnim(root, gsap) {
+  globeAnim(root, gsap, 'sw-globe', 138)
+
   const tl = gsap.timeline({ repeat: -1, defaults: { ease: 'none' } })
   const q = (sel) => root.querySelector(sel)
 

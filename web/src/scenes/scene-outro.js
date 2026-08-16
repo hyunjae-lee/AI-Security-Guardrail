@@ -13,7 +13,7 @@
 
 import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
-import { campus, globe, HOME_FACE } from './_places.js'
+import { campus, globe, HOME_FACE, globeAnim } from './_places.js'
 import { sceneOutro as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 406, oy: 150, s: 1 })
@@ -165,6 +165,8 @@ export function sceneOutroSvg() {
    ========================================================================== */
 
 export function sceneOutroAnim(root, gsap) {
+  globeAnim(root, gsap, 'so-globe', 112)
+
   const tl = gsap.timeline({ repeat: -1, defaults: { ease: 'none' } })
 
   ;['so-bag-1', 'so-bag-2', 'so-bag-3'].forEach((id, i) => {

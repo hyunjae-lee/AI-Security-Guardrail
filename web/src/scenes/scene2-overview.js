@@ -16,7 +16,7 @@
 
 import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
-import { campus, globe, HOME_FACE } from './_places.js'
+import { campus, globe, HOME_FACE, globeAnim } from './_places.js'
 import { scene2 as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 406, oy: 130, s: 1 })
@@ -271,14 +271,14 @@ export function scene2Svg() {
       ${callout({
         n: '04',
         from: at(620, 20, 0),
-        to: [1140, 196],
+        to: [1096, 196],
         side: 'right',
         title: t.border,
       })}
       ${callout({
         n: '05',
-        from: at(833, 75, 224),
-        to: [1140, 320],
+        from: at(880, 200, 250),
+        to: [1096, 320],
         side: 'right',
         title: t.factory,
         sub: t.factorySub,
@@ -307,6 +307,8 @@ const BAG_ROUTES = [
 ]
 
 export function scene2Anim(root, gsap) {
+  globeAnim(root, gsap, 's2-globe', 150)
+
   const tl = gsap.timeline({ repeat: -1, defaults: { ease: 'none' } })
 
   BAG_ROUTES.forEach(([bagSel, pathSel], i) => {

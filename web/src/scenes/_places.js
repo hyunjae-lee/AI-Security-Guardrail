@@ -206,78 +206,145 @@ export function campus(iso, X, Y, W, D, { pond = true, detail = true } = {}) {
 
 /* ==========================================================================
    국경 밖 — 지구본
+   --------------------------------------------------------------------------
+   앞선 판은 평면 채색이라 '공' 이 아니라 와이어프레임 구체로 보였다. 진짜
+   지구본으로 읽히려면 네 가지가 필요하다:
+     1. 구면 음영 — 좌상단에서 빛이 오는 방사 그라디언트. 이게 없으면 원이다.
+     2. 기울어진 축 — 23.5° 기울기와 위아래 축 꼭지.
+     3. 자오선 고리 + 받침 — 책상 위 지구본의 그 형태.
+     4. 도는 대륙 — 구에 클립한 지도 띠를 가로로 굴린다. 대륙이 옆으로 흘러가면
+        회전으로 읽힌다 (경선 rx 를 흔드는 것보다 훨씬 자연스럽다).
    ========================================================================== */
 
-/**
- * 지구본.  평면 대륙 대신 구(球)로 두어 "지구 반대편" 을 형태로 말한다.
- * plan 은 지구본이 놓인 평면 위치, r 은 화면 반지름.
- */
-export function globe(iso, plan, r, { id = '', datacenter = true } = {}) {
-  const [cx, cyGround] = iso.at(...plan)
-  const cy = cyGround - r * 1.02 // 지면에 살짝 얹힌 것처럼
+const SEA_LIT = '#3a3450'
+const SEA_MID = '#2a2537'
+const SEA_DARK = '#14121c'
+const LANDMASS = '#4a4460'
+const RING = '#6b6070'
 
-  // 경선: 가운데로 갈수록 납작해지는 타원 여러 개
-  const meridians = [0.34, 0.68]
+/** 지도 띠 한 장 — 폭 2r 이 한 바퀴다. 대륙처럼 보이도록 굴곡을 준다. */
+const mapBand = (r) => {
+  const u = (n) => (n * r).toFixed(1)
+  return `
+        <path d="M ${u(0.05)} ${u(-0.62)}
+                 q ${u(0.34)} ${u(-0.2)} ${u(0.62)} ${u(0.02)}
+                 q ${u(0.22)} ${u(0.2)} ${u(0.02)} ${u(0.34)}
+                 q ${u(-0.34)} ${u(0.16)} ${u(-0.66)} ${u(-0.02)}
+                 q ${u(-0.16)} ${u(-0.16)} ${u(0.02)} ${u(-0.34)} Z"
+              fill="${LANDMASS}" />
+        <path d="M ${u(0.42)} ${u(-0.06)}
+                 q ${u(0.2)} ${u(-0.06)} ${u(0.26)} ${u(0.18)}
+                 q ${u(0.04)} ${u(0.3)} ${u(-0.12)} ${u(0.46)}
+                 q ${u(-0.18)} ${u(0.08)} ${u(-0.22)} ${u(-0.16)}
+                 q ${u(-0.04)} ${u(-0.28)} ${u(0.08)} ${u(-0.48)} Z"
+              fill="${LANDMASS}" />
+        <path d="M ${u(-0.72)} ${u(-0.28)}
+                 q ${u(0.2)} ${u(-0.12)} ${u(0.26)} ${u(0.1)}
+                 q ${u(0.02)} ${u(0.22)} ${u(-0.16)} ${u(0.28)}
+                 q ${u(-0.2)} ${u(0.02)} ${u(-0.2)} ${u(-0.18)}
+                 q ${u(0)} ${u(-0.14)} ${u(0.1)} ${u(-0.2)} Z"
+              fill="${LANDMASS}" />
+        <path d="M ${u(-0.5)} ${u(0.22)}
+                 q ${u(0.16)} ${u(0.02)} ${u(0.14)} ${u(0.24)}
+                 q ${u(-0.04)} ${u(0.22)} ${u(-0.2)} ${u(0.16)}
+                 q ${u(-0.12)} ${u(-0.08)} ${u(0.06)} ${u(-0.4)} Z"
+              fill="${LANDMASS}" />
+        <ellipse cx="${u(1.16)}" cy="${u(0.34)}" rx="${u(0.16)}" ry="${u(0.11)}" fill="${LANDMASS}" />
+        <ellipse cx="${u(1.5)}" cy="${u(-0.34)}" rx="${u(0.26)}" ry="${u(0.17)}" fill="${LANDMASS}" />
+        <ellipse cx="${u(1.72)}" cy="${u(0.16)}" rx="${u(0.18)}" ry="${u(0.13)}" fill="${LANDMASS}" />`
+}
+
+/** 대륙 위 서버 표시 — 외부 AI 가 세계 곳곳에 있다는 신호. 같이 돈다. */
+const servers = (r) =>
+  [
+    [0.3, -0.4],
+    [-0.42, -0.16],
+    [0.56, 0.26],
+    [1.42, -0.28],
+  ]
     .map(
-      (k) =>
-        `<ellipse cx="${cx}" cy="${cy}" rx="${(r * k).toFixed(1)}" ry="${r}"
-                  fill="none" stroke="var(--c-away-edge)" stroke-width="1" opacity="0.7" />`,
+      ([u, v]) =>
+        `<circle cx="${(u * r).toFixed(1)}" cy="${(v * r).toFixed(1)}" r="${(r * 0.032).toFixed(1)}"
+                 fill="#F0A63A" opacity="0.9" />`,
     )
     .join('')
 
-  // 위선: 위아래로 갈수록 짧아지는 가로 타원
-  const parallels = [-0.62, -0.3, 0, 0.3, 0.62]
-    .map((k) => {
-      const ry = r * 0.16
-      const rx = r * Math.sqrt(Math.max(0, 1 - k * k))
-      return `<ellipse cx="${cx}" cy="${(cy + r * k).toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}"
-                       fill="none" stroke="var(--c-away-edge)" stroke-width="1"
-                       opacity="${k === 0 ? 0.85 : 0.45}" />`
-    })
-    .join('')
-
-  // 대륙 — 알아볼 수 있는 지형이 아니라 덩어리로만 둔다.
-  const land = `
-        <path d="M ${cx - r * 0.62} ${cy - r * 0.3}
-                 q ${r * 0.24} ${-r * 0.22} ${r * 0.5} ${-r * 0.04}
-                 q ${r * 0.18} ${r * 0.12} ${r * 0.04} ${r * 0.3}
-                 q ${-r * 0.3} ${r * 0.16} ${-r * 0.58} ${-r * 0.04} Z"
-              fill="var(--c-away-top)" opacity="0.9" />
-        <path d="M ${cx - r * 0.1} ${cy + r * 0.18}
-                 q ${r * 0.3} ${-r * 0.14} ${r * 0.52} ${r * 0.08}
-                 q ${r * 0.06} ${r * 0.24} ${-r * 0.22} ${r * 0.32}
-                 q ${-r * 0.3} ${r * 0.02} ${-r * 0.34} ${-r * 0.4} Z"
-              fill="var(--c-away-top)" opacity="0.8" />
-        <path d="M ${cx - r * 0.74} ${cy + r * 0.32}
-                 q ${r * 0.2} ${-r * 0.06} ${r * 0.26} ${r * 0.16}
-                 q ${-r * 0.1} ${r * 0.16} ${-r * 0.3} ${r * 0.06} Z"
-              fill="var(--c-away-top)" opacity="0.7" />`
-
-  // 지구본 위에 얹힌 데이터센터 — 외부 AI 가 도는 자리
-  const dc = datacenter
-    ? `
-        <g transform="translate(${cx - r * 0.16} ${cy - r * 1.02})">
-          <rect x="-26" y="-16" width="52" height="18" rx="2" fill="var(--c-away-top)"
-                stroke="var(--c-away-edge)" stroke-width="1.25" />
-          <rect x="-18" y="-30" width="36" height="16" rx="2" fill="var(--c-away-l)"
-                stroke="var(--c-away-edge)" stroke-width="1.25" />
-          <path d="M -8 -30 v -12 M 8 -30 v -8" stroke="var(--c-away-edge)" stroke-width="1.5"
-                stroke-linecap="round" />
-          <circle cx="-8" cy="-44" r="2.6" fill="#F0A63A" opacity="0.85" />
-        </g>`
-    : ''
+/**
+ * 지구본.  plan 은 받침이 놓인 평면 위치, r 은 구의 화면 반지름.
+ * id 를 주면 `#{id}-spin` 그룹이 생기고, globeAnim() 이 그걸 굴린다.
+ */
+export function globe(iso, plan, r, { id = 'globe', datacenter = true } = {}) {
+  const [gx, gyGround] = iso.at(...plan)
+  const cy = gyGround - r * 1.42 // 받침 높이만큼 띄운다
+  const TILT = -23.5
 
   return `
-      <g${id ? ` id="${id}"` : ''} class="globe">
-        <!-- 궤도 — 전 세계 어디서나 같은 서비스라는 표시 -->
-        <ellipse cx="${cx}" cy="${cy}" rx="${(r * 1.28).toFixed(1)}" ry="${(r * 0.34).toFixed(1)}"
-                 fill="none" stroke="var(--c-away-edge)" stroke-width="1"
-                 stroke-dasharray="5 8" opacity="0.55" />
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--c-away-g-top)"
-                stroke="var(--c-away-edge)" stroke-width="1.5" />
-        ${land}
-        ${parallels}
-        ${meridians}
-        ${dc}
+      <g id="${id}" class="globe" transform="translate(${gx} ${cy})">
+        <defs>
+          <radialGradient id="${id}-sea" cx="34%" cy="28%" r="76%">
+            <stop offset="0%" stop-color="${SEA_LIT}" />
+            <stop offset="52%" stop-color="${SEA_MID}" />
+            <stop offset="100%" stop-color="${SEA_DARK}" />
+          </radialGradient>
+          <clipPath id="${id}-clip">
+            <circle cx="0" cy="0" r="${r}" />
+          </clipPath>
+        </defs>
+
+        <!-- 받침 -->
+        <ellipse cx="0" cy="${(r * 1.42).toFixed(1)}" rx="${(r * 0.46).toFixed(1)}"
+                 ry="${(r * 0.14).toFixed(1)}" fill="var(--c-away-l)"
+                 stroke="${RING}" stroke-width="1.25" />
+        <rect x="${(-r * 0.05).toFixed(1)}" y="${(r * 1.02).toFixed(1)}"
+              width="${(r * 0.1).toFixed(1)}" height="${(r * 0.4).toFixed(1)}"
+              fill="var(--c-away-top)" stroke="${RING}" stroke-width="1" />
+
+        <g transform="rotate(${TILT})">
+          <!-- 자오선 고리 (구 뒤쪽 절반) -->
+          <path d="M 0 ${(-r * 1.14).toFixed(1)} A ${(r * 1.14).toFixed(1)} ${(r * 1.14).toFixed(1)} 0 0 0 0 ${(r * 1.14).toFixed(1)}"
+                fill="none" stroke="${RING}" stroke-width="2.5" opacity="0.55" />
+
+          <!-- 바다 (구면 음영) -->
+          <circle cx="0" cy="0" r="${r}" fill="url(#${id}-sea)" />
+
+          <!-- 도는 지도 띠 — 한 바퀴(2r)를 두 장 이어 붙여 끊김 없이 흐르게 한다 -->
+          <g clip-path="url(#${id}-clip)">
+            <g id="${id}-spin" opacity="0.92">
+              <g transform="translate(${(-r).toFixed(1)} 0)">${mapBand(r)}${datacenter ? servers(r) : ''}</g>
+              <g transform="translate(${r.toFixed(1)} 0)">${mapBand(r)}${datacenter ? servers(r) : ''}</g>
+            </g>
+          </g>
+
+          <!-- 위선 — 극으로 갈수록 짧아진다 -->
+          <g clip-path="url(#${id}-clip)" opacity="0.35">
+            ${[-0.66, -0.34, 0, 0.34, 0.66]
+              .map((k) => {
+                const rx = r * Math.sqrt(Math.max(0, 1 - k * k))
+                return `<ellipse cx="0" cy="${(r * k).toFixed(1)}" rx="${rx.toFixed(1)}"
+                                 ry="${(r * 0.13).toFixed(1)}" fill="none"
+                                 stroke="${RING}" stroke-width="1" />`
+              })
+              .join('')}
+          </g>
+
+          <!-- 가장자리 테와 앞쪽 고리 -->
+          <circle cx="0" cy="0" r="${r}" fill="none" stroke="${RING}" stroke-width="1.25" opacity="0.7" />
+          <path d="M 0 ${(-r * 1.14).toFixed(1)} A ${(r * 1.14).toFixed(1)} ${(r * 1.14).toFixed(1)} 0 0 1 0 ${(r * 1.14).toFixed(1)}"
+                fill="none" stroke="${RING}" stroke-width="2.5" />
+          <!-- 축 꼭지 -->
+          <circle cx="0" cy="${(-r * 1.14).toFixed(1)}" r="${(r * 0.045).toFixed(1)}" fill="${RING}" />
+          <circle cx="0" cy="${(r * 1.14).toFixed(1)}" r="${(r * 0.045).toFixed(1)}" fill="${RING}" />
+        </g>
       </g>`
+}
+
+/** 지구본 회전 — 지도 띠를 한 바퀴(2r)만큼 흘리고 되돌린다. */
+export function globeAnim(root, gsap, id, r, duration = 26) {
+  const el = root.querySelector(`#${id}-spin`)
+  if (!el) return
+  gsap.fromTo(
+    el,
+    { x: 0 },
+    { x: -2 * r, duration, ease: 'none', repeat: -1 },
+  )
 }

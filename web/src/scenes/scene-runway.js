@@ -13,7 +13,7 @@
 
 import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
-import { globe } from './_places.js'
+import { globe, globeAnim } from './_places.js'
 import { sceneRunway as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 330, oy: 130, s: 1 })
@@ -222,6 +222,8 @@ export function sceneRunwaySvg() {
    ========================================================================== */
 
 export function sceneRunwayAnim(root, gsap) {
+  globeAnim(root, gsap, 'sr-globe', 116)
+
   const fly = (sel, pathSel, delay, dur) => {
     const el = root.querySelector(sel)
     const path = root.querySelector(pathSel)
