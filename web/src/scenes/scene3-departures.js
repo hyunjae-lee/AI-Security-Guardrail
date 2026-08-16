@@ -12,7 +12,8 @@
  *   #s3-belt-teeth            벨트 무늬 (흐름)
  *   #s3-beam                  X-ray 스캔 빔
  *   #s3-screen-sweep          판독 화면 주사선
- *   #s3-xray-idcard / #s3-xray-note   화면에 비친 내용물
+ *   #s3-xray-idcard / #s3-xray-note / #s3-xray-clean   화면에 비친 내용물
+ *   #s3-sample-allow|mask|block|override   가방마다 다른 입력 원문
  *   #s3-path-allow|mask|block 게이트 3갈래 벨트
  *   #s3-lamp-allow|mask|block 게이트 표시등
  *   #s3-path-override / #s3-override-outlet  즉시 거부 우회로
@@ -234,42 +235,93 @@ const figure = (plan) => {
 /* ---------------------------------------------------------- 판독 화면
 
    왼쪽은 가방 투시, 오른쪽은 실제로 들어온 입력 원문.  비유(가방)와 실물
-   (프롬프트)을 한 화면에 나란히 두어야 X-ray 가 무엇을 보는 것인지 연결된다. */
+   (프롬프트)을 한 화면에 나란히 두어야 X-ray 가 무엇을 보는 것인지 연결된다.
+
+   컨베이어 위 가방 네 개는 서로 다른 질의다.  그래서 네 벌의 원문을 같은
+   자리에 겹쳐 두고, 스캐너에 들어온 가방의 것만 켠다 (#s3-sample-<판정>).
+   판정 칩과 투시 아이콘도 같이 갈아 끼운다 — 한 화면에서 네 판정이 왜
+   갈리는지 보이게 하는 것이 이 장면의 목적이다. */
 
 const PX = 400 // 패널 좌측
-const PW = 530
+const PW = 580
 const PY = 16
 const PH = 212
 const DIV = PX + 226 // 두 칸을 가르는 세로선
+/** 오른쪽 칸(입력 원문)이 쓸 수 있는 폭 — 카피를 여기 맞춰 줄 나눈다. */
+export const SAMPLE_W = PX + PW - 16 - (DIV + 18)
 
 const SFS = 15
-const isWideCh = (c) => /[^\x00-\x7F]/.test(c)
-const runW = (str, f) => [...str].reduce((a, c) => a + f * (isWideCh(c) ? 1 : 0.55), 0)
-const TONE3 = { hot: '#E25749', warm: '#F0A63A' }
 
-const sampleLines = t.screenSample
-  .map((segs, li) => {
-    let x = DIV + 18
-    const y = PY + 88 + li * 28
-    const out = []
-    for (const [text, kind] of segs) {
-      const w = runW(text, SFS)
-      const color = TONE3[kind]
-      if (kind) {
-        out.push(
-          `<rect x="${(x - 3).toFixed(1)}" y="${y - SFS + 1}" width="${(w + 6).toFixed(1)}"
-                 height="${SFS + 7}" rx="2" fill="${color}" opacity="0.16" />`,
-        )
+/* 하이라이트 상자를 글자 위에 얹으려면 각 조각의 폭을 알아야 하는데, SVG 는
+   레이아웃을 알려 주지 않으므로 폰트 어드밴스를 직접 잰다.  Noto Sans KR 기준
+   대략치 — 전부 0.55em 으로 잡으면 공백·쉼표가 과대평가되어 조각 사이가
+   눈에 띄게 벌어진다 (그게 예전 판독 화면의 틈이었다). */
+const advance = (c) => {
+  if (/[가-힣ㄱ-ㅎㅏ-ㅣ一-鿿]/.test(c)) return 1.0
+  if (c === ' ') return 0.26
+  if (/[,.·:;'"]/.test(c)) return 0.28
+  if (/[-–—/|]/.test(c)) return 0.36
+  if (/[()[\]{}]/.test(c)) return 0.33
+  if (/[ilj!.]/.test(c)) return 0.3
+  return 0.56
+}
+const runW = (str, f) => [...str].reduce((a, c) => a + f * advance(c), 0)
+const TONE3 = { hot: '#E25749', warm: '#F0A63A' }
+const CHIP = { ok: '#7FBF57', warm: '#F0A63A', hot: '#E25749' }
+
+/** 기본으로 켜 두는 판정 — 애니메이션이 없을 때(정지·reduced-motion) 보이는 화면. */
+const DEFAULT_KEY = 'mask'
+
+/** 라벨 칸과 값 칸의 고정 x — 값이 항상 같은 세로줄에서 시작해 눈이 따라가기 쉽다. */
+const COL_LABEL = DIV + 18
+const COL_VALUE_OFF = 130
+export const COL_VALUE_OFFSET = COL_VALUE_OFF
+const COL_VALUE = DIV + COL_VALUE_OFF
+
+/** 강조 배경 — 글자 시작점은 고정이고 오른쪽 끝만 추정하므로 어긋나도 티가 안 난다. */
+const mark = (x, y, text, color) =>
+  `<rect x="${(x - 4).toFixed(1)}" y="${y - SFS + 1}" width="${(runW(text, SFS) + 8).toFixed(1)}"
+                 height="${SFS + 7}" rx="2" fill="${color}" opacity="0.16" />`
+
+const sampleBlock = (key, s) => {
+  const lines = s.lines
+    .map((ln, li) => {
+      const y = PY + 88 + li * 28
+      const color = TONE3[ln.kind]
+      if (ln.label !== undefined) {
+        return `
+          <text x="${COL_LABEL}" y="${y}" style="font-size:${SFS}px;fill:#9C9B93">${ln.label}</text>
+          ${color ? mark(COL_VALUE, y, ln.value, color) : ''}
+          <text x="${COL_VALUE}" y="${y}" style="font-size:${SFS}px;fill:${
+            color || '#ECEAE3'
+          }" font-weight="700">${ln.value}</text>`
       }
-      out.push(
-        `<text x="${x.toFixed(1)}" y="${y}" style="font-size:${SFS}px;fill:${color || '#ECEAE3'}"${
-          kind ? ' font-weight="700"' : ''
-        }>${text}</text>`,
-      )
-      x += w
-    }
-    return out.join('')
-  })
+      return `
+          ${color ? mark(COL_LABEL, y, ln.text, color) : ''}
+          <text x="${COL_LABEL}" y="${y}" style="font-size:${SFS}px;fill:${
+            color || '#ECEAE3'
+          }"${ln.kind ? ' font-weight="700"' : ''}>${ln.text}</text>`
+    })
+    .join('')
+
+  const tone = CHIP[s.tone]
+  const chipW = runW(s.verdict, 13) + 30
+  return `
+        <g id="s3-sample-${key}"${key === DEFAULT_KEY ? '' : ' opacity="0"'}>
+          <text x="${PX + PW - 16}" y="${PY + 60}" text-anchor="end"
+                style="font-size:12px;fill:#5A5F6B" letter-spacing="1">${
+                  t.screenRoleLabel
+                } · ${s.role}</text>
+          ${lines}
+          <rect x="${DIV + 16}" y="${PY + 168}" width="${chipW.toFixed(1)}" height="26" rx="13"
+                fill="none" stroke="${tone}" stroke-width="1.25" opacity="0.8" />
+          <text x="${DIV + 31}" y="${PY + 186}"
+                style="font-size:13px;fill:${tone}">${s.verdict}</text>
+        </g>`
+}
+
+const samples = Object.entries(t.screenSamples)
+  .map(([k, s]) => sampleBlock(k, s))
   .join('')
 
 const screen = `
@@ -298,25 +350,25 @@ const screen = `
           <circle cx="${PX + 53}" cy="${PY + 106}" r="6.5" fill="none" stroke="#F0A63A" stroke-width="1.5" />
           <path d="M ${PX + 66} ${PY + 101} H ${PX + 84} M ${PX + 66} ${PY + 112} H ${PX + 80}"
                 stroke="#F0A63A" stroke-width="1.5" />
+          <text x="${PX + 64}" y="${PY + 152}" text-anchor="middle"
+                style="font-size:13px;fill:#F0A63A">${t.screenIdCard}</text>
         </g>
         <g id="s3-xray-note">
           <path d="M ${PX + 112} ${PY + 90} L ${PX + 150} ${PY + 84} L ${PX + 157} ${PY + 126} L ${PX + 119} ${PY + 132} Z"
                 fill="none" stroke="#E25749" stroke-width="1.75" />
           <path d="M ${PX + 121} ${PY + 101} H ${PX + 146} M ${PX + 121} ${PY + 112} H ${PX + 142}"
                 stroke="#E25749" stroke-width="1.5" />
+          <text x="${PX + 142}" y="${PY + 152}" text-anchor="middle"
+                style="font-size:13px;fill:#E25749">${t.screenNote}</text>
         </g>
-        <text x="${PX + 64}" y="${PY + 152}" text-anchor="middle"
-              style="font-size:13px;fill:#F0A63A">${t.screenIdCard}</text>
-        <text x="${PX + 142}" y="${PY + 152}" text-anchor="middle"
-              style="font-size:13px;fill:#E25749">${t.screenNote}</text>
+        <!-- 아무것도 안 걸린 가방 — 투시 아이콘이 하나도 없을 때 이 자리를 채운다. -->
+        <text id="s3-xray-clean" x="${PX + 112}" y="${PY + 126}" text-anchor="middle" opacity="0"
+              style="font-size:14px;fill:#7FBF57">${t.screenClean}</text>
 
-        <!-- 오른쪽: 실제로 들어온 입력 -->
+        <!-- 오른쪽: 실제로 들어온 입력 (가방마다 다르다) -->
         <text x="${DIV + 18}" y="${PY + 60}" style="font-size:12px;fill:#5A5F6B"
               letter-spacing="1">${t.screenTextLabel}</text>
-        ${sampleLines}
-        <rect x="${DIV + 16}" y="${PY + 168}" width="246" height="26" rx="13"
-              fill="none" stroke="#F0A63A" stroke-width="1.25" opacity="0.8" />
-        <text x="${DIV + 30}" y="${PY + 186}" style="font-size:13px;fill:#F0A63A">${t.screenVerdict}</text>
+        ${samples}
       </g>`
 
 /* ------------------------------------------------------------------ 조립 */
@@ -431,7 +483,11 @@ const LANE_END = {
   block: [856, 218, BELT_Z],
 }
 
-/** 대기열: [id, 최초 평면위치, 판정] — 앞의 가방이 빠지면 한 칸씩 당긴다. */
+/** 판독 화면에 겹쳐 둔 원문 네 벌의 키 — 스캔할 때마다 하나만 켠다. */
+const SAMPLE_KEYS = Object.keys(t.screenSamples)
+
+/** 대기열: [id, 최초 평면위치, 판정] — 앞의 가방이 빠지면 한 칸씩 당긴다.
+ *  판정 키가 곧 그 가방의 입력 원문 키다 (t.screenSamples). */
 const QUEUE = [
   ['s3-bag-4', [380, 140, BELT_Z], 'allow'],
   ['s3-bag-3', [260, 140, BELT_Z], 'mask'],
@@ -468,9 +524,17 @@ export function scene3Anim(root, gsap, ScrollTrigger) {
   const beam = q('#s3-beam')
   const beamSweep = delta([320, 140, 0], [450, 140, 0])
 
-  /** 스캔 1회: 빔이 가방을 훑고, 판독 화면에 내용물이 뜬다. */
-  const scan = (t0, { idcard = false, note = false }) => {
-    tl.fromTo(beam, { opacity: 0, x: 0, y: 0 }, { opacity: 1, duration: 0.15 }, t0)
+  /**
+   * 스캔 1회: 빔이 가방을 훑고, 판독 화면이 **그 가방의 입력 원문**으로 바뀐다.
+   * 원문은 빔이 지나가기 전에 미리 갈아 끼우고(무엇을 스캔하는지 먼저 보여야
+   * 한다), 투시 아이콘은 빔이 지나간 뒤에 뜬다(스캔 결과이므로).
+   */
+  const scan = (t0, verdict) => {
+    const s = t.screenSamples[verdict] || {}
+    const xray = s.xray || []
+    tl.set(SAMPLE_KEYS.map((k) => q(`#s3-sample-${k}`)).filter(Boolean), { opacity: 0 }, t0)
+      .set(q(`#s3-sample-${verdict}`), { opacity: 1 }, t0)
+      .fromTo(beam, { opacity: 0, x: 0, y: 0 }, { opacity: 1, duration: 0.15 }, t0)
       .to(beam, { x: beamSweep.x, y: beamSweep.y, duration: 0.7 }, t0)
       .to(beam, { opacity: 0, duration: 0.15 }, t0 + 0.7)
       .fromTo(
@@ -479,10 +543,16 @@ export function scene3Anim(root, gsap, ScrollTrigger) {
         { attr: { y: 180 }, duration: 0.7 },
         t0,
       )
-    if (idcard) tl.to(q('#s3-xray-idcard'), { opacity: 1, duration: 0.25 }, t0 + 0.35)
-    if (note) tl.to(q('#s3-xray-note'), { opacity: 1, duration: 0.25 }, t0 + 0.45)
-    // 다음 가방을 위해 판독 결과를 비운다.
-    tl.to([q('#s3-xray-idcard'), q('#s3-xray-note')], { opacity: 0, duration: 0.2 }, t0 + 1.55)
+    if (xray.includes('idcard')) tl.to(q('#s3-xray-idcard'), { opacity: 1, duration: 0.25 }, t0 + 0.35)
+    if (xray.includes('note')) tl.to(q('#s3-xray-note'), { opacity: 1, duration: 0.25 }, t0 + 0.45)
+    // 아무것도 안 걸린 가방도 '스캔했지만 깨끗하다' 를 보여 줘야 한다.
+    if (!xray.length) tl.to(q('#s3-xray-clean'), { opacity: 1, duration: 0.25 }, t0 + 0.45)
+    // 다음 가방을 위해 투시 결과만 비운다 (원문은 다음 스캔에서 갈아 끼운다).
+    tl.to(
+      [q('#s3-xray-idcard'), q('#s3-xray-note'), q('#s3-xray-clean')],
+      { opacity: 0, duration: 0.2 },
+      t0 + 1.55,
+    )
   }
 
   /** 판정 후 분기점을 거쳐 해당 레인 끝까지 보낸다. */
@@ -500,8 +570,7 @@ export function scene3Anim(root, gsap, ScrollTrigger) {
 
   QUEUE.forEach(([id, origin, verdict], i) => {
     const t0 = i * 2 // 가방 하나당 두 박자: 스캔 → 판정
-    const scanned = { idcard: verdict !== 'allow', note: verdict === 'block' || verdict === 'override' }
-    scan(t0, scanned)
+    scan(t0, verdict)
 
     if (verdict === 'override') {
       // 판정 게이트를 아예 건너뛴다. 전용 가방으로 갈아타 경로를 태운다.
