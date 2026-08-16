@@ -13,11 +13,13 @@ import MotionPathPlugin from 'gsap/MotionPathPlugin'
 
 import {
   guideline,
+  legend,
   placeholderKicker,
   revealLabel,
   reveals,
   scenes,
   site,
+  summary,
 } from './content/strings.js'
 import { sceneIntroAnim, sceneIntroSvg } from './scenes/scene-intro.js'
 import { sceneWhyAnim, sceneWhySvg } from './scenes/scene-why.js'
@@ -90,6 +92,38 @@ const revealMarkup = (scene) => {
         </details>`
 }
 
+/** 비유 대조표 — 그림을 읽는 열쇠. 조감도에만 붙는다. */
+const legendMarkup = () => `
+        <aside class="legend">
+          <span class="legend__kicker">${legend.kicker}</span>
+          <p class="legend__title">${legend.title}</p>
+          <table class="legend__table">
+            <thead>
+              <tr><th>${legend.cols[0]}</th><th>${legend.cols[1]}</th></tr>
+            </thead>
+            <tbody>
+              ${legend.rows
+                .map(([real, meta]) => `<tr><td>${real}</td><td>${meta}</td></tr>`)
+                .join('\n              ')}
+            </tbody>
+          </table>
+          <p class="legend__note">${legend.note}</p>
+        </aside>`
+
+/** 발표 마무리 세 줄 정리 — 아웃트로에만 붙는다. */
+const summaryMarkup = () => `
+        <aside class="summary">
+          <span class="summary__kicker">${summary.kicker}</span>
+          <ol class="summary__list">
+            ${summary.points
+              .map(
+                (p) =>
+                  `<li><b>${p.head}</b><span>${p.body}</span></li>`,
+              )
+              .join('\n            ')}
+          </ol>
+        </aside>`
+
 const sceneMarkup = (scene) => `
   <section class="scene" id="${scene.id}" aria-labelledby="${scene.id}-title">
     <div class="scene__inner">
@@ -99,7 +133,14 @@ const sceneMarkup = (scene) => `
           <span class="scene__eyebrow-rule"></span>
           <span>${scene.label}</span>
         </p>
-        <h2 class="scene__title" id="${scene.id}-title">${scene.title.replace(/\n/g, '<br>')}</h2>
+        <h2 class="scene__title" id="${scene.id}-title">${scene.title.replace(/\n/g, '<br>')}</h2>${
+          scene.lead
+            ? `
+        <div class="scene__lead">
+          ${scene.lead.map((para) => `<p>${para}</p>`).join('\n          ')}
+        </div>`
+            : ''
+        }
       </header>
       <div class="scene__stage">${
         STAGES[scene.id] ? STAGES[scene.id]() : placeholder(scene)
@@ -108,6 +149,8 @@ const sceneMarkup = (scene) => `
         <div class="scene__foot-main">
           <p class="scene__caption">${scene.caption}</p>${revealMarkup(scene)}
         </div>${scene.id === 'why' ? refsMarkup() : ''}${
+          scene.id === 'overview' ? legendMarkup() : ''
+        }${scene.id === 'outro' ? summaryMarkup() : ''}${
           scene.cta
             ? `
         <a class="scene__cta" href="${scene.cta.href}" target="_blank" rel="noopener">${scene.cta.label}</a>`
@@ -193,7 +236,7 @@ function setupReveals() {
   scenes.forEach((scene) => {
     const section = document.querySelector(`#${scene.id}`)
     const targets = section.querySelectorAll(
-      '.scene__eyebrow, .scene__title, .scene__stage, .scene__caption, .reveal, .scene__refs, .scene__cta',
+      '.scene__eyebrow, .scene__title, .scene__lead, .scene__stage, .scene__caption, .reveal, .scene__refs, .legend, .summary, .scene__cta',
     )
 
     gsap.from(targets, {

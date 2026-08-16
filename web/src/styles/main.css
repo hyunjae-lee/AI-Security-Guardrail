@@ -268,8 +268,10 @@ body {
 
 /* 설계 근거 카드 — 도면의 표제란처럼 얇은 괘선으로 묶는다. */
 .scene__refs {
-  /* 폭이 모자라면 옆이 아니라 아래로 내려가게 (밀려나 잘리는 것보다 낫다) */
-  flex: 1 1 22rem;
+  /* 폭이 모자라면 옆이 아니라 아래로 내려가게 (밀려나 잘리는 것보다 낫다).
+     캡션보다 grow 를 크게 줘야 표·목록이 눌리지 않는다. */
+  flex: 2 1 26rem;
+  min-width: 0;
   word-break: keep-all;
   max-width: 44ch;
   border-left: 1px solid var(--c-line);
@@ -657,9 +659,9 @@ body {
    ========================================================================== */
 
 .scene__foot-main {
-  flex: 1 1 32rem;
+  flex: 1 1 24rem;
   min-width: 0;
-  max-width: 74ch;
+  max-width: 58ch;
 }
 
 .reveal {
@@ -723,4 +725,159 @@ body {
 /* 마지막 문단이 ※ 로 시작하면 주의 문구로 취급 */
 .reveal__body p:last-child:first-letter {
   font-weight: inherit;
+}
+
+/* ==========================================================================
+   리드 문단 — 제목과 그림 사이의 도입부.
+   장면마다 앞 장면을 받아 잇는 문장으로 시작해 흐름이 끊기지 않게 한다.
+   ========================================================================== */
+
+.scene__lead {
+  max-width: 64ch;
+  word-break: keep-all;
+}
+
+.scene__lead p {
+  margin: 0 0 0.6rem;
+  font-size: clamp(1rem, 1.05vw, 1.125rem);
+  line-height: 1.8;
+  color: var(--c-label);
+  text-wrap: pretty;
+}
+
+.scene__lead p:last-child {
+  margin-bottom: 0;
+}
+
+.scene__lead b {
+  color: var(--c-text);
+  font-weight: 700;
+  border-bottom: 1px solid var(--c-bag);
+  padding-bottom: 1px;
+}
+
+/* ==========================================================================
+   비유 대조표 (범례) — 그림을 읽는 열쇠
+   ========================================================================== */
+
+.legend {
+  flex: 2 1 28rem;
+  min-width: 0;
+  max-width: 42rem;
+  word-break: keep-all;
+  border-left: 1px solid var(--c-line);
+  padding-left: clamp(1rem, 2vw, 1.75rem);
+}
+
+.legend__kicker,
+.summary__kicker {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
+  text-transform: uppercase;
+  color: var(--c-bag);
+}
+
+.legend__title {
+  margin: 0.4rem 0 0.9rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.legend__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.legend__table th {
+  text-align: left;
+  padding: 0 0 0.45rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--c-muted);
+  border-bottom: 1px solid var(--c-line);
+}
+
+.legend__table td {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--c-hair);
+  color: var(--c-muted);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.legend__table td:first-child {
+  width: 46%;
+  padding-right: 1.25rem;
+}
+
+/* 오른쪽이 비유어 — 이쪽이 그림에서 보게 될 말이다. */
+.legend__table td:last-child {
+  color: var(--c-bag);
+}
+
+.legend__table tr:last-child td {
+  border-bottom: 0;
+}
+
+.legend__note {
+  margin: 0.75rem 0 0;
+  font-size: var(--fs-meta);
+  color: var(--c-muted);
+}
+
+/* ==========================================================================
+   마무리 정리
+   ========================================================================== */
+
+.summary {
+  flex: 2 1 28rem;
+  min-width: 0;
+  max-width: 44rem;
+  word-break: keep-all;
+  border-left: 1px solid var(--c-gear);
+  padding-left: clamp(1rem, 2vw, 1.75rem);
+}
+
+.summary__list {
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: sum;
+}
+
+.summary__list li {
+  counter-increment: sum;
+  position: relative;
+  padding-left: 2rem;
+  margin-top: 0.9rem;
+}
+
+.summary__list li::before {
+  content: counter(sum, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.1rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--c-gear);
+}
+
+.summary__list b {
+  display: block;
+  font-size: 1rem;
+  color: var(--c-text);
+}
+
+.summary__list span {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--c-muted);
 }
