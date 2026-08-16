@@ -27,11 +27,40 @@ export const HOME_FACE = {
   r: 'home-r',
   cls: 'home-edge',
 }
+export const GATE_FACE = {
+  top: 'gate-top',
+  l: 'gate-l',
+  r: 'gate-r',
+  cls: 'gate-edge',
+}
 export const AWAY_FACE = {
   top: 'away-top',
   l: 'away-l',
   r: 'away-r',
   cls: 'away-edge',
+}
+
+/**
+ * 검사장 후광 — 지면에 깔리는 청록 빛과 그 둘레의 점선 고리.
+ * "여기 하나뿐" 을 형태가 아니라 빛으로 한 번 더 말한다. 필터는 쓰지 않는다.
+ */
+export function gateGlow(iso, plan, r, { id = 'gate-glow' } = {}) {
+  const [gx, gy] = iso.at(...plan)
+  return `
+      <g class="gate-glow">
+        <defs>
+          <radialGradient id="${id}-g">
+            <stop offset="0%" stop-color="#43bc9c" stop-opacity="0.28" />
+            <stop offset="60%" stop-color="#43bc9c" stop-opacity="0.1" />
+            <stop offset="100%" stop-color="#43bc9c" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <ellipse cx="${gx}" cy="${gy}" rx="${r.toFixed(1)}" ry="${(r * 0.52).toFixed(1)}"
+                 fill="url(#${id}-g)" />
+        <ellipse id="${id}-ring" cx="${gx}" cy="${gy}" rx="${(r * 0.76).toFixed(1)}"
+                 ry="${(r * 0.4).toFixed(1)}" fill="none" stroke="#43bc9c"
+                 stroke-width="1.25" stroke-dasharray="7 9" opacity="0.5" />
+      </g>`
 }
 
 /* ==========================================================================

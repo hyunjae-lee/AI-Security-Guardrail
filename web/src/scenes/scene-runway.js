@@ -162,7 +162,7 @@ export function sceneRunwaySvg() {
           [196, 214, 24],
         ],
         'route',
-        'id="sr-arc-in" stroke="#43BC9C" opacity="0.45"',
+        'id="sr-arc-in" style="stroke:#43BC9C" opacity="0.45"',
       )}
 
       ${outland}

@@ -180,18 +180,18 @@ const gates = `
 
 /* ------------------------------------------- 즉시 거부 (전략물자·위조 여권) */
 
-const [outX, outY] = at(830, 24, 206)
+const [outX, outY] = at(884, 278, 20)
 
 const override = `
       <g id="s3-override">
         ${curve(
           [
-            [470, 140, 44],
-            [620, 96, 250],
-            [800, 30, 214],
+            [470, 196, 26],
+            [624, 272, 40],
+            [812, 276, 22],
           ],
           'route',
-          'id="s3-path-override" stroke="#E25749" stroke-dasharray="9 7" opacity="0.95"',
+          'id="s3-path-override" style="stroke:#E25749;stroke-dasharray:9 7" opacity="0.95"',
         )}
         <g id="s3-override-outlet" transform="translate(${outX} ${outY})">
           <rect x="-34" y="-26" width="68" height="52" rx="3"
@@ -231,35 +231,92 @@ const figure = (plan) => {
       </g>`
 }
 
-/* ---------------------------------------------------------- 판독 화면 */
+/* ---------------------------------------------------------- 판독 화면
+
+   왼쪽은 가방 투시, 오른쪽은 실제로 들어온 입력 원문.  비유(가방)와 실물
+   (프롬프트)을 한 화면에 나란히 두어야 X-ray 가 무엇을 보는 것인지 연결된다. */
+
+const PX = 400 // 패널 좌측
+const PW = 530
+const PY = 16
+const PH = 212
+const DIV = PX + 226 // 두 칸을 가르는 세로선
+
+const SFS = 15
+const isWideCh = (c) => /[^\x00-\x7F]/.test(c)
+const runW = (str, f) => [...str].reduce((a, c) => a + f * (isWideCh(c) ? 1 : 0.55), 0)
+const TONE3 = { hot: '#E25749', warm: '#F0A63A' }
+
+const sampleLines = t.screenSample
+  .map((segs, li) => {
+    let x = DIV + 18
+    const y = PY + 88 + li * 28
+    const out = []
+    for (const [text, kind] of segs) {
+      const w = runW(text, SFS)
+      const color = TONE3[kind]
+      if (kind) {
+        out.push(
+          `<rect x="${(x - 3).toFixed(1)}" y="${y - SFS + 1}" width="${(w + 6).toFixed(1)}"
+                 height="${SFS + 7}" rx="2" fill="${color}" opacity="0.16" />`,
+        )
+      }
+      out.push(
+        `<text x="${x.toFixed(1)}" y="${y}" style="font-size:${SFS}px;fill:${color || '#ECEAE3'}"${
+          kind ? ' font-weight="700"' : ''
+        }>${text}</text>`,
+      )
+      x += w
+    }
+    return out.join('')
+  })
+  .join('')
 
 const screen = `
       <g id="s3-screen">
-        <path class="co-leader" d="M 604 186 L 581 238" />
-        <rect x="590" y="26" width="240" height="160" rx="3"
+        <path class="co-leader" d="M ${PX + 180} ${PY + PH} L 581 238" />
+        <rect x="${PX}" y="${PY}" width="${PW}" height="${PH}" rx="4"
               fill="#0f1116" stroke="#43BC9C" stroke-width="1.75" />
-        <path d="M 590 52 H 830" stroke="#43BC9C" stroke-width="1" opacity="0.6" />
-        <text class="co-sub" x="604" y="45" letter-spacing="2" style="fill:#43BC9C">${t.screen}</text>
-        <rect id="s3-screen-sweep" x="590" y="60" width="240" height="2"
+        <path d="M ${PX} ${PY + 34} H ${PX + PW}" stroke="#43BC9C" stroke-width="1" opacity="0.6" />
+        <text x="${PX + 16}" y="${PY + 24}" class="co-sub" letter-spacing="2">${t.screen}</text>
+        <circle cx="${PX + PW - 22}" cy="${PY + 17}" r="4" fill="#43BC9C" opacity="0.9" />
+        <rect id="s3-screen-sweep" x="${PX}" y="${PY + 40}" width="${PW}" height="2"
               fill="#43BC9C" opacity="0.45" />
-        <!-- 가방 투시 -->
-        <rect x="620" y="76" width="146" height="82" rx="10"
+        <path d="M ${DIV} ${PY + 42} V ${PY + PH - 12}" stroke="#43BC9C"
+              stroke-width="1" opacity="0.3" />
+
+        <!-- 왼쪽: 가방 투시 -->
+        <text x="${PX + 16}" y="${PY + 60}" style="font-size:12px;fill:#5A5F6B"
+              letter-spacing="1">${t.screenXrayLabel}</text>
+        <rect x="${PX + 22}" y="${PY + 72}" width="180" height="94" rx="10"
               fill="none" stroke="#43BC9C" stroke-width="1.5" opacity="0.5" />
-        <path d="M 672 76 C 672 64 714 64 714 76" fill="none"
-              stroke="#43BC9C" stroke-width="1.5" opacity="0.5" />
+        <path d="M ${PX + 90} ${PY + 72} C ${PX + 90} ${PY + 60} ${PX + 134} ${PY + 60} ${PX + 134} ${PY + 72}"
+              fill="none" stroke="#43BC9C" stroke-width="1.5" opacity="0.5" />
         <g id="s3-xray-idcard">
-          <rect x="634" y="94" width="46" height="31" rx="2"
+          <rect x="${PX + 38}" y="${PY + 92}" width="52" height="34" rx="2"
                 fill="none" stroke="#F0A63A" stroke-width="1.75" />
-          <circle cx="647" cy="106" r="6" fill="none" stroke="#F0A63A" stroke-width="1.5" />
-          <path d="M 659 102 H 675 M 659 112 H 671" stroke="#F0A63A" stroke-width="1.5" />
+          <circle cx="${PX + 53}" cy="${PY + 106}" r="6.5" fill="none" stroke="#F0A63A" stroke-width="1.5" />
+          <path d="M ${PX + 66} ${PY + 101} H ${PX + 84} M ${PX + 66} ${PY + 112} H ${PX + 80}"
+                stroke="#F0A63A" stroke-width="1.5" />
         </g>
         <g id="s3-xray-note">
-          <path d="M 702 92 L 736 86 L 742 124 L 708 130 Z"
+          <path d="M ${PX + 112} ${PY + 90} L ${PX + 150} ${PY + 84} L ${PX + 157} ${PY + 126} L ${PX + 119} ${PY + 132} Z"
                 fill="none" stroke="#E25749" stroke-width="1.75" />
-          <path d="M 710 102 H 732 M 710 112 H 728" stroke="#E25749" stroke-width="1.5" />
+          <path d="M ${PX + 121} ${PY + 101} H ${PX + 146} M ${PX + 121} ${PY + 112} H ${PX + 142}"
+                stroke="#E25749" stroke-width="1.5" />
         </g>
-        <text x="646" y="152" text-anchor="middle" style="fill:#F0A63A;font-size:16px">${t.screenIdCard}</text>
-        <text x="740" y="152" text-anchor="middle" style="fill:#E25749;font-size:16px">${t.screenNote}</text>
+        <text x="${PX + 64}" y="${PY + 152}" text-anchor="middle"
+              style="font-size:13px;fill:#F0A63A">${t.screenIdCard}</text>
+        <text x="${PX + 142}" y="${PY + 152}" text-anchor="middle"
+              style="font-size:13px;fill:#E25749">${t.screenNote}</text>
+
+        <!-- 오른쪽: 실제로 들어온 입력 -->
+        <text x="${DIV + 18}" y="${PY + 60}" style="font-size:12px;fill:#5A5F6B"
+              letter-spacing="1">${t.screenTextLabel}</text>
+        ${sampleLines}
+        <rect x="${DIV + 16}" y="${PY + 168}" width="246" height="26" rx="13"
+              fill="none" stroke="#F0A63A" stroke-width="1.25" opacity="0.8" />
+        <text x="${DIV + 30}" y="${PY + 186}" style="font-size:13px;fill:#F0A63A">${t.screenVerdict}</text>
       </g>`
 
 /* ------------------------------------------------------------------ 조립 */
@@ -339,8 +396,8 @@ export function scene3Svg() {
       })}
       ${callout({
         n: '08',
-        from: [outX + 34, outY - 14],
-        to: [1152, 252],
+        from: [outX + 76, outY - 8],
+        to: [1104, 706],
         side: 'right',
         title: t.override,
         sub: t.overrideSub,

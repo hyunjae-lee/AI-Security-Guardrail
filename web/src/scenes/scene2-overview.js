@@ -16,7 +16,14 @@
 
 import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
-import { campus, globe, HOME_FACE, globeAnim } from './_places.js'
+import {
+  campus,
+  gateGlow,
+  globe,
+  globeAnim,
+  GATE_FACE,
+  HOME_FACE,
+} from './_places.js'
 import { scene2 as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 406, oy: 130, s: 1 })
@@ -83,12 +90,15 @@ const DEVICES = [
 
 const [beaconX, beaconY] = at(402, 210, 156)
 
+
 const terminal = `
       ${slab(380, 90, 160, 220, 16, { tone: 'home' })}
       ${cutHatch(380, 90, 160, 220, 16, 'l')}
       ${cutHatch(380, 90, 160, 220, 16, 'r')}
+      <!-- 지면 후광 — 이 장면의 답이 되는 구조물이라 빛으로 한 번 더 짚는다 -->
+      ${gateGlow(iso, [460, 200], 210, { id: 's2-gate' })}
       <g id="s2-terminal">
-        <!-- 활주로 (지면이라 가장 먼저) -->
+        <!-- 활주로 -->
         ${plane(
           [
             [396, 240, 1],
@@ -105,37 +115,42 @@ const terminal = `
           ],
           'route',
         )}
-        <!-- 본동 -->
-        ${box(398, 126, 116, 66, 62, HOME)}
+        <!-- 본동 — 주변보다 밝은 검사장 면 -->
+        ${box(398, 126, 116, 66, 68, GATE_FACE)}
         ${line(
           [
-            [398, 126, 62],
-            [514, 126, 62],
-            [514, 192, 62],
-            [398, 192, 62],
+            [398, 126, 68],
+            [514, 126, 68],
+            [514, 192, 68],
+            [398, 192, 68],
           ],
           'gear',
           true,
         )}
+        <!-- 지붕 위 표시등 줄 — 운영 중이라는 신호 -->
+        ${[0, 1, 2, 3].map((i) => {
+          const [lx, ly] = at(416 + i * 28, 159, 68)
+          return `<circle cx="${lx}" cy="${ly}" r="3.4" class="gear-fill" opacity="0.85" />`
+        }).join('')}
         <!-- 가방이 들어오는 입구 -->
         ${plane(
           [
-            [416, 192, 30],
-            [446, 192, 30],
+            [416, 192, 34],
+            [446, 192, 34],
             [446, 192, 0],
             [416, 192, 0],
           ],
           'gear-fill',
-          'opacity="0.28"',
+          'opacity="0.35"',
         )}
         <!-- 관제탑 -->
-        ${box(392, 200, 20, 20, 130, HOME)}
-        ${box(385, 193, 34, 34, 14, { z: 130, ...HOME })}
+        ${box(392, 200, 20, 20, 130, GATE_FACE)}
+        ${box(385, 193, 34, 34, 14, { z: 130, ...GATE_FACE })}
         <circle id="s2-beacon" class="gear-fill" cx="${beaconX}" cy="${beaconY}" r="6" />
         <!-- 탑승교 -->
-        ${box(514, 134, 30, 7, 5, { z: 30 })}
-        ${box(514, 152, 30, 7, 5, { z: 30 })}
-        ${box(514, 170, 30, 7, 5, { z: 30 })}
+        ${box(514, 134, 30, 7, 5, { z: 30, ...GATE_FACE })}
+        ${box(514, 152, 30, 7, 5, { z: 30, ...GATE_FACE })}
+        ${box(514, 170, 30, 7, 5, { z: 30, ...GATE_FACE })}
       </g>`
 
 /* 캠퍼스와 터미널을 잇는 유일한 다리 */
@@ -333,6 +348,15 @@ export function scene2Anim(root, gsap) {
   gsap.to(root.querySelector('#s2-bag-5'), {
     y: -5,
     duration: 1.4,
+    ease: 'sine.inOut',
+    repeat: -1,
+    yoyo: true,
+  })
+
+  // 후광 고리가 천천히 숨쉬면 '작동 중인 통제 지점' 으로 읽힌다
+  gsap.to(root.querySelector('#s2-gate-ring'), {
+    opacity: 0.18,
+    duration: 2.6,
     ease: 'sine.inOut',
     repeat: -1,
     yoyo: true,

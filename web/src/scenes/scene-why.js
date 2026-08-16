@@ -107,7 +107,7 @@ const trails = `
           ],
           'route',
           false,
-          `id="sw-trail-in-${i + 1}" stroke="#E25749" opacity="0.45"`,
+          `id="sw-trail-in-${i + 1}" style="stroke:#E25749" opacity="0.45"`,
         ),
       ).join('')}`
 

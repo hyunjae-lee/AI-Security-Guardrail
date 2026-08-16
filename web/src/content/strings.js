@@ -215,6 +215,24 @@ export const scene3 = {
   screen: '판독 화면',
   screenIdCard: '신분증',
   screenNote: '숨은 쪽지',
+  screenXrayLabel: '가방 투시',
+  screenTextLabel: '입력 원문',
+  /* 판독 화면에 띄우는 실제 입력. attacks/samples.json 의 pii-student 샘플을
+     화면 폭에 맞게 줄만 나눈 것이라, 데모에 그대로 넣어도 같은 판정이 나온다.
+     kind: 'hot'(치명·빨강) | 'warm'(주의·호박) | ''(평문) */
+  screenSample: [
+    [['재학증명서 발급 신청합니다.', '']],
+    [
+      ['이름 홍길동, 학번 ', ''],
+      ['20201234', 'warm'],
+      [',', ''],
+    ],
+    [
+      ['주민등록번호 ', ''],
+      ['900101-1234568', 'hot'],
+    ],
+  ],
+  screenVerdict: '주민등록번호 1건 — 치환 대상',
   gates: '게이트 3갈래',
   gateAllow: '통과',
   gateMask: '물건만 빼고 통과',

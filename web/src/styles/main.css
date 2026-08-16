@@ -540,6 +540,12 @@ body {
 .illus .home-g-r { fill: var(--c-home-g-r); }
 .illus .solid.home-edge { stroke: var(--c-home-edge); }
 
+/* 검사장 — 유일한 통제 지점. 주변보다 밝게 띄운다. */
+.illus .gate-top { fill: var(--c-gate-top); }
+.illus .gate-l { fill: var(--c-gate-l); }
+.illus .gate-r { fill: var(--c-gate-r); }
+.illus .solid.gate-edge { stroke: var(--c-gate-edge); stroke-width: 1.5; }
+
 .illus .away-top { fill: var(--c-away-top); }
 .illus .away-l { fill: var(--c-away-l); }
 .illus .away-r { fill: var(--c-away-r); }
