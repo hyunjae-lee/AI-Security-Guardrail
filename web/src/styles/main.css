@@ -712,12 +712,14 @@ body {
   opacity: 0.4;
 }
 .illus .border-line {
+  /* 국경은 이 사이트의 주인공 중 하나다. 흐리면 '국경에 검사대가 없다' 는
+     콜아웃이 가리킬 대상을 잃는다. */
   fill: none;
-  stroke: var(--c-muted);
-  stroke-width: 1.5;
-  stroke-dasharray: 9 7;
+  stroke: var(--c-label);
+  stroke-width: 2;
+  stroke-dasharray: 10 7;
   stroke-linecap: butt;
-  opacity: 0.75;
+  opacity: 0.95;
 }
 .illus .route {
   fill: none;

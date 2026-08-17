@@ -314,7 +314,8 @@ export function scene2Svg() {
       })}
       ${callout({
         n: '04',
-        from: at(620, 20, 0),
+        // 지구본에서 벗어난 국경 구간. 위쪽(y<150)은 지구본이 덮어 점이 파묻힌다.
+        from: at(620, 210, 0),
         to: [1096, 196],
         side: 'right',
         title: t.border,

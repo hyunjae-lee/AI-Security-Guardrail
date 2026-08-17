@@ -513,7 +513,7 @@ export function scene3Svg() {
       })}
       ${callout({
         n: '08',
-        from: [outX + 76, outY - 8],
+        from: [outX + 34, outY - 6], // 배출구 상자 오른쪽 모서리 (밖으로 벗어나 있었다)
         to: [1104, 706],
         side: 'right',
         title: t.override,

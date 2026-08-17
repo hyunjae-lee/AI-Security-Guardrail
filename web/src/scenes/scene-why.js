@@ -38,16 +38,16 @@ const border = `
       <g id="sw-border">
         ${line(
           [
-            [440, -110],
+            [440, -230],
             [440, 450],
           ],
           'border-line',
         )}
-        ${Array.from({ length: 11 }, (_, i) =>
+        ${Array.from({ length: 14 }, (_, i) =>
           line(
             [
-              [440, -90 + i * 52],
-              [418, -90 + i * 52],
+              [440, -210 + i * 52],
+              [418, -210 + i * 52],
             ],
             'hair',
           ),
@@ -136,6 +136,8 @@ export function sceneWhySvg() {
   const body = `
       ${homeland}
       ${border}
+      <text x="${at(440, -230, 0)[0]}" y="${at(440, -230, 0)[1] - 16}"
+            text-anchor="middle" class="co-sub" letter-spacing="6">${t.borderLabel}</text>
       ${outland}
       ${trails}
 
@@ -160,7 +162,8 @@ export function sceneWhySvg() {
 
       ${callout({
         n: '01',
-        from: at(440, -90, 0),
+        // 지구본 위쪽으로 트인 국경 구간. 아래쪽은 지구본이 덮어 점이 파묻힌다.
+        from: at(440, -210, 0),
         to: [1010, 150],
         side: 'right',
         title: t.gap,
@@ -178,8 +181,10 @@ export function sceneWhySvg() {
       })}
       ${callout({
         n: '03',
-        from: at(250, 300, 14),
-        to: [420, 700],
+        // 요청을 보내는 쪽 — 캠퍼스 연구동 지붕. 빈 잔디를 가리키면
+        // '누구의 요청인지 모른다' 가 가리킬 대상을 잃는다.
+        from: at(49, 231, 66),
+        to: [200, 690],
         side: 'right',
         title: t.risk2,
         sub: t.risk2Sub,
@@ -187,7 +192,7 @@ export function sceneWhySvg() {
       })}
       ${callout({
         n: '04',
-        from: at(600, IN_Y[0], FLY_Z + 18),
+        from: at(548, IN_Y[0], FLY_Z + 18), // 돌아오는 가방(sw-in-1) 윗면
         to: [1000, 622],
         side: 'right',
         title: t.risk3,

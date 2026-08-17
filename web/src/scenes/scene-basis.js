@@ -190,7 +190,8 @@ export function sceneBasisSvg() {
       })}
       ${callout({
         n: '03',
-        from: at(741, -190, 16),
+        // 객체는 '외부 생성형 AI' 이므로 대지가 아니라 서버를 가리켜야 한다.
+        from: at(666, -160, 26),
         to: [1180, 330],
         side: 'right',
         title: t.object,
