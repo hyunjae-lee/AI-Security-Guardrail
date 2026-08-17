@@ -1,0 +1,1283 @@
+@import './tokens.css';
+
+/* ==========================================================================
+   기본
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* 스크롤 스냅은 쓰지 않는다 — M3 에서 단면 장면을 ScrollTrigger 로 pin + scrub
+     할 예정이라, CSS scroll-snap 이 스크럽 구간과 충돌한다. */
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--c-text);
+  font-family: var(--font-sans);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+
+  /* 도면 그리드 + 비네트. 정적 배경이라 스크롤 중 재계산 비용이 없다. */
+  background-color: var(--c-bg);
+  background-image:
+    radial-gradient(
+      ellipse 90% 70% at 50% 0%,
+      rgba(67, 188, 156, 0.05),
+      transparent 70%
+    ),
+    linear-gradient(var(--c-hair) 1px, transparent 1px),
+    linear-gradient(90deg, var(--c-hair) 1px, transparent 1px);
+  background-size: 100% 100%, 88px 88px, 88px 88px;
+  background-attachment: fixed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.75rem 1.25rem;
+  background: var(--c-gear);
+  color: var(--c-bg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+}
+
+:focus-visible {
+  outline: 1px solid var(--c-gear);
+  outline-offset: 4px;
+}
+
+/* ==========================================================================
+   상단 바 — 워드마크 / 현재 장면 / 스크롤 진행선
+   ========================================================================== */
+
+.topbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 40;
+  height: var(--bar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--pad-x);
+  background: linear-gradient(var(--c-bg) 55%, transparent);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.topbar__mark {
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--c-text);
+}
+
+.topbar__now {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.topbar__now b {
+  color: var(--c-bag);
+  font-weight: 700;
+}
+
+.progress {
+  position: fixed;
+  inset: 0 auto auto 0;
+  z-index: 41;
+  height: 1px;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: var(--c-bag);
+}
+
+/* ==========================================================================
+   장면(섹션)
+   ========================================================================== */
+
+.scene {
+  position: relative;
+  min-height: 100svh;
+  padding: calc(var(--bar-h) + clamp(2rem, 5vh, 4rem)) var(--pad-x)
+    clamp(2.5rem, 5vh, 4rem);
+  display: flex;
+  justify-content: center;
+}
+
+/* 우측 번호 레일이 뜨는 폭에서는 도면 라벨이 그 아래로 들어가지 않게 비워 둔다. */
+@media (min-width: 641px) {
+  .scene {
+    padding-right: calc(var(--pad-x) + 96px);
+  }
+}
+
+.scene__inner {
+  position: relative;
+  width: 100%;
+  max-width: var(--w-content);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(1.25rem, 2.4vh, 2rem);
+}
+
+/* 프레임 모서리 틱 — 도면 트리밍 마크 */
+.scene__inner::before,
+.scene__inner::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--c-line);
+  pointer-events: none;
+}
+
+.scene__inner::before {
+  top: -14px;
+  left: -18px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.scene__inner::after {
+  bottom: -14px;
+  right: -18px;
+  border-left: 0;
+  border-top: 0;
+}
+
+/* --- 머리 --- */
+
+.scene__head {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 1.6vh, 1.25rem);
+}
+
+.scene__eyebrow {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  font-size: var(--fs-eyebrow);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.scene__num {
+  font-family: var(--font-mono);
+  font-size: var(--fs-num);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--c-bag);
+}
+
+.scene__eyebrow-rule {
+  flex: 0 0 clamp(28px, 5vw, 72px);
+  height: 1px;
+  background: var(--c-line);
+}
+
+.scene__title {
+  margin: 0;
+  /* ch(=숫자 0 폭)는 한글에서 실제 글자 폭과 무관하므로 em 으로 잡는다. */
+  max-width: 18em;
+  font-size: var(--fs-title);
+  font-weight: 900;
+  line-height: var(--lh-title);
+  letter-spacing: -0.026em;
+  /* 한글은 keep-all 이 없으면 어절 한가운데서 잘린다. 줄 나눔 위치는
+     strings.js 의 개행(\n)으로 직접 지정한다. */
+  word-break: keep-all;
+  text-wrap: balance;
+}
+
+/* --- 무대 --- */
+
+.scene__stage {
+  /* 남는 세로 공간에서 늘어나지 않게 — 늘어나면 판만 커지고 그림은 그대로라
+     그림이 빈 상자 안에 떠 있는 꼴이 된다. */
+  align-self: center;
+  /* 도면은 본문 단보다 넓게 — 가로 폭이 렌더 배율을 정하므로 폭이 곧 글씨 크기다.
+     오른쪽 번호 레일(96px) 자리까지 일부 되찾는다. */
+  margin-inline: calc(var(--pad-x) * -0.55) calc(var(--pad-x) * -0.55 - 48px);
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--c-line);
+  border-radius: 3px;
+  background: var(--c-stage);
+  padding: clamp(0.75rem, 1.8vh, 1.5rem) clamp(0.75rem, 1.4vw, 1.5rem);
+}
+
+/* 일러스트는 뷰박스 기준 축소 렌더라, 무대가 낮으면 도면 글씨가 그대로 작아진다.
+   섹션이 100svh 를 넘겨 커지더라도 도면 크기를 우선한다. */
+.scene__stage svg {
+  width: 100%;
+  height: auto;
+  max-height: 84svh;
+  display: block;
+}
+
+/* --- 발 --- */
+
+.scene__foot {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.scene__caption {
+  margin: 0;
+  word-break: keep-all;
+  text-wrap: balance;
+  position: relative;
+  padding-left: 1.375rem;
+  max-width: 56em;
+  font-size: var(--fs-caption);
+  color: var(--c-muted);
+}
+
+.scene__caption::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.75em;
+  width: 10px;
+  height: 1px;
+  background: var(--c-bag);
+}
+
+/* 설계 근거 카드 — 도면의 표제란처럼 얇은 괘선으로 묶는다. */
+.scene__refs {
+  /* 설계 근거는 이 장면의 논지 그 자체라 옆구리가 아니라 한 행을 통째로 쓴다.
+     조항 세 개는 가로로 늘어놓아야 '분류-이동-생산/저장' 이 한눈에 병렬로 읽힌다. */
+  margin-top: clamp(1.75rem, 3vw, 2.75rem);
+  padding: clamp(1.25rem, 2.4vw, 2rem) clamp(1.25rem, 2.4vw, 2rem)
+    clamp(1.1rem, 2vw, 1.5rem);
+  border: 1px solid var(--c-line);
+  border-left: 3px solid var(--c-gate-edge);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.014);
+  word-break: keep-all;
+  font-size: 1rem;
+  color: var(--c-muted);
+}
+
+.scene__refs-kicker {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
+  text-transform: uppercase;
+  color: var(--c-gear);
+}
+
+.scene__refs-source {
+  display: block;
+  color: var(--c-text);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.scene__refs-meta {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: var(--fs-meta);
+  letter-spacing: 0.03em;
+  color: var(--c-muted);
+}
+
+.scene__refs b {
+  color: var(--c-gear);
+  font-weight: 700;
+}
+
+.scene__refs-note {
+  margin: 0.9rem 0 0;
+  font-size: var(--fs-meta);
+  letter-spacing: 0.02em;
+  color: var(--c-bag);
+}
+
+.scene__refs ol {
+  margin: 1.1rem 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: ref;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr));
+  gap: 1.5rem clamp(1.5rem, 3vw, 2.75rem);
+}
+
+.scene__refs li {
+  counter-increment: ref;
+  position: relative;
+  padding-left: 1.9rem;
+  line-height: 1.6;
+}
+
+.scene__refs li::before {
+  content: counter(ref, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--c-bag);
+}
+
+.scene__refs-code {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 700;
+  color: var(--c-gear);
+}
+
+/* 원문 인용 — 요약과 눈으로 구분되도록 괘선을 붙이고 살짝 눕힌다. */
+.scene__refs blockquote {
+  margin: 0;
+  padding-left: 0.875rem;
+  border-left: 2px solid var(--c-line);
+  font-style: italic;
+  text-wrap: pretty;
+  color: var(--c-label);
+}
+
+.scene__refs cite {
+  display: block;
+  margin-top: 0.45rem;
+  padding-left: 0.875rem;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: var(--fs-meta);
+  letter-spacing: 0.03em;
+  color: var(--c-muted);
+}
+
+.scene__refs-closing {
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--c-hair);
+  max-width: 58em;
+  text-wrap: balance;
+  color: var(--c-text);
+}
+
+.scene__cta {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--c-gear);
+  color: var(--c-gear);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out);
+}
+
+.scene__cta::after {
+  content: '↗';
+  font-size: 0.9em;
+}
+
+.scene__cta:hover,
+.scene__cta:focus-visible {
+  background: var(--c-gear);
+  color: var(--c-bg);
+}
+
+/* ==========================================================================
+   일러스트 자리표시 (M4 에서 실제 SVG 로 교체)
+   ========================================================================== */
+
+.placeholder {
+  width: 100%;
+  min-height: clamp(15rem, 40svh, 26rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border: 1px dashed var(--c-line);
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent 0 10px,
+    rgba(60, 62, 70, 0.16) 10px 11px
+  );
+  color: var(--c-muted);
+  text-align: center;
+  padding: 2rem;
+}
+
+.placeholder__label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
+  text-transform: uppercase;
+  color: var(--c-line);
+}
+
+.placeholder__note {
+  margin: 0;
+  word-break: keep-all;
+  text-wrap: balance;
+  max-width: 30em;
+  font-size: 0.9375rem;
+}
+
+/* ==========================================================================
+   앵커 내비 — 우측 번호 레일
+   ========================================================================== */
+
+.dotnav {
+  position: fixed;
+  right: clamp(0.75rem, 2vw, 2rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 45;
+}
+
+.dotnav__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+}
+
+.dotnav__link {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--c-line);
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.06em;
+  transition: color 0.25s var(--ease-out);
+}
+
+.dotnav__tick {
+  display: block;
+  width: 18px;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.28s var(--ease-out), background-color 0.28s var(--ease-out);
+}
+
+.dotnav__name {
+  font-family: var(--font-sans);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
+  color: var(--c-muted);
+  opacity: 0;
+  transform: translateX(4px);
+  transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+}
+
+.dotnav__link:hover,
+.dotnav__link:focus-visible {
+  color: var(--c-muted);
+}
+
+.dotnav__link:hover .dotnav__name,
+.dotnav__link:focus-visible .dotnav__name {
+  opacity: 1;
+  transform: none;
+}
+
+.dotnav__link[aria-current='true'] {
+  color: var(--c-bag);
+}
+
+.dotnav__link[aria-current='true'] .dotnav__tick {
+  width: 34px;
+}
+
+.dotnav__link[aria-current='true'] .dotnav__name {
+  opacity: 1;
+  transform: none;
+  color: var(--c-text);
+}
+
+@media (max-width: 900px) {
+  .dotnav__name {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .dotnav {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   일러스트 SVG 공통
+   ========================================================================== */
+
+.illus {
+  /* 컨테이너보다 커지지 않도록 못 박는다. 도면 내용은 전부 뷰박스 안에 있으므로
+     기본값(hidden)으로 두어 밖으로 새는 것도 막는다. */
+  max-width: 100%;
+}
+
+.illus text {
+  font-family: var(--font-sans);
+  fill: var(--c-label);
+  font-size: 20px;
+}
+
+/* 아이소메트릭 입체 3면 */
+.illus .f-top {
+  fill: var(--c-face-top);
+}
+.illus .f-l {
+  fill: var(--c-face-l);
+}
+.illus .f-r {
+  fill: var(--c-face-r);
+}
+.illus .f-deep {
+  fill: var(--c-face-deep);
+}
+.illus .solid {
+  stroke: var(--c-edge);
+  stroke-width: 1.15;
+  stroke-linejoin: round;
+}
+
+/* 영토 구분 — 우리 쪽(한색) / 국경 밖(보랏빛 무채색) */
+.illus .home-top { fill: var(--c-home-top); }
+.illus .home-l { fill: var(--c-home-l); }
+.illus .home-r { fill: var(--c-home-r); }
+.illus .home-g-top { fill: var(--c-home-g-top); }
+.illus .home-g-l { fill: var(--c-home-g-l); }
+.illus .home-g-r { fill: var(--c-home-g-r); }
+.illus .solid.home-edge { stroke: var(--c-home-edge); }
+
+/* 검사장 — 유일한 통제 지점. 주변보다 밝게 띄운다. */
+.illus .gate-top { fill: var(--c-gate-top); }
+.illus .gate-l { fill: var(--c-gate-l); }
+.illus .gate-r { fill: var(--c-gate-r); }
+.illus .solid.gate-edge { stroke: var(--c-gate-edge); stroke-width: 1.5; }
+
+.illus .away-top { fill: var(--c-away-top); }
+.illus .away-l { fill: var(--c-away-l); }
+.illus .away-r { fill: var(--c-away-r); }
+.illus .away-g-top { fill: var(--c-away-g-top); }
+.illus .away-g-l { fill: var(--c-away-g-l); }
+.illus .away-g-r { fill: var(--c-away-g-r); }
+.illus .solid.away-edge { stroke: var(--c-away-edge); }
+
+/* 지면 · 대지 */
+.illus .ground-top {
+  fill: #282c34;
+}
+.illus .ground-l {
+  fill: #22252c;
+}
+.illus .ground-r {
+  fill: #1a1d22;
+}
+
+/* 컨베이어 — 바닥보다 한 단계 밝게 띄워야 흐름선으로 읽힌다 */
+.illus .belt-top {
+  fill: #4b5265;
+}
+.illus .belt-l {
+  fill: #333846;
+}
+.illus .belt-r {
+  fill: #272b34;
+}
+
+/* 항공기 — 어두운 지면 위 공중에 뜨므로 한 단계 더 밝게 잡는다 */
+.illus .craft-top {
+  fill: #626b7e;
+}
+.illus .craft-l {
+  fill: #4d5466;
+}
+.illus .craft-r {
+  fill: #3a4150;
+}
+
+/* 설비(청록) */
+.illus .gear {
+  fill: none;
+  stroke: var(--c-gear);
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.illus .gear-fill {
+  fill: var(--c-gear);
+}
+
+/* 가방(호박) */
+.illus .bag-top {
+  fill: #f7bd62;
+}
+.illus .bag-l {
+  fill: #e09a33;
+}
+.illus .bag-r {
+  fill: #b97a22;
+}
+
+/* 콜아웃(지시선 + 번호 배지 + 라벨) */
+.illus .co-leader {
+  fill: none;
+  stroke: var(--c-leader);
+  stroke-width: 1.4;
+}
+.illus .co-dot {
+  fill: var(--c-bag);
+}
+.illus .co-badge {
+  /* 판 색으로 채워 지시선이 배지를 뚫고 지나가지 않게 한다. */
+  fill: var(--c-stage);
+  stroke: var(--c-bag);
+  stroke-width: 1.4;
+}
+.illus .co-num {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  fill: var(--c-bag);
+}
+.illus .co-title {
+  font-size: 25px;
+  font-weight: 700;
+  fill: var(--c-text);
+  letter-spacing: -0.01em;
+}
+.illus .co-sub {
+  font-size: 19px;
+  fill: var(--c-label);
+}
+.illus .co-title--block {
+  fill: var(--c-block);
+}
+.illus .co-title--allow {
+  fill: var(--c-allow);
+}
+.illus .co-title--bag {
+  fill: var(--c-bag);
+}
+
+/* 도면 보조선 */
+.illus .hair {
+  fill: none;
+  stroke: var(--c-line);
+  stroke-width: 1;
+  opacity: 0.7;
+}
+.illus .hatch {
+  stroke: var(--c-line);
+  stroke-width: 1;
+  opacity: 0.4;
+}
+.illus .border-line {
+  /* 국경은 이 사이트의 주인공 중 하나다. 흐리면 '국경에 검사대가 없다' 는
+     콜아웃이 가리킬 대상을 잃는다. */
+  fill: none;
+  stroke: var(--c-label);
+  stroke-width: 2;
+  stroke-dasharray: 10 7;
+  stroke-linecap: butt;
+  opacity: 0.95;
+}
+.illus .route {
+  fill: none;
+  stroke: var(--c-bag);
+  stroke-width: 1.25;
+  stroke-dasharray: 4 6;
+  opacity: 0.5;
+}
+
+/* ==========================================================================
+   "실제로는" 접이식 패널 (M5)
+   본문은 비유어, 기술 용어는 여기에만. 기본은 접힌 상태라 흐름을 방해하지 않는다.
+   ========================================================================== */
+
+.scene__foot-main {
+  flex: 1 1 24rem;
+  min-width: 0;
+}
+
+.reveal {
+  margin-top: 1.25rem;
+  word-break: keep-all;
+}
+
+.reveal__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  list-style: none;
+  padding: 0.4rem 0.9rem 0.4rem 0.75rem;
+  border: 1px solid var(--c-line);
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
+  text-transform: uppercase;
+  color: var(--c-gear);
+  transition: border-color 0.2s var(--ease-out), color 0.2s var(--ease-out);
+}
+
+.reveal__summary::-webkit-details-marker {
+  display: none;
+}
+
+.reveal__summary::before {
+  content: '+';
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.reveal[open] .reveal__summary::before {
+  content: '−';
+}
+
+.reveal__summary:hover {
+  border-color: var(--c-gear);
+  color: var(--c-text);
+}
+
+.reveal__body {
+  margin-top: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--c-gear);
+  /* 리드와 같은 두 단 구성 — 접었다 폈을 때 본문 폭이 달라지지 않게. */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(28rem, 1fr));
+  gap: 0.7rem clamp(2rem, 4vw, 4rem);
+  align-items: start;
+}
+
+.reveal__body p {
+  text-wrap: balance;
+  margin: 0;
+  max-width: 42em;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--c-label);
+}
+
+/* 마지막 문단이 ※ 로 시작하면 주의 문구로 취급 */
+.reveal__body p:last-child:first-letter {
+  font-weight: inherit;
+}
+
+/* ==========================================================================
+   리드 문단 — 제목과 그림 사이의 도입부.
+   장면마다 앞 장면을 받아 잇는 문장으로 시작해 흐름이 끊기지 않게 한다.
+   ========================================================================== */
+
+/* 한 줄이 너무 길면 한글은 읽는 눈이 되돌아올 자리를 잃는다.  그래서 폭을
+   늘리는 대신 단을 나눈다 — 데스크톱에서는 두 단으로 화면을 꽉 채우고,
+   좁아지면 자동으로 한 단으로 접힌다 (minmax 의 auto-fit).
+   문단 자체를 그리드 아이템으로 두어 문단 중간이 단을 넘어가지 않게 했다. */
+.scene__lead {
+  word-break: keep-all;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
+  gap: 0.6rem clamp(2rem, 4vw, 4rem);
+  align-items: start;
+}
+
+.scene__lead p {
+  margin: 0;
+  max-width: 40em;
+  font-size: clamp(1.0625rem, 1.22vw, 1.1875rem);
+  line-height: 1.78;
+  color: var(--c-label);
+  text-wrap: balance;
+}
+
+.scene__lead b {
+  color: var(--c-text);
+  font-weight: 700;
+  border-bottom: 1px solid var(--c-bag);
+  padding-bottom: 1px;
+}
+
+/* ==========================================================================
+   비유 대조표 (범례) — 그림을 읽는 열쇠
+   ========================================================================== */
+
+.legend {
+  flex: 2 1 28rem;
+  min-width: 0;
+  max-width: 46rem;
+  margin-top: 0;
+  word-break: keep-all;
+}
+
+.legend__body,
+.cases__body {
+  margin-top: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--c-gear);
+}
+
+.legend__kicker,
+.summary__kicker {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
+  text-transform: uppercase;
+  color: var(--c-bag);
+}
+
+.legend__title {
+  margin: 0.4rem 0 0.9rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.legend__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.legend__table th {
+  text-align: left;
+  padding: 0 0 0.45rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--c-muted);
+  border-bottom: 1px solid var(--c-line);
+}
+
+.legend__table td {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--c-hair);
+  color: var(--c-muted);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.legend__table td:first-child {
+  width: 46%;
+  padding-right: 1.25rem;
+}
+
+/* 오른쪽이 비유어 — 이쪽이 그림에서 보게 될 말이다. */
+.legend__table td:last-child {
+  color: var(--c-bag);
+}
+
+.legend__table tr:last-child td {
+  border-bottom: 0;
+}
+
+.legend__note {
+  margin: 0.75rem 0 0;
+  font-size: var(--fs-meta);
+  color: var(--c-muted);
+}
+
+/* ==========================================================================
+   마무리 정리
+   ========================================================================== */
+
+.summary {
+  flex: 2 1 28rem;
+  min-width: 0;
+  max-width: 44rem;
+  word-break: keep-all;
+  border-left: 1px solid var(--c-gear);
+  padding-left: clamp(1rem, 2vw, 1.75rem);
+}
+
+.summary__list {
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: sum;
+}
+
+.summary__list li {
+  counter-increment: sum;
+  position: relative;
+  padding-left: 2rem;
+  margin-top: 0.9rem;
+}
+
+.summary__list li::before {
+  content: counter(sum, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.1rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--c-gear);
+}
+
+.summary__list b {
+  display: block;
+  font-size: 1rem;
+  color: var(--c-text);
+}
+
+.summary__list span {
+  text-wrap: balance;
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--c-muted);
+}
+
+/* ==========================================================================
+   판정 사례 카드 (SCENE 04)
+   실제 엔진 출력을 그대로 싣는다. 무엇이 걸렸고 왜 그 판정인지를 한 카드에서
+   끝까지 따라갈 수 있어야 한다 — 질문 → 탐지 → 판정 → 모델이 받은 것 → 왜.
+   ========================================================================== */
+
+/* foot 의 flex 배치에 기대면 캡션 옆에서 한 칸으로 눌린다. 그래서 .scene__inner
+   그리드의 별도 행으로 두어 항상 전체 폭을 쓰게 한다. */
+.cases {
+  min-width: 0;
+  word-break: keep-all;
+}
+
+.cases__note {
+  margin: 0 0 1.1rem;
+  font-size: var(--fs-meta);
+  color: var(--c-muted);
+}
+
+.cases__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(26rem, 1fr));
+  gap: 1rem;
+}
+
+.case {
+  border: 1px solid var(--c-line);
+  border-top-width: 2px;
+  padding: 1rem 1.1rem 1.15rem;
+  background: var(--c-panel);
+}
+
+.case--allow {
+  border-top-color: var(--c-allow);
+}
+.case--mask {
+  border-top-color: var(--c-bag);
+}
+.case--block {
+  border-top-color: var(--c-block);
+}
+
+.case__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.case__verdict {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.case--allow .case__verdict {
+  color: var(--c-allow);
+}
+.case--mask .case__verdict {
+  color: var(--c-bag);
+}
+.case--block .case__verdict {
+  color: var(--c-block);
+}
+
+.case__role {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.04em;
+  color: var(--c-muted);
+  white-space: nowrap;
+}
+
+/* 실제 입력한 문장 — 인용부호 대신 왼쪽 괘선으로 구분 */
+.case__prompt {
+  text-wrap: balance;
+  margin: 0 0 0.85rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--c-line);
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--c-text);
+}
+
+.case__rows {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.case__rows dt {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.04em;
+  color: var(--c-muted);
+  padding-top: 0.1rem;
+}
+
+.case__rows dd {
+  margin: 0;
+  color: var(--c-label);
+  line-height: 1.6;
+}
+
+.case__hits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.case__hits li {
+  margin-bottom: 0.25rem;
+}
+
+.case__hits b {
+  color: var(--c-text);
+  font-weight: 700;
+}
+
+/* 심각도 배지 */
+.case__hits em {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0 0.35rem;
+  border: 1px solid var(--c-line);
+  font-size: 0.6875rem;
+  font-style: normal;
+  color: var(--c-muted);
+  vertical-align: 1px;
+}
+
+.case__hits span {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--c-muted);
+}
+
+/* 모델이 실제로 받은 문자열 — 마스킹이 '삭제가 아닌 변환' 임을 보여 주는 자리 */
+.case__fwd {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: var(--c-gear);
+  word-break: break-all;
+}
+
+.case__why {
+  text-wrap: balance;
+  margin: 0.9rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--c-hair);
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  color: var(--c-muted);
+}
+
+/* ==========================================================================
+   실측 지연 카드 — 활주로 장면
+   --------------------------------------------------------------------------
+   숫자가 논지인 카드라 표를 먼저 크게 보여 주고, 비교와 비례는 옆단으로 뺀다.
+   근거 카드(scene__refs)와 같은 규격의 판을 써서 '측정한 것' 이라는 성격이
+   한눈에 같은 급으로 읽히게 한다.
+   ========================================================================== */
+
+.latency {
+  margin-top: clamp(1.75rem, 3vw, 2.75rem);
+  padding: clamp(1.25rem, 2.4vw, 2rem);
+  border: 1px solid var(--c-line);
+  border-left: 3px solid var(--c-bag);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.014);
+  word-break: keep-all;
+}
+
+.latency__kicker {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
+  text-transform: uppercase;
+  color: var(--c-bag);
+}
+
+.latency__title {
+  margin: 0.5rem 0 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.latency__lead {
+  margin: 0.5rem 0 0;
+  max-width: 52em;
+  text-wrap: balance;
+  color: var(--c-label);
+}
+
+.latency__grid {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: 1.5rem clamp(1.5rem, 3vw, 2.75rem);
+  align-items: start;
+}
+
+.latency__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.latency__table th,
+.latency__table td {
+  padding: 0.55rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--c-hair);
+}
+
+.latency__table th {
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--c-muted);
+}
+
+/* 숫자는 자릿수가 흔들리지 않게 고정폭 + 우측 정렬 */
+.latency__table .num,
+.latency__compare b {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.latency__table td:first-child {
+  color: var(--c-label);
+}
+
+.latency__table td.num {
+  color: var(--c-text);
+}
+
+.latency__total td {
+  border-bottom: 0;
+  border-top: 1px solid var(--c-line);
+  font-weight: 700;
+}
+
+.latency__total td.num {
+  color: var(--c-bag);
+}
+
+.latency__block h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.latency__compare {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9375rem;
+}
+
+.latency__compare li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--c-hair);
+  color: var(--c-label);
+}
+
+.latency__compare li:last-child {
+  border-bottom: 0;
+}
+
+.latency__compare b {
+  color: var(--c-text);
+}
+
+.latency__note {
+  margin: 0.75rem 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  text-wrap: pretty;
+  color: var(--c-muted);
+}
+
+.latency__note b {
+  color: var(--c-text);
+  font-weight: 700;
+}
+
+.latency__method {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--c-hair);
+}
+
+/* 지면 그림자 — 물체가 바닥에 닿아 있음을 말한다. 배경보다 어두워야
+   '그늘' 로 읽히고, 너무 진하면 구멍처럼 보인다. */
+.illus .iso-shadow {
+  fill: #05060a;
+}

@@ -1,0 +1,18 @@
+{
+  "name": "digital-border",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "디지털 국경 — AI 보안 가드레일 스크롤텔링 사이트",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "gsap": "^3.13.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
+  }
+}
