@@ -17,6 +17,7 @@ import {
   casesNote,
   glue,
   guideline,
+  latency,
   legend,
   placeholderKicker,
   revealLabel,
@@ -92,6 +93,48 @@ const refsMarkup = () => `
               .join('\n            ')}
           </ol>
           <p class="scene__refs-closing">${glue(guideline.finding)}</p>
+        </aside>`
+
+/** 실측 지연 카드 — 활주로 장면에만. 수치는 전부 실제 측정값이다. */
+const latencyMarkup = () => `
+        <aside class="latency">
+          <span class="latency__kicker">${latency.kicker}</span>
+          <h3 class="latency__title">${glue(latency.title)}</h3>
+          <p class="latency__lead">${glue(latency.lead)}</p>
+          <div class="latency__grid">
+            <table class="latency__table">
+              <thead><tr>${latency.cols
+                .map((c, i) => `<th${i ? ' class="num"' : ''}>${c}</th>`)
+                .join('')}</tr></thead>
+              <tbody>${latency.rows
+                .map(
+                  ([what, med, max], i) =>
+                    `<tr${i === latency.rows.length - 1 ? ' class="latency__total"' : ''}>` +
+                    `<td>${glue(what)}</td><td class="num">${med}</td><td class="num">${max}</td></tr>`,
+                )
+                .join('')}</tbody>
+            </table>
+            <div class="latency__block">
+              <h4>${glue(latency.compareLabel)}</h4>
+              <ul class="latency__compare">${latency.compare
+                .map(([what, v]) => `<li><span>${glue(what)}</span><b>${v}</b></li>`)
+                .join('')}</ul>
+              <p class="latency__note">${glue(latency.compareNote)}</p>
+            </div>
+            <div class="latency__block">
+              <h4>${glue(latency.scaleLabel)}</h4>
+              <p class="latency__note">${glue(latency.scale)}</p>
+              <ul class="latency__compare">${latency.scaleRows
+                .map(([what, v]) => `<li><span>${glue(what)}</span><b>${v}</b></li>`)
+                .join('')}</ul>
+            </div>
+          </div>
+          <details class="latency__method">
+            <summary class="reveal__summary">${latency.methodLabel}</summary>
+            <div class="reveal__body">${latency.method
+              .map((m) => `<p>${glue(m)}</p>`)
+              .join('')}</div>
+          </details>
         </aside>`
 
 /** "실제로는" 접이식 패널 — 비유 뒤의 실제 동작을 장면마다 병기한다. */
@@ -209,6 +252,8 @@ const sceneMarkup = (scene) => `
             : ''
         }
       </footer>${scene.id === 'basis' ? refsMarkup() : ''}${
+        scene.id === 'runway' ? latencyMarkup() : ''
+      }${
         scene.id === 'departures' ? casesMarkup() : ''
       }
     </div>

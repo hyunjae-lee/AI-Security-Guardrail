@@ -233,6 +233,35 @@ const border = `
 
 /* ------------------------------------------------------------------ 조립 */
 
+/* ------------------------------------------------------------------ 등식
+
+   이 장면의 결론을 그림 바닥에 등식으로 박는다.  콜아웃은 부품을 가리키는
+   주기지만, 이건 그림 전체가 무엇인지를 말하는 문장이라 격을 달리해 크게 쓴다.
+   터미널 쪽은 호박(가방·비유), 가드레일 쪽은 청록(설비)으로 색을 갈라
+   "왼쪽 말 = 오른쪽 말" 이 색으로도 읽히게 했다. */
+
+/* 그림 바닥을 가로지르는 결론 띠.  괘선만 그으면 지구본을 뚫고 지나가므로
+   판 색으로 채운 띠를 얹는다 — 겹침도 없애고, '이 장면의 결론' 이라는
+   격도 생긴다. */
+
+const EQ_TOP = 700
+const EQ_H = 80
+const EQ_MID = EQ_TOP + 34
+
+const equation = `
+      <g id="s2-equation">
+        <rect x="60" y="${EQ_TOP}" width="1320" height="${EQ_H}" rx="4"
+              fill="var(--c-stage)" stroke="#43BC9C" stroke-width="1.25" opacity="0.97" />
+        <text x="694" y="${EQ_MID}" text-anchor="end"
+              style="font-size:31px;fill:#F0A63A" font-weight="900">${t.equationLeft}</text>
+        <text x="720" y="${EQ_MID}" text-anchor="middle"
+              style="font-size:29px;fill:var(--c-muted)">=</text>
+        <text x="746" y="${EQ_MID}" text-anchor="start"
+              style="font-size:31px;fill:#43BC9C" font-weight="900">${t.equationRight}</text>
+        <text x="720" y="${EQ_MID + 28}" text-anchor="middle"
+              style="font-size:17px;fill:var(--c-label)">${t.equationNote}</text>
+      </g>`
+
 export function scene2Svg() {
   const body = `
       ${homeland}
@@ -297,11 +326,12 @@ export function scene2Svg() {
         side: 'right',
         title: t.factory,
         sub: t.factorySub,
-      })}`
+      })}
+      ${equation}`
 
   return svgWrap({
     id: 's2',
-    viewBox: '0 0 1440 742',
+    viewBox: '0 0 1440 796',
     title: t.svgTitle,
     desc: t.svgDesc,
     body,

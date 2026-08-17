@@ -141,6 +141,52 @@ const border = `
 
 /* ------------------------------------------------------------------ 조립 */
 
+/* ------------------------------------------------- 시간이 어디에 쓰이나
+
+   이 장면에서 반드시 나오는 질문 — "검사를 끼우면 느려지는 것 아니냐".
+   답을 다른 데로 미루지 않고 같은 그림 안에 둔다.  수속에 쓰는 시간과 비행
+   시간을 나란히 놓으면 비유가 그대로 근거가 된다.
+
+   막대를 실제 비율로 그리지 않는 이유는 그림에 직접 적어 둔다 — 실제 비율이면
+   검사 구간은 1픽셀도 안 되어 아예 안 보인다.  그 사실 자체가 논지지만,
+   비율을 속인 그림으로 오해되면 안 되므로 주기로 못 박는다. */
+
+const BAR_Y = 762
+const BAR_X = 96
+const BAR_W = 1248
+const BAR_H = 34
+const SEG_OUT = 76 // 검사 구간 — 실제 비율보다 크게 그린 것
+const SEG_IN = 76
+
+const seg = (x, w, fill, label, value, side) => `
+      <rect x="${x}" y="${BAR_Y}" width="${w}" height="${BAR_H}" rx="3"
+            fill="${fill}" opacity="0.22" stroke="${fill}" stroke-width="1.25" />
+      <text x="${x + w / 2}" y="${BAR_Y + 22}" text-anchor="middle"
+            style="font-size:15px;fill:${fill}" font-weight="700">${value}</text>
+      <text x="${x + w / 2}" y="${BAR_Y - 12}" text-anchor="${side}"
+            style="font-size:16px;fill:var(--c-label)">${label}</text>`
+
+const timeBar = `
+      <g id="sr-timebar">
+        <text x="${BAR_X}" y="${BAR_Y - 46}" letter-spacing="2"
+              style="font-size:17px;fill:var(--c-bag)" font-weight="700">${t.timeLabel}</text>
+        <path class="hair" d="M ${BAR_X} ${BAR_Y - 34} H ${BAR_X + BAR_W}" />
+        ${seg(BAR_X, SEG_OUT, '#F0A63A', t.timeOut, t.timeOutVal, 'start')}
+        ${seg(
+          BAR_X + SEG_OUT + 6,
+          BAR_W - SEG_OUT - SEG_IN - 12,
+          '#8A8F9C',
+          t.timeAway,
+          t.timeAwayVal,
+          'middle',
+        )}
+        ${seg(BAR_X + BAR_W - SEG_IN, SEG_IN, '#F0A63A', t.timeIn, t.timeInVal, 'end')}
+        <text x="${BAR_X}" y="${BAR_Y + BAR_H + 26}"
+              style="font-size:17px;fill:var(--c-text)">${t.timeNote}</text>
+        <text x="${BAR_X}" y="${BAR_Y + BAR_H + 48}"
+              style="font-size:14px;fill:var(--c-muted)">${t.timeScaleNote}</text>
+      </g>`
+
 export function sceneRunwaySvg() {
   const body = `
       ${terminal}
@@ -206,11 +252,12 @@ export function sceneRunwaySvg() {
         side: 'right',
         title: t.outside,
         sub: t.outsideSub,
-      })}`
+      })}
+      ${timeBar}`
 
   return svgWrap({
     id: 'sr',
-    viewBox: '0 0 1440 780',
+    viewBox: '0 0 1440 872',
     title: t.svgTitle,
     desc: t.svgDesc,
     body,
