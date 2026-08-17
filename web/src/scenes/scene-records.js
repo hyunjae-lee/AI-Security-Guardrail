@@ -19,13 +19,13 @@ import { isoSpace } from './_iso.js'
 import { sceneRecords as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 300, oy: 150, s: 0.8 })
-const { at, box, slab, line, plane, grid, cutHatch } = iso
+const { at, box, slab, line, plane, grid, cutHatch, shadow } = iso
 
 /* -------------------------------------------------------------- 기록실 */
 
 const room = `
-      ${box(-12, -12, 624, 12, 90)}
-      ${box(-12, 0, 12, 400, 90)}
+      ${box(-12, -12, 624, 12, 90, { cls: 'wall' })}
+      ${box(-12, 0, 12, 400, 90, { cls: 'wall' })}
       ${slab(0, 0, 600, 400, 24)}
       ${grid(0, 0, 600, 400, 80)}
       ${cutHatch(0, 0, 600, 400, 24, 'l', 34)}
@@ -63,11 +63,17 @@ const room = `
 
 const [stampX, stampY] = at(286, 288, 45)
 
+/* 검인대 상판이 z=44 이고 M3 에서 스탬프가 16 만큼 내려찍는다.  쉬는 자리를
+   44+16=60 에 두어야 내려찍었을 때 상판에 정확히 닿는다.  46 에 두면 14 만큼
+   책상을 뚫고 들어간다 (예전 값). */
+const STAMP_REST = 60
+
 const stamp = `
+      ${shadow(258, 262, 56, 52, { z: 44, lift: STAMP_REST - 44, opacity: 0.4 })}
       <g id="sk-stamp">
-        ${box(258, 262, 56, 52, 26, { z: 46 })}
-        ${box(276, 280, 20, 20, 44, { z: 72 })}
-        ${box(264, 268, 44, 44, 12, { z: 116 })}
+        ${box(258, 262, 56, 52, 26, { z: STAMP_REST, cls: 'stamp-air' })}
+        ${box(276, 280, 20, 20, 44, { z: STAMP_REST + 26 })}
+        ${box(264, 268, 44, 44, 12, { z: STAMP_REST + 70 })}
       </g>`
 
 /* ------------------------------------------------------------- 기록부

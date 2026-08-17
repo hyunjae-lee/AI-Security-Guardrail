@@ -235,6 +235,7 @@ export const sceneWhy = {
   risk3: '돌아오는 짐도 그대로입니다',
   risk3Sub: '숨어 들어온 것이 있어도 걸러지지 않습니다',
   borderLabel: '국 경',
+  noCheck: '여권 확인대 없음',
   outbound: '나가는 질문',
   inbound: '돌아오는 답변',
   // 등급 배지 — 이 장면의 논거가 '등급 혼용' 이라 도면 주기로 함께 표기한다.

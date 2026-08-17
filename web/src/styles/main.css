@@ -1275,3 +1275,9 @@ body {
   padding-top: 1rem;
   border-top: 1px solid var(--c-hair);
 }
+
+/* 지면 그림자 — 물체가 바닥에 닿아 있음을 말한다. 배경보다 어두워야
+   '그늘' 로 읽히고, 너무 진하면 구멍처럼 보인다. */
+.illus .iso-shadow {
+  fill: #05060a;
+}

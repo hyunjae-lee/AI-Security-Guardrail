@@ -196,6 +196,7 @@ const bag = (id, x, y, { z = 0, w = 22, d = 15, h = 17 } = {}) => {
   return `
       <g id="${id}">
         ${box(x - w / 2, y - d / 2, w, d, h, {
+          cls: 'bag',
           top: 'bag-top',
           l: 'bag-l',
           r: 'bag-r',
@@ -273,7 +274,7 @@ export function scene2Svg() {
       ${bridge}
       ${bag('s2-bag-4', 330, 190)}
       ${terminal}
-      ${bag('s2-bag-5', 388, 208)}
+      ${bag('s2-bag-5', 394, 204)} <!-- 계류장 안으로 (귀퉁이가 허공에 걸려 있었다) -->
       ${border}
       ${outland}
 

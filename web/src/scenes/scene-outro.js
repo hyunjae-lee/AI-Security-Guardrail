@@ -111,6 +111,7 @@ const bag = (id, x, y, { z = 0, w = 22, d = 15, h = 17 } = {}) => {
       <g id="${id}">
         ${box(x - w / 2, y - d / 2, w, d, h, {
           z,
+          cls: 'bag',
           top: 'bag-top',
           l: 'bag-l',
           r: 'bag-r',

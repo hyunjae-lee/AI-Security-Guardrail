@@ -110,7 +110,7 @@ const goose = (iso, x, y, flip = false) => {
  * (X, Y, W, D) 는 대지 평면 사각형. 안의 배치는 비율로 잡아 어느 장면에서든 쓴다.
  */
 export function campus(iso, X, Y, W, D, { pond = true, detail = true } = {}) {
-  const { box, plane, line } = iso
+  const { box, plane, line, shadow } = iso
   const rx = (f) => X + W * f
   const ry = (f) => Y + D * f
 
@@ -208,15 +208,21 @@ export function campus(iso, X, Y, W, D, { pond = true, detail = true } = {}) {
         'hair',
       )}`
 
-  const built = halls
-    .map(([fx, fy, fw, fd, h]) => {
-      const x = rx(fx)
-      const y = ry(fy)
-      const w = W * fw
-      const d = D * fd
-      return box(x, y, w, d, h, HOME_FACE) + windows(x, y, w, d, h)
-    })
-    .join('')
+  /* 접지 그림자를 먼저 전부 깔고 나서 건물을 올린다.  건물별로 번갈아 그리면
+     앞 건물의 그림자가 뒤 건물 위에 얹혀 순서가 뒤집힌다. */
+  const built =
+    halls.map(([fx, fy, fw, fd]) =>
+      shadow(rx(fx), ry(fy), W * fw, D * fd, { opacity: 0.42, grow: 1.5 }),
+    ).join('') +
+    halls
+      .map(([fx, fy, fw, fd, h]) => {
+        const x = rx(fx)
+        const y = ry(fy)
+        const w = W * fw
+        const d = D * fd
+        return box(x, y, w, d, h, HOME_FACE) + windows(x, y, w, d, h)
+      })
+      .join('')
 
   const green = detail
     ? `

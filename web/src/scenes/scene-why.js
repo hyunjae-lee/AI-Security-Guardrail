@@ -54,6 +54,46 @@ const border = `
         ).join('')}
       </g>`
 
+/* ------------------------------------------------- 여권 확인대가 없다는 표시
+
+   이 장면은 '없는 것' 을 말하는데, 없는 것은 그릴 수가 없다.  그래서 있어야 할
+   자리에 빈 확인대 자국만 남긴다 — 바닥에 점선 자리표시, 그 위에 여권 심볼과
+   가위표.  출국층(SCENE 05)의 여권·비자 확인 포털과 같은 형태를 점선으로만
+   그려, 뒤에 그것이 나왔을 때 "아, 여기 없던 게 저거구나" 로 이어지게 했다. */
+
+const noCheckpoint = (() => {
+  /* 없는 것을 그리는 방법: 있어야 할 것의 윤곽만 점선으로 세우고 가위표를 친다.
+     모양은 출국층(SCENE 05)의 여권·비자 확인 포털과 같게 잡아, 뒤에 그 포털이
+     나왔을 때 "여기 없던 게 저거였구나" 로 이어지게 했다.
+     이름표는 달지 않는다 — 콜아웃 03 이 바로 이 자리를 가리킨다. */
+  const GH = 74 // 포털 높이
+  const ghost = 'stroke="#E25749" stroke-width="1.8" stroke-dasharray="7 6" opacity="0.9"'
+  const post = (py) =>
+    line([[434, py, 0], [434, py, GH]], '', false, ghost) +
+    line([[446, py, 0], [446, py, GH]], '', false, ghost)
+  const [cx, cy] = at(440, 200, GH / 2)
+  return `
+      <g id="sw-nocheck" fill="none">
+        <!-- 비어 있는 부지 — 확인대가 서 있어야 할 자리 -->
+        ${line(
+          [[404, 164], [476, 164], [476, 236], [404, 236]],
+          '', true,
+          'stroke="#E25749" stroke-dasharray="9 7" opacity="0.5"',
+        )}
+        <!-- 서 있지 않은 포털: 기둥 둘 + 상인방, 전부 점선 -->
+        ${post(170)}
+        ${post(224)}
+        ${line([[434, 170, GH], [434, 236, GH]], '', false, ghost)}
+        ${line([[446, 170, GH], [446, 236, GH]], '', false, ghost)}
+        ${line([[434, 170, GH], [446, 170, GH]], '', false, ghost)}
+        ${line([[434, 236, GH], [446, 236, GH]], '', false, ghost)}
+        <!-- 없다는 표시 -->
+        <path d="M ${cx - 30} ${cy - 30} L ${cx + 30} ${cy + 30}
+                 M ${cx + 30} ${cy - 30} L ${cx - 30} ${cy + 30}"
+              stroke="#E25749" stroke-width="3.4" stroke-linecap="round" />
+      </g>`
+})()
+
 /* --------------------------------------------------- 확인 없이 오가는 짐 */
 
 const FLY_Z = 46
@@ -65,6 +105,7 @@ const bag = (id, x, y, { z = 0, w = 24, d = 16, h = 18 } = {}) => {
       <g id="${id}">
         ${box(x - w / 2, y - d / 2, w, d, h, {
           z,
+          cls: 'bag fly', // 국경을 넘는 중 — 받침이 없는 게 맞다
           top: 'bag-top',
           l: 'bag-l',
           r: 'bag-r',
@@ -136,6 +177,7 @@ export function sceneWhySvg() {
   const body = `
       ${homeland}
       ${border}
+      ${noCheckpoint}
       <text x="${at(440, -230, 0)[0]}" y="${at(440, -230, 0)[1] - 16}"
             text-anchor="middle" class="co-sub" letter-spacing="6">${t.borderLabel}</text>
       ${outland}
@@ -181,9 +223,8 @@ export function sceneWhySvg() {
       })}
       ${callout({
         n: '03',
-        // 요청을 보내는 쪽 — 캠퍼스 연구동 지붕. 빈 잔디를 가리키면
-        // '누구의 요청인지 모른다' 가 가리킬 대상을 잃는다.
-        from: at(49, 231, 66),
+        // 비어 있는 여권 확인대 자리. '없는 것' 에도 가리킬 자국은 있어야 한다.
+        from: at(440, 200, 60),
         to: [200, 690],
         side: 'right',
         title: t.risk2,

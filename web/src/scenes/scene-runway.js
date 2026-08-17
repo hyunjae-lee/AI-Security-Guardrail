@@ -72,7 +72,7 @@ const CRAFT = { top: 'craft-top', l: 'craft-l', r: 'craft-r' }
 
 const aircraft = (x, y, z) => `
       <g>
-        ${box(x, y, 88, 20, 18, { z, ...CRAFT })}
+        ${box(x, y, 88, 20, 18, { z, cls: 'craft', ...CRAFT })}
         ${plane(
           [
             [x + 30, y - 34, z + 9],
@@ -91,7 +91,7 @@ const aircraft = (x, y, z) => `
           ],
           'craft-l',
         )}
-        ${box(x + 3, y + 7, 12, 7, 26, { z: z + 18, ...CRAFT })}
+        ${box(x + 3, y + 7, 12, 7, 26, { z: z + 18, cls: 'craft', ...CRAFT })}
         ${plane(
           [
             [x + 88, y + 3, z + 9],
@@ -105,8 +105,8 @@ const aircraft = (x, y, z) => `
 /** 화물 — 나갈 땐 가방(질의), 돌아올 땐 상자(답변). */
 const cargo = (x, y, z, kind) =>
   kind === 'bag'
-    ? box(x, y, 24, 16, 18, { z, top: 'bag-top', l: 'bag-l', r: 'bag-r' })
-    : box(x, y, 26, 18, 20, { z })
+    ? box(x, y, 24, 16, 18, { z, cls: 'cargo', top: 'bag-top', l: 'bag-l', r: 'bag-r' })
+    : box(x, y, 26, 18, 20, { z, cls: 'cargo' })
 
 /* --------------------------------------------------------- 관제 밖 장막
 

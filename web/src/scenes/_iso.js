@@ -13,6 +13,20 @@
 
 const COS30 = 0.8660254
 
+/**
+ * 물리 검사용 기록기.  globalThis.__ISO_RECORD__ 에 배열을 넣어 두면 그 뒤로
+ * 만들어지는 모든 직육면체·슬래브의 평면/높이 정보가 쌓인다.  평소에는 아무
+ * 일도 하지 않는다 (undefined 검사 한 번).
+ *
+ * 있는 이유: '물체가 허공에 떠 있다', '바닥 밖으로 나갔다', '서로 관통한다'
+ * 같은 것은 눈으로는 잘 안 보이는데 도면의 신뢰를 깎는다.  좌표로 잡는 게
+ * 확실하다.
+ */
+const record = (kind, o) => {
+  const log = globalThis.__ISO_RECORD__
+  if (log) log.push({ kind, ...o })
+}
+
 export function isoSpace({ ox, oy, s = 1 }) {
   const sx = (x, y) => ox + (x - y) * COS30 * s
   const sy = (x, y, z = 0) => oy + ((x + y) * 0.5 - z) * s
@@ -66,6 +80,7 @@ export function isoSpace({ ox, oy, s = 1 }) {
     { z = 0, id = '', cls = '', top = 'f-top', l = 'f-l', r = 'f-r' } = {},
   ) => {
     const t = z + h
+    record('box', { x, y, w, d, z, h, top: t, id, cls })
     return `<g class="solid ${cls}"${id ? ` id="${id}"` : ''}>
         ${poly(
           [
@@ -102,6 +117,7 @@ export function isoSpace({ ox, oy, s = 1 }) {
    * tone: 'ground'(기본) | 'home'(우리 영토) | 'away'(국경 밖)
    */
   const slab = (x, y, w, d, thickness, { id = '', tone = 'ground' } = {}) => {
+    record('slab', { x, y, w, d, z: -thickness, h: thickness, top: 0, id, tone })
     const g = tone === 'ground' ? 'ground' : `${tone}-g`
     return box(x, y, w, d, thickness, {
       z: -thickness,
@@ -111,6 +127,27 @@ export function isoSpace({ ox, oy, s = 1 }) {
       l: `${g}-l`,
       r: `${g}-r`,
     })
+  }
+
+  /**
+   * 지면 그림자.  물체가 바닥에 닿아 있는지, 떠 있다면 얼마나 떠 있는지를
+   * 그림자의 위치로 말한다.  광원이 좌상단이므로(면 음영과 같은 약속)
+   * 그림자는 우하단(+x, +y)으로 뜬 높이만큼 밀린다.
+   *
+   * lift 0 이면 접지 그림자 — 물체 바로 아래에 깔려 '닿아 있다' 를 말한다.
+   */
+  const shadow = (x, y, w, d, { z = 0, lift = 0, opacity = 0.32, grow = 1 } = {}) => {
+    const k = lift * 0.45
+    return plane(
+      [
+        [x + k - grow, y + k - grow, z + 0.4],
+        [x + w + k + grow, y + k - grow, z + 0.4],
+        [x + w + k + grow, y + d + k + grow, z + 0.4],
+        [x + k - grow, y + d + k + grow, z + 0.4],
+      ],
+      'iso-shadow',
+      `opacity="${opacity}"`,
+    )
   }
 
   /** 임의의 사각 평면 (스캔 빔, 활주로 노면 등) */
@@ -190,6 +227,7 @@ export function isoSpace({ ox, oy, s = 1 }) {
     box,
     slab,
     plane,
+    shadow,
     grid,
     cutHatch,
   }
