@@ -21,7 +21,7 @@ curl http://127.0.0.1:8088/healthz
 
 `web/` 번들은 `Dockerfile.full`의 node 스테이지에서 `VITE_BASE=/explain/ npm run build`로 빌드되어 이미지에 포함됩니다 (호스트에 Node 불필요). 로컬 개발은 `cd web && npm run dev` (포트 5173).
 
-## 도메인 (`testcert.kaist.ac.kr`)
+## 도메인 (`guardrail.kaist.ac.kr`)
 
 기관 내부망에서 8088 같은 비표준 포트가 막혀 접근이 안 되는 경우가 있어,
 이 호스트의 SSL Manager(Caddy)를 앞에 두고 443으로도 서빙합니다.
@@ -29,7 +29,7 @@ curl http://127.0.0.1:8088/healthz
 Caddy 설정은 이 저장소가 아니라 **`/home/kaistcert/workdir/Caddyfile`** 에 있습니다:
 
 ```
-testcert.kaist.ac.kr {
+guardrail.kaist.ac.kr, testcert.kaist.ac.kr {
     reverse_proxy 143.248.4.101:8088
     tls /etc/caddy/certificate/fullchain.crt /etc/caddy/certificate/Wildcard.kaist.ac.kr.key
 }
@@ -40,8 +40,9 @@ testcert.kaist.ac.kr {
 - 인증서는 기존 `*.kaist.ac.kr` 와일드카드를 그대로 씁니다(2026-12-17 만료).
 - 반영: `docker exec workdir-caddy-1 caddy reload --config /etc/caddy/Caddyfile`
   (컨테이너 재시작 불필요 — Caddyfile은 bind mount).
-- **DNS는 별도**입니다. `testcert.kaist.ac.kr` A 레코드가 이 호스트(143.248.4.101)를
-  가리켜야 합니다.
+- DNS: `guardrail.kaist.ac.kr` A → 143.248.4.101 (등록 완료, TTL 86400).
+  `testcert` 는 A 레코드가 143.248.4.48 을 가리켜 이 호스트로 오지 않습니다 —
+  나중에 돌리면 바로 받도록 이름만 함께 걸어 뒀습니다.
 
 8088 직결은 그대로 열어 둡니다 — CD 헬스체크가 이 포트를 씁니다.
 

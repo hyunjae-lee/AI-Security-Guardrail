@@ -70,7 +70,7 @@ docker compose up -d --build
 # http://<host>:8088  (80/443은 이 호스트의 SSL Manager가 사용 중이라 8088 사용)
 ```
 
-공개 주소: **https://testcert.kaist.ac.kr** (SSL Manager/Caddy → 8088 리버스 프록시).
+공개 주소: **https://guardrail.kaist.ac.kr** (SSL Manager/Caddy → 8088 리버스 프록시).
 직결은 `http://143.248.4.101:8088`. 자세한 내용은 [DEPLOY.md](DEPLOY.md).
 
 | 경로 | 내용 |
