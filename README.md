@@ -70,6 +70,14 @@ docker compose up -d --build
 # http://<host>:8088  (80/443은 이 호스트의 SSL Manager가 사용 중이라 8088 사용)
 ```
 
+| 경로 | 내용 |
+|------|------|
+| `/` | 실시간 가드레일 데모 (두 레인 · SSE 파이프라인 · 감사 대시보드) |
+| `/explain/` | 「디지털 국경」 — 질의가 국경을 넘는 과정을 공항 단면으로 설명하는 스크롤텔링 사이트 |
+
+`/explain/` 번들(`web/`, Vite + GSAP)은 `docker-compose.full.yml` 빌드 시 이미지 안에서
+함께 빌드됩니다. 프론트만 따로 개발하려면 `cd web && npm install && npm run dev` (포트 5173).
+
 환경변수:
 
 | 변수 | 기본값 | 설명 |

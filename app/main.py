@@ -495,6 +495,17 @@ async def get_stats() -> dict[str, Any]:
     return audit.stats()
 
 
+if settings.explain_dir.exists():
+    # Scrollytelling explainer ("디지털 국경"). Built separately with Vite
+    # (VITE_BASE=/explain/ npm run build) and mounted here so one container
+    # serves both the demo and the story that frames it.
+    app.mount(
+        "/explain",
+        StaticFiles(directory=settings.explain_dir, html=True),
+        name="explain",
+    )
+
+
 if settings.static_dir.exists():
     app.mount("/static", StaticFiles(directory=settings.static_dir), name="static")
 

@@ -16,6 +16,10 @@ curl http://127.0.0.1:8088/healthz
 ```
 
 접속: `http://<host-ip>:8088`
+- `/` — 실시간 가드레일 데모
+- `/explain/` — 「디지털 국경」 스크롤텔링 설명 사이트
+
+`web/` 번들은 `Dockerfile.full`의 node 스테이지에서 `VITE_BASE=/explain/ npm run build`로 빌드되어 이미지에 포함됩니다 (호스트에 Node 불필요). 로컬 개발은 `cd web && npm run dev` (포트 5173).
 
 SSL Manager(Caddy) 뒤에 도메인으로 노출하려면 Caddy 설정에
 `reverse_proxy localhost:8088` 을 추가하세요. (이 저장소는 Caddy 설정을 건드리지 않습니다.)

@@ -50,6 +50,14 @@ body {
 }
 .tab:hover { color: var(--text); }
 .tab.active { background: var(--accent); color: #fff; }
+/* Link out to the scrollytelling explainer — not a view tab, so it keeps
+   its own class and stays clear of the tab click handler. */
+.tab-link {
+  display: inline-flex; align-items: center; text-decoration: none;
+  color: var(--muted); border: 1px solid var(--border);
+  padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 600;
+}
+.tab-link:hover { color: var(--text); }
 
 main { max-width: 1500px; margin: 0 auto; padding: 22px; }
 .view { display: none; }

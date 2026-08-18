@@ -153,7 +153,7 @@ export const scenes = [
       '보이지 않는 것과 없는 것은 다릅니다. 지표 아래에서, 모든 질문이 여전히 여기를 지납니다.',
     cta: {
       label: '실제 동작 보기',
-      href: 'http://localhost:8088',
+      href: '/',
     },
   },
 ]

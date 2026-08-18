@@ -1,6 +1,17 @@
 # Full image: bundles Microsoft Presidio and NVIDIA NeMo Guardrails so the
 # third-party engines run for real. Larger and slower to build than the base
 # Dockerfile — the base image is what CI builds; this is the "탑재" deployment.
+
+# Stage 1 — build the "디지털 국경" explainer bundle. Kept in-image so a plain
+# `docker compose -f docker-compose.full.yml up -d --build` (what CD runs) needs
+# no Node toolchain on the host.
+FROM node:22-alpine AS web
+WORKDIR /web
+COPY web/package.json web/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY web/ ./
+RUN VITE_BASE=/explain/ npm run build
+
 FROM python:3.12-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
@@ -29,6 +40,7 @@ RUN pip install --no-cache-dir -r requirements-full.txt \
 
 COPY app ./app
 COPY attacks ./attacks
+COPY --from=web /web/dist ./web/dist
 
 RUN useradd --create-home --uid 10001 guardrail \
     && mkdir -p /app/data \

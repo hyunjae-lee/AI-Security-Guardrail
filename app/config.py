@@ -40,6 +40,8 @@ class Settings:
     use_presidio: bool = _env_bool("GUARDRAIL_USE_PRESIDIO", False)
     use_nemo: bool = _env_bool("GUARDRAIL_USE_NEMO", False)
     static_dir: Path = BASE_DIR / "static"
+    # Built Vite bundle for the "디지털 국경" explainer, served under /explain.
+    explain_dir: Path = PROJECT_ROOT / "web" / "dist"
     samples_path: Path = PROJECT_ROOT / "attacks" / "samples.json"
 
 
