@@ -263,7 +263,7 @@ const TONE3 = { hot: '#E25749', warm: '#F0A63A' }
 const CHIP = { ok: '#7FBF57', warm: '#F0A63A', hot: '#E25749' }
 
 /** 기본으로 켜 두는 판정 — 애니메이션이 없을 때(정지·reduced-motion) 보이는 화면. */
-const DEFAULT_KEY = 'mask'
+const DEFAULT_KEY = 'allow' // 대기열 첫 가방의 판정과 같아야 정지 화면이 맞는다
 
 /* 정지 상태(애니메이션 없음·reduced-motion)에서는 기본 가방의 투시 결과만 켠다.
    둘 다 켜 두면 마스킹 가방에 '숨은 쪽지' 까지 든 것처럼 보인다. */
@@ -577,12 +577,21 @@ export function scene3Anim(root, gsap, ScrollTrigger) {
    * 원문은 빔이 지나가기 전에 미리 갈아 끼우고(무엇을 스캔하는지 먼저 보여야
    * 한다), 투시 아이콘은 빔이 지나간 뒤에 뜬다(스캔 결과이므로).
    */
-  const scan = (t0, verdict) => {
+  const scan = (t0, verdict, first) => {
     const s = t.screenSamples[verdict] || {}
     const xray = s.xray || []
-    tl.set(SAMPLE_KEYS.map((k) => q(`#s3-sample-${k}`)).filter(Boolean), { opacity: 0 }, t0)
-      .set(q(`#s3-sample-${verdict}`), { opacity: 1 }, t0)
-      .fromTo(beam, { opacity: 0, x: 0, y: 0 }, { opacity: 1, duration: 0.15 }, t0)
+    /* 첫 가방은 타임라인에서 갈아 끼우지 않는다.  시각 0 에 'set' 을 걸면 스크럽이
+       진행률 0 을 렌더할 때 그 시각의 '전부 끄기' 까지만 적용되고 뒤따르는 '켜기'
+       는 아직 미래라, 장면에 막 들어온 동안 판독 화면이 비어 보인다.  첫 벌은
+       마크업 기본값(DEFAULT_KEY)이 그대로 보이면 된다. */
+    if (!first) {
+      tl.to(
+        SAMPLE_KEYS.map((k) => q(`#s3-sample-${k}`)).filter(Boolean),
+        { opacity: 0, duration: 0.12 },
+        t0,
+      ).to(q(`#s3-sample-${verdict}`), { opacity: 1, duration: 0.12 }, t0 + 0.12)
+    }
+    tl.fromTo(beam, { opacity: 0, x: 0, y: 0 }, { opacity: 1, duration: 0.15 }, t0)
       .to(beam, { x: beamSweep.x, y: beamSweep.y, duration: 0.7 }, t0)
       .to(beam, { opacity: 0, duration: 0.15 }, t0 + 0.7)
       .fromTo(
@@ -612,7 +621,7 @@ export function scene3Anim(root, gsap, ScrollTrigger) {
 
   QUEUE.forEach(([id, origin, verdict], i) => {
     const t0 = i * 2 // 가방 하나당 두 박자: 스캔 → 판정
-    scan(t0, verdict)
+    scan(t0, verdict, i === 0)
 
     if (verdict === 'override') {
       // 판정 게이트를 아예 건너뛴다. 전용 가방으로 갈아타 경로를 태운다.

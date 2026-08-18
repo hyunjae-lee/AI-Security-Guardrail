@@ -122,9 +122,12 @@ const glyph = {
                 stroke="${c}" stroke-width="1.4" stroke-linecap="round" />`,
 }
 
+/* 쌓이는 순서 = 가방이 지나가는 순서. 개인정보(치환 후 전달) → 반출 링크(폐기)
+   → 카나리아(폐기). 카나리아는 시스템 프롬프트가 통째로 새어 나온 신호라
+   치환으로 지울 수 있는 종류가 아니다 — 그래서 뒤 둘은 폐기로 간다. */
 const FINDS = [
-  { id: 'sa-find-1', x: 372, color: '#E25749', kind: 'link' },
-  { id: 'sa-find-2', x: 404, color: '#F0A63A', kind: 'id' },
+  { id: 'sa-find-1', x: 372, color: '#F0A63A', kind: 'id' },
+  { id: 'sa-find-2', x: 404, color: '#E25749', kind: 'link' },
   { id: 'sa-find-3', x: 436, color: '#E25749', kind: 'tag' },
 ]
 
@@ -305,6 +308,14 @@ const bag = (id, x, y, { z = 0, w = 22, d = 15, h = 17 } = {}) => {
       </g>`
 }
 
+/* 벨트 위 대기 슬롯 — 0번이 검역대 자리다.  앞의 가방이 빠지면 뒤가 한 칸씩
+   당겨 온다.  조립과 애니메이션이 같은 배열을 봐야 어긋나지 않는다. */
+const SLOTS = [
+  [566, 140, BELT_Z],
+  [680, 140, BELT_Z],
+  [794, 140, BELT_Z],
+]
+
 const figure = (plan) => {
   const [x, y] = at(...plan)
   return `
@@ -324,10 +335,10 @@ export function sceneArrivalsSvg() {
       ${shell}
       ${conveyor}
       ${tray}
-      ${bag('sa-bag-1', 800, 140, { z: BELT_Z })}
-      ${bag('sa-bag-2', 690, 140, { z: BELT_Z })}
+      ${bag('sa-bag-1', SLOTS[2][0], 140, { z: BELT_Z })}
+      ${bag('sa-bag-2', SLOTS[1][0], 140, { z: BELT_Z })}
       ${quarantine}
-      ${bag('sa-bag-3', 566, 140, { z: BELT_Z })}
+      ${bag('sa-bag-3', SLOTS[0][0], 140, { z: BELT_Z })}
       ${gates}
       ${figure([640, 250])}
       ${screen}
@@ -390,67 +401,122 @@ export function sceneArrivalsSvg() {
 }
 
 /* ==========================================================================
-   M3 — 도착 가방이 검역대를 지나며 하나씩 적발되고 2갈래로 갈린다.
-   출국층과 달리 pin 하지 않는다 (같은 장치를 두 번 쓰면 지루하다).
+   M3 — 스크롤이 진행 장치다.
+
+   예전에는 타임라인이 혼자 돌았다.  발표 중에는 그게 제일 곤란하다 — 설명하는
+   동안 화면이 먼저 가 버리고, 되돌릴 방법이 없다.  출국층(SCENE 05)과 같은
+   방식으로 바꾼다: 장면을 고정(pin)하고 스크롤 진행률에 타임라인을 묶어
+   (scrub), 말하는 속도대로 앞뒤로 움직일 수 있게 한다.
+
+   가방 하나당 두 박자다 — ① 검역대에서 판독(판독 화면이 그 답변으로 바뀐다)
+   ② 판정 후 2갈래 중 한 곳으로.  벨트 무늬만 스크럽과 무관하게 계속 흐른다.
    ========================================================================== */
 
-const QUARANTINE = [566, 140, BELT_Z]
 const JUNCTION = [132, 150, BELT_Z]
 const EXIT = {
   deliver: [40, 82, BELT_Z],
   drop: [40, 218, BELT_Z],
 }
 
-export function sceneArrivalsAnim(root, gsap) {
+/** 대기열: [id, 최초 슬롯, 판정, 트레이에 남는 것]. 판정 키가 곧 판독 화면 키다. */
+const QUEUE = [
+  ['sa-bag-3', SLOTS[0], 'deliver', '#sa-find-1'],
+  ['sa-bag-2', SLOTS[1], 'drop', '#sa-find-2'],
+  ['sa-bag-1', SLOTS[2], 'drop', '#sa-find-3'],
+]
+
+const SAMPLE_KEYS = Object.keys(t.screenSamples)
+
+export function sceneArrivalsAnim(root, gsap, ScrollTrigger) {
   const q = (sel) => root.querySelector(sel)
   gsap.set(root.querySelectorAll('[id^="sa-find-"]'), { opacity: 0 })
 
-  const tl = gsap.timeline({ repeat: -1, repeatDelay: 0.8, defaults: { ease: 'none' } })
+  const tl = gsap.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: {
+      trigger: root.closest('.scene'),
+      start: 'center center',
+      end: '+=2400',
+      pin: true,
+      scrub: 0.6,
+      anticipatePin: 1,
+    },
+  })
 
-  /* 판독 화면은 검역대에 들어온 가방의 것만 켠다 — 두 벌이 같이 켜지면
-     한 답변에 두 판정이 난 것처럼 읽힌다. */
-  const showSample = (key, t0) => {
-    Object.keys(t.screenSamples).forEach((k) => {
-      tl.to(q(`#sa-sample-${k}`), { opacity: k === key ? 1 : 0, duration: 0.25 }, t0)
-    })
-  }
-
-  const runBag = (id, origin, verdict, findSel, t0) => {
-    const el = q(`#${id}`)
-    if (!el) return
-    const toQ = delta(origin, QUARANTINE)
-    const toJ = delta(origin, JUNCTION)
-    const toE = delta(origin, EXIT[verdict])
-
-    tl.to(el, { x: toQ.x, y: toQ.y, duration: 1.1 }, t0)
+  /** 판독 1회 — 판독 화면을 그 가방의 답변으로 갈아 끼우고 주사선을 내린다. */
+  const read = (t0, verdict, findSel, first) => {
+    /* 첫 가방의 판독 결과는 타임라인이 건드리지 않는다 — 마크업 기본값이 곧
+       정지 화면이다.  나머지는 set() 이 아니라 짧은 tween 으로 갈아 끼운다.
+       시각 0 근처의 set() 은 스크럽이 진행률 0 을 렌더할 때 '전부 끄기' 만
+       적용되고 '켜기' 는 미래로 남아, 장면에 막 들어온 동안 판독 화면이 빈 채로
+       보인다 — 발표 중 그 장면에 멈춰 서 있는 시간이 가장 긴데도. */
+    if (!first) {
+      tl.to(
+        SAMPLE_KEYS.map((k) => q(`#sa-sample-${k}`)).filter(Boolean),
+        { opacity: 0, duration: 0.12 },
+        t0,
+      ).to(q(`#sa-sample-${verdict}`), { opacity: 1, duration: 0.12 }, t0 + 0.12)
+    }
+    tl.fromTo(
+        q('#sa-screen-sweep'),
+        { attr: { y: PY + 44 }, opacity: 0.35 },
+        { attr: { y: RULE_Y - 6 }, opacity: 0.1, duration: 0.8 },
+        t0,
+      )
       // 검역 표시등이 판정 색으로 바뀐다.
-      .to(q('#sa-lamp'), { fill: verdict === 'drop' ? '#E25749' : '#F0A63A', duration: 0.2 }, t0 + 1.1)
-    showSample(verdict, t0 + 1.05)
+      .to(
+        q('#sa-lamp'),
+        { fill: verdict === 'drop' ? '#E25749' : '#F0A63A', duration: 0.2 },
+        t0 + 0.55,
+      )
     if (findSel) {
       tl.fromTo(
         q(findSel),
         { opacity: 0, y: -22 },
-        { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
-        t0 + 1.2,
+        { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' },
+        t0 + 0.7,
       )
     }
-    tl.to(q('#sa-lamp'), { fill: '#43BC9C', duration: 0.3 }, t0 + 1.9)
-      .to(el, { x: toJ.x, y: toJ.y, duration: 1 }, t0 + 1.9)
-      .to(el, { x: toE.x, y: toE.y, duration: 0.6 }, t0 + 2.9)
-      .to(el, { opacity: 0, duration: 0.3 }, t0 + 3.4)
   }
 
-  runBag('sa-bag-3', [566, 140, BELT_Z], 'deliver', '#sa-find-1', 0)
-  runBag('sa-bag-2', [690, 140, BELT_Z], 'drop', '#sa-find-2', 2.2)
-  runBag('sa-bag-1', [800, 140, BELT_Z], 'deliver', '#sa-find-3', 4.4)
+  /** 판정 후 분기점을 거쳐 해당 레인 끝으로 내보낸다. */
+  const divert = (id, origin, verdict, t0) => {
+    const el = q(`#${id}`)
+    if (!el) return
+    tl.to(q('#sa-lamp'), { fill: '#43BC9C', duration: 0.25 }, t0)
+      .to(el, { ...delta(origin, JUNCTION), duration: 0.7 }, t0)
+      .to(el, { ...delta(origin, EXIT[verdict]), duration: 0.5 }, t0 + 0.7)
+      .to(el, { opacity: 0, duration: 0.25 }, t0 + 1.15)
+  }
 
+  QUEUE.forEach(([id, origin, verdict, findSel], i) => {
+    const t0 = i * 2
+    read(t0, verdict, findSel, i === 0)
+    divert(id, origin, verdict, t0 + 1)
+
+    /* 뒤에 남은 가방을 한 칸씩 당긴다.  x/y 는 최초 위치 기준 절대 변위라
+       '몇 칸 당겼는지' 가 아니라 '지금 몇 번 슬롯인지' 로 목표를 잡는다. */
+    QUEUE.slice(i + 1).forEach(([nextId, nextOrigin], k) => {
+      tl.to(q(`#${nextId}`), { ...delta(nextOrigin, SLOTS[k]), duration: 0.8 }, t0 + 1.2)
+    })
+  })
+
+  // 벨트 무늬는 스크럽과 무관하게 흐른다 (설비가 살아 있다는 신호).
   const tooth = delta([28, 140, BELT_Z], [0, 140, BELT_Z])
-  gsap.to(q('#sa-belt-teeth'), {
+  const beltLoop = gsap.to(q('#sa-belt-teeth'), {
     x: tooth.x,
     y: tooth.y,
     duration: 1.1,
     ease: 'none',
     repeat: -1,
+  })
+
+  // 화면 밖에서는 루프를 멈춰 둔다.
+  ScrollTrigger.create({
+    trigger: root.closest('.scene'),
+    start: 'top bottom',
+    end: 'bottom top',
+    onToggle: (self) => (self.isActive ? beltLoop.play() : beltLoop.pause()),
   })
 
   return tl
