@@ -44,6 +44,16 @@ body {
   }
 }
 
+/* 사이트 안에서 모션을 직접 켠 경우에는 OS 설정보다 그 선택을 따른다.
+   (data-motion 은 main.js 가 첫 렌더 전에 <html> 에 찍는다.) */
+html[data-motion='on'] {
+  scroll-behavior: smooth;
+}
+
+html[data-motion='off'] {
+  scroll-behavior: auto;
+}
+
 .skip-link {
   position: absolute;
   left: -9999px;
@@ -102,6 +112,98 @@ body {
   font-weight: 700;
 }
 
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* 모션 토글 — 상단 바의 메타 텍스트와 같은 급으로 두어, 읽는 흐름을 끊지 않되
+   '동작 줄이기' 때문에 화면이 멈춰 있을 때 되돌릴 자리가 항상 보이게 한다. */
+.motion-toggle {
+  appearance: none;
+  cursor: pointer;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--c-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--c-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-meta);
+  text-transform: uppercase;
+}
+
+.motion-toggle b {
+  color: var(--c-gear);
+  font-weight: 700;
+}
+
+.motion-toggle[aria-pressed='false'] b {
+  color: var(--c-muted);
+}
+
+.motion-toggle:hover {
+  border-color: var(--c-gear);
+  color: var(--c-text);
+}
+
+/* 첫 방문에서 모션이 꺼져 있을 때만 뜨는 안내. 한 번 답하면 다시 뜨지 않는다. */
+.motion-notice {
+  position: fixed;
+  z-index: 45;
+  inset: auto auto 1.25rem 50%;
+  transform: translateX(-50%);
+  width: min(46rem, calc(100vw - 2rem));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--c-line);
+  border-radius: 0.5rem;
+  background: var(--c-panel);
+  box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 45%);
+  color: var(--c-label);
+  font-size: 0.875rem;
+}
+
+.motion-notice__text {
+  flex: 1 1 18rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.motion-notice__text b {
+  color: var(--c-text);
+}
+
+.motion-notice__go,
+.motion-notice__close {
+  appearance: none;
+  cursor: pointer;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.motion-notice__go {
+  border: 1px solid var(--c-gear);
+  background: var(--c-gear);
+  color: var(--c-bg);
+}
+
+.motion-notice__close {
+  border: 1px solid var(--c-line);
+  background: transparent;
+  color: var(--c-muted);
+}
+
+.motion-notice__close:hover {
+  color: var(--c-text);
+}
+
 .progress {
   position: fixed;
   inset: 0 auto auto 0;
@@ -140,6 +242,14 @@ body {
   display: grid;
   grid-template-rows: auto 1fr auto;
   gap: clamp(1.25rem, 2.4vh, 2rem);
+}
+
+/* 그리드·플렉스 항목의 기본 min-width 는 auto(=내용의 최소 폭)라, 도면 SVG 처럼
+   본래 폭이 넓은 내용이 들어가면 칸이 화면 밖까지 늘어난다. 좁은 화면에서 가로
+   스크롤이 생기고 상단 바가 밀려 나가던 원인이 이것이다. */
+.scene__inner > *,
+.scene__foot > * {
+  min-width: 0;
 }
 
 /* 프레임 모서리 틱 — 도면 트리밍 마크 */
@@ -542,6 +652,18 @@ body {
   .dotnav {
     display: none;
   }
+
+  /* 레일이 사라진 폭에서는 그 자리를 비워 두던 오른쪽 여백(-48px)도 걷는다.
+     남겨 두면 도면이 화면 밖으로 밀려 나가 가로 스크롤이 생긴다. */
+  .scene__stage {
+    margin-inline: calc(var(--pad-x) * -0.55);
+  }
+
+  /* 좁은 폭에서는 현재 장면 표시보다 모션 토글이 먼저다 —
+     화면이 멈춰 보일 때 되돌릴 자리가 여기뿐이다. */
+  .topbar__now {
+    display: none;
+  }
 }
 
 /* ==========================================================================
@@ -816,7 +938,9 @@ body {
 .scene__lead {
   word-break: keep-all;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
+  /* min() 없이 minmax(30rem,…) 만 쓰면 화면이 30rem 보다 좁을 때 칸이 줄지 못해
+     본문이 화면 밖으로 나간다. 좁은 화면에서는 한 칸이 곧 화면 폭이다. */
+  grid-template-columns: repeat(auto-fit, minmax(min(30rem, 100%), 1fr));
   gap: 0.6rem clamp(2rem, 4vw, 4rem);
   align-items: start;
 }

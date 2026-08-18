@@ -13,6 +13,15 @@
 export const site = {
   title: '디지털 국경',
   navLabel: '장면 이동',
+  motionLabel: '모션',
+  motionOn: '켜짐',
+  motionOff: '꺼짐',
+  // OS/브라우저의 '동작 줄이기' 때문에 화면이 정지해 보일 때 뜨는 안내.
+  // 발표 자리에서 원인을 모른 채 "애니메이션이 사라졌다" 로 끝나지 않게 한다.
+  motionNotice:
+    "이 브라우저에 <b>'동작 줄이기(reduce motion)'</b> 가 켜져 있어 애니메이션을 멈춰 둔 상태입니다.",
+  motionNoticeAction: '이 사이트에서는 켜기',
+  motionNoticeDismiss: '이대로 보기',
 }
 
 /** 스크롤 순서 고정.
