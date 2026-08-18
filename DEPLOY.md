@@ -21,8 +21,29 @@ curl http://127.0.0.1:8088/healthz
 
 `web/` 번들은 `Dockerfile.full`의 node 스테이지에서 `VITE_BASE=/explain/ npm run build`로 빌드되어 이미지에 포함됩니다 (호스트에 Node 불필요). 로컬 개발은 `cd web && npm run dev` (포트 5173).
 
-SSL Manager(Caddy) 뒤에 도메인으로 노출하려면 Caddy 설정에
-`reverse_proxy localhost:8088` 을 추가하세요. (이 저장소는 Caddy 설정을 건드리지 않습니다.)
+## 도메인 (`testcert.kaist.ac.kr`)
+
+기관 내부망에서 8088 같은 비표준 포트가 막혀 접근이 안 되는 경우가 있어,
+이 호스트의 SSL Manager(Caddy)를 앞에 두고 443으로도 서빙합니다.
+
+Caddy 설정은 이 저장소가 아니라 **`/home/kaistcert/workdir/Caddyfile`** 에 있습니다:
+
+```
+testcert.kaist.ac.kr {
+    reverse_proxy 143.248.4.101:8088
+    tls /etc/caddy/certificate/fullchain.crt /etc/caddy/certificate/Wildcard.kaist.ac.kr.key
+}
+```
+
+- 컨테이너 이름이 아니라 호스트 IP로 넘깁니다. 이 앱은 Caddy와 다른 compose 네트워크에
+  있고, CD가 컨테이너를 재생성해도 이 설정이 깨지지 않아야 하기 때문입니다.
+- 인증서는 기존 `*.kaist.ac.kr` 와일드카드를 그대로 씁니다(2026-12-17 만료).
+- 반영: `docker exec workdir-caddy-1 caddy reload --config /etc/caddy/Caddyfile`
+  (컨테이너 재시작 불필요 — Caddyfile은 bind mount).
+- **DNS는 별도**입니다. `testcert.kaist.ac.kr` A 레코드가 이 호스트(143.248.4.101)를
+  가리켜야 합니다.
+
+8088 직결은 그대로 열어 둡니다 — CD 헬스체크가 이 포트를 씁니다.
 
 ## 자동 배포 (GitHub Actions)
 
