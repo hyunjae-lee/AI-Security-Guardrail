@@ -1,20 +1,21 @@
 /**
- * SCENE 10 · 아웃트로 — 지표 아래에서 계속 돌아가는 검사대.
+ * SCENE 10 · 아웃트로 — 눈에 띄지 않는 자리에서 계속 돌아가는 검사대.
  *
  * 이 장면이 말해야 하는 것은 "사라졌다" 가 아니라 **"안 보일 뿐 그대로 돈다"**
  * 이다.  그래서 예전처럼 빈 윤곽선을 흐리게 깜빡이는 방식은 쓰지 않는다 —
  * 그건 '꺼져 가는 것' 으로 읽힌다.  대신 두 가지를 그림으로 증명한다:
  *
- *   1) 지표를 잘라 낸다.  위층은 평범한 캠퍼스, 아래층에는 불을 켠 검사대.
+ *   1) 땅을 잘라 낸다.  위층은 평범한 캠퍼스, 아래층에는 불을 켠 검사대.
  *      '보이지 않는 것' 과 '없는 것' 이 다르다는 말을 단면으로 보여 준다.
- *   2) 가방 경로가 지표 아래로 내려갔다 올라온다.  캠퍼스에서 출발한 질문이
+ *   2) 가방 경로가 땅 아래로 내려갔다 올라온다.  캠퍼스에서 출발한 질문이
  *      검사대를 지나지 않고 국경으로 갈 길이 그림 안에 없다.
  *
- * 아래층은 SCENE 04 의 터미널과 같은 청록 계열을 쓰되 한 단계 가라앉혀,
- * '작동 중이지만 눈에 띄지 않는다' 를 톤으로 말한다.
+ * 아래층은 SCENE 04 의 터미널과 같은 검사장 색을 그대로 쓴다.  가라앉히면
+ * '꺼져 가는 것' 으로 읽혀 이 장면의 논지와 반대가 된다 — 안 보이는 것은
+ * 위치이지 밝기가 아니다.  가려 주는 것은 색이 아니라 그 위를 덮은 땅이다.
  *
  * M3 애니메이션 대상 id:
- *   #so-bag-1 … #so-bag-3   지표 아래로 내려갔다 올라오는 가방
+ *   #so-bag-1 … #so-bag-3   땅 아래로 내려갔다 올라오는 가방
  *   #so-route-1 … #so-route-3   그 경로
  *   #so-belt                 아래층 컨베이어 흐름
  *   #so-lamp-1 … #so-lamp-3  가동 표시등 (꺼지지 않는다 — 맥동만 한다)
@@ -40,14 +41,14 @@ const homeland = `
 
 /* 터미널이 있던 자리.  앞쪽 절반을 잘라 내 아래를 드러낸다 — 남은 것은 뒤쪽
    띠와, 잘린 자리를 알려 주는 점선뿐이다. */
-const CUT_Y = 158 // 지표가 잘린 선
+const CUT_Y = 158 // 땅이 잘린 선
 
 const siteGround = `
       ${slab(296, 90, 244, CUT_Y - 90, 16, { tone: 'home' })}
       ${grid(296, 90, 244, CUT_Y - 90, 50)}
       ${cutHatch(296, 90, 244, CUT_Y - 90, 16, 'l')}
       ${cutHatch(296, 90, 244, CUT_Y - 90, 16, 'r')}
-      <!-- 걷어 낸 지표가 원래 있던 자리 -->
+      <!-- 걷어 낸 땅이 원래 있던 자리 -->
       ${line(
         [
           [296, CUT_Y],
@@ -65,7 +66,7 @@ const siteGround = `
 const FLOOR = -128 // 아래층 바닥
 const BELT = FLOOR + 10
 
-/** 아래층은 위층보다 한 단계 가라앉힌 청록 — 돌아가지만 눈에 띄지 않는다. */
+/** 아래층도 검사장 색 그대로 — 땅에 덮여 안 보일 뿐, 불이 꺼진 것은 아니다. */
 const DOWN_FACE = { top: 'gate-top', l: 'gate-l', r: 'gate-r', cls: 'gate-edge' }
 
 const underworld = `
@@ -111,9 +112,24 @@ const underworld = `
         <text x="${at(406, 300, FLOOR + 4)[0]}" y="${at(406, 300, FLOOR + 4)[1] + 30}"
               text-anchor="middle" letter-spacing="3"
               style="font-size:16px;fill:#43BC9C" font-weight="700">${t.running}</text>
+        <!-- 통과 시간 — '느려지지 않는다' 를 말이 아니라 숫자로 둔다. 가동 표시
+             바로 아래에 붙여 검사대의 상태값으로 읽히게 하고, 가방 경로와 겹치지
+             않는 빈자리에 놓는다. 색은 경로와 같은 호박색 — 지나가는 시간이다. -->
+        ${(() => {
+          const [gx, gy] = at(406, 300, FLOOR + 4)
+          const ty = gy + 66
+          return `<g id="so-timing">
+          <rect x="${gx - 54}" y="${ty - 21}" width="108" height="30" rx="15"
+                fill="#131418" stroke="#F0A63A" stroke-width="1.4" />
+          <text x="${gx}" y="${ty}" text-anchor="middle" font-weight="700"
+                style="font-size:17px;fill:#F0A63A">${t.timing}</text>
+          <text x="${gx}" y="${ty + 25}" text-anchor="middle"
+                style="font-size:14px;fill:var(--c-muted)">${t.timingSub}</text>
+        </g>`
+        })()}
       </g>`
 
-/* 잘린 지표의 단면 — 아래층이 '땅속' 임을 이 면이 말한다. */
+/* 잘린 땅의 단면 — 아래층이 '땅속' 임을 이 면이 말한다. */
 const cutFace = `
       <g class="solid" opacity="0.9">
         ${plane(
@@ -136,7 +152,7 @@ const cutFace = `
         ).join('')}
       </g>`
 
-/* 지표선 — 위/아래를 가르는 기준선. 이 장면의 논지가 이 선 하나다. */
+/* 지면선 — 위/아래를 가르는 기준선. 이 장면의 논지가 이 선 하나다. */
 const groundLine = `
       ${line(
         [
@@ -152,14 +168,23 @@ const groundLine = `
               t.groundLine
             }</text>`
 
-/** 지표선의 화면 높이 — 왼쪽 레일 눈금을 여기에 맞춘다. */
+/** 지면선의 화면 높이 — 왼쪽 레일 눈금을 여기에 맞춘다. */
 const GL_Y = at(296, CUT_Y, 0)[1]
 
-const outland = `<g opacity="0.72">${globe(iso, [900, 40], 108, { id: 'so-globe' })}</g>`
+/* 국경 밖 — 비유가 끝나는 자리라 여기서만 실제 서비스 이름을 쓴다.
+   "그래서 이게 어디로 가는 얘기냐" 를 그림 안에서 끊는다. */
+const [obX, obY] = at(900, 40, 0)
+
+const outland = `
+      <g opacity="0.72">${globe(iso, [900, 40], 108, { id: 'so-globe' })}</g>
+      <text x="${obX}" y="${obY + 34}" text-anchor="middle" letter-spacing="1"
+            style="font-size:18px;fill:var(--c-label)" font-weight="700">${t.services}</text>
+      <text x="${obX}" y="${obY + 57}" text-anchor="middle"
+            style="font-size:15px;fill:var(--c-muted)">${t.servicesSub}</text>`
 
 /* --------------------------------------------------- 내려갔다 올라오는 경로
 
-   캠퍼스에서 출발한 가방이 지표 아래로 내려가 컨베이어를 타고, 검사대를 지난
+   캠퍼스에서 출발한 가방이 땅 아래로 내려가 컨베이어를 타고, 검사대를 지난
    뒤 다시 올라가 국경 너머로 나간다.  검사대를 건너뛰는 길은 그리지 않는다 —
    그림 안에 없는 길은 실제로도 없다는 것이 이 장면의 주장이다. */
 
@@ -193,7 +218,7 @@ const ROUTES = [
   ],
 ]
 
-/** 지표를 드나드는 지점 — 아래로 꽂히는 화살표와 위로 나가는 화살표. */
+/** 지면을 드나드는 지점 — 아래로 꽂히는 화살표와 위로 나가는 화살표. */
 const arrowAt = (plan, dir) => {
   const [x, y] = at(...plan)
   const s = dir === 'down' ? 1 : -1

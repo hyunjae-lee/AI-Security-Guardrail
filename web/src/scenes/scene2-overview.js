@@ -27,7 +27,7 @@ import {
 import { scene2 as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 406, oy: 130, s: 1 })
-const { at, box, slab, line, plane, grid, cutHatch, curve } = iso
+const { at, pt, box, slab, line, plane, grid, cutHatch, curve } = iso
 
 const HOME = HOME_FACE
 
@@ -86,10 +86,79 @@ const DEVICES = [
   ),
 ].join('')
 
+/* 볼트(반원통) 지붕 — 이 건물만의 실루엣.
+
+   상자에 평지붕을 얹으면 캠퍼스 연구동과 형태가 같아져, 색을 아무리 밝혀도
+   '조금 밝은 건물' 로만 읽힌다.  아치 단면을 세워 두면 축소된 조감도에서도
+   윤곽만으로 다른 종류의 건물이라는 게 먼저 온다 — 공항 터미널의 형태다.
+
+   면을 부드럽게 잇지 않고 여덟 조각으로 각지게 나눈 것은 이 도면의 약속을
+   따른 것이다(면은 평면, 음영은 세 단계).  뒤쪽 경사는 어둡게, 마루는 밝게. */
+const VAULT_N = 8
+
+const vault = (x0, x1, y0, y1, zBase, rise) => {
+  const d = y1 - y0
+  const zAt = (k) => zBase + rise * Math.sin(Math.PI * k)
+  const tone = (k) => (k < 0.3 ? 'gate-r' : k < 0.62 ? 'gate-top' : 'gate-l')
+  const strips = []
+  for (let i = 0; i < VAULT_N; i++) {
+    const k0 = i / VAULT_N
+    const k1 = (i + 1) / VAULT_N
+    strips.push(
+      `<polygon class="${tone((k0 + k1) / 2)}" points="${[
+        pt(x0, y0 + d * k0, zAt(k0)),
+        pt(x1, y0 + d * k0, zAt(k0)),
+        pt(x1, y0 + d * k1, zAt(k1)),
+        pt(x0, y0 + d * k1, zAt(k1)),
+      ].join(' ')}" />`,
+    )
+  }
+  /* 보이는 쪽(+x) 마구리는 아치 그대로 뚫어 둔다 — 안이 비쳐야 '지나가는 곳'
+     으로 읽힌다. 안쪽 면은 처마 밑 그늘색. */
+  const archPts = []
+  for (let i = 0; i <= VAULT_N * 2; i++) {
+    const k = i / (VAULT_N * 2)
+    archPts.push(pt(x1, y0 + d * k, zAt(k)))
+  }
+  const face = `<polygon class="gate-deep" points="${[
+    pt(x1, y0, zBase),
+    ...archPts,
+    pt(x1, y1, zBase),
+  ].join(' ')}" />`
+  const rib = `<path class="gear" fill="none" d="M ${archPts.join(' L ')}" />`
+  return `${strips.join('')}${face}${rib}`
+}
+
 /* ------------------------------------------------------------ 터미널 섬 */
 
-const [beaconX, beaconY] = at(402, 210, 156)
+const [beaconX, beaconY] = at(401, 214, 132)
 
+/** 관문 — 가방이 실제로 통과하는 문.
+
+    앞면에 아치로 뚫는다.  건물 앞에 문틀을 따로 세워 보았더니, 축소된 조감도
+    에서는 건물 모서리에 걸린 고리 하나로 읽혀 무엇인지 알 수 없었다.  벽에
+    뚫린 아치는 크기가 작아도 '들어가는 곳' 으로 바로 읽힌다. */
+const portal = (() => {
+  const X0 = 410
+  const X1 = 448
+  const H = 30 // 기둥 높이
+  const R = 15 // 아치 높이
+  const N = 10
+  const arc = Array.from({ length: N + 1 }, (_, i) => {
+    const k = i / N
+    return pt(X0 + (X1 - X0) * k, 194, H + R * Math.sin(Math.PI * k))
+  })
+  const outline = `M ${pt(X0, 194, 0)} L ${arc.join(' L ')} L ${pt(X1, 194, 0)} Z`
+  const [cx, cy] = at((X0 + X1) / 2, 194, H + R + 12)
+  return `
+        <g id="s2-portal">
+          <path class="gate-deep" d="${outline}" />
+          <path d="${outline}" fill="none" stroke="var(--c-gate-edge)"
+                stroke-width="2.2" stroke-linejoin="round" />
+          <!-- 문 위 표시등 — 열려서 돌아가고 있다는 신호 -->
+          <circle cx="${cx}" cy="${cy}" r="3.4" class="gear-fill" opacity="0.9" />
+        </g>`
+})()
 
 const terminal = `
       ${slab(380, 90, 160, 220, 16, { tone: 'home' })}
@@ -115,42 +184,54 @@ const terminal = `
           ],
           'route',
         )}
-        <!-- 본동 — 주변보다 밝은 검사장 면 -->
-        ${box(398, 126, 116, 66, 68, GATE_FACE)}
-        ${line(
-          [
-            [398, 126, 68],
-            [514, 126, 68],
-            [514, 192, 68],
-            [398, 192, 68],
-          ],
-          'gear',
-          true,
-        )}
-        <!-- 지붕 위 표시등 줄 — 운영 중이라는 신호 -->
-        ${[0, 1, 2, 3].map((i) => {
-          const [lx, ly] = at(416 + i * 28, 159, 68)
-          return `<circle cx="${lx}" cy="${ly}" r="3.4" class="gear-fill" opacity="0.85" />`
-        }).join('')}
-        <!-- 가방이 들어오는 입구 -->
+        <!-- 본동 — 낮은 벽 위에 볼트 지붕 -->
+        ${box(396, 122, 120, 72, 42, GATE_FACE)}
+        ${vault(396, 516, 122, 194, 42, 34)}
+        <!-- 앞면 유리 커튼월 — 벽 전체가 아니라 띠로만 넣어 면을 죽이지 않는다 -->
         ${plane(
           [
-            [416, 192, 34],
-            [446, 192, 34],
-            [446, 192, 0],
-            [416, 192, 0],
+            [456, 194, 34],
+            [512, 194, 34],
+            [512, 194, 12],
+            [456, 194, 12],
           ],
-          'gear-fill',
-          'opacity="0.35"',
+          'gate-glass',
+          'opacity="0.16"',
         )}
-        <!-- 관제탑 -->
-        ${box(392, 200, 20, 20, 130, GATE_FACE)}
-        ${box(385, 193, 34, 34, 14, { z: 130, ...GATE_FACE })}
+        ${Array.from({ length: 4 }, (_, i) =>
+          line(
+            [
+              [466 + i * 12, 194, 34],
+              [466 + i * 12, 194, 12],
+            ],
+            'hair',
+          ),
+        ).join('')}
+        <!-- 마루 위 표시등 줄 — 운영 중이라는 신호 -->
+        ${[0, 1, 2, 3]
+          .map((i) => {
+            const [lx, ly] = at(414 + i * 28, 158, 76)
+            return `<circle cx="${lx}" cy="${ly}" r="3.4" class="gear-fill" opacity="0.85" />`
+          })
+          .join('')}
+        <!-- 가방이 들어오는 관문 -->
+        ${portal}
+        <!-- 관제탑 — 아래는 가늘게, 위는 내밀어 공항 관제탑 실루엣으로 -->
+        ${box(394, 206, 14, 14, 96, GATE_FACE)}
+        ${box(389, 201, 24, 24, 16, { z: 96, ...GATE_FACE })}
+        ${box(392, 204, 18, 18, 5, { z: 112, ...GATE_FACE })}
+        <path d="M ${at(401, 213, 117)[0]} ${at(401, 213, 117)[1]}
+                 L ${beaconX} ${beaconY}" class="gear" fill="none" />
         <circle id="s2-beacon" class="gear-fill" cx="${beaconX}" cy="${beaconY}" r="6" />
-        <!-- 탑승교 -->
-        ${box(514, 134, 30, 7, 5, { z: 30, ...GATE_FACE })}
-        ${box(514, 152, 30, 7, 5, { z: 30, ...GATE_FACE })}
-        ${box(514, 170, 30, 7, 5, { z: 30, ...GATE_FACE })}
+        <!-- 탑승교 — 끝에 항공기 스탠드 표시 -->
+        ${[130, 150, 170]
+          .map((y) => {
+            const [sxp, syp] = at(540, y + 3, 30)
+            return `${box(516, y, 24, 6, 5, { z: 25, ...GATE_FACE })}
+        <circle cx="${sxp}" cy="${syp}" r="4.2" fill="none"
+                stroke="var(--c-gate-edge)" stroke-width="1.4" opacity="0.8" />`
+          })
+          .join('')}
       </g>`
 
 /* 캠퍼스와 터미널을 잇는 유일한 다리 */

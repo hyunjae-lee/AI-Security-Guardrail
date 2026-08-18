@@ -49,6 +49,37 @@ export const callout = ({
       </g>`
 }
 
+/* --------------------------------------------------------------- 글자 폭
+
+   SVG 는 레이아웃을 알려 주지 않는데, 글자 위에 강조 상자를 얹으려면 조각의
+   폭을 알아야 한다.  Noto Sans KR 기준 어드밴스 대략치 — 전부 0.55em 으로
+   잡으면 공백·쉼표가 과대평가되어 조각 사이가 눈에 띄게 벌어진다.
+   출국층·입국층 두 판독 화면이 같은 자를 써야 두 장면이 같은 화면으로 읽힌다. */
+
+const advance = (c) => {
+  if (/[가-힣ㄱ-ㅎㅏ-ㅣ一-鿿]/.test(c)) return 1.0
+  if (c === ' ') return 0.26
+  if (/[,.·:;'"]/.test(c)) return 0.28
+  if (/[-–—/|]/.test(c)) return 0.36
+  if (/[()[\]{}]/.test(c)) return 0.33
+  if (/[ilj!.]/.test(c)) return 0.3
+  // 대문자·숫자는 소문자보다 확실히 넓다. 뭉뚱그리면 [REDACTED:PHONE_KR] 같은
+  // 토큰의 폭이 20px 넘게 모자라 다음 조각이 글자 위로 올라탄다.
+  if (/[A-Z]/.test(c)) return 0.72
+  if (c === '@') return 0.95
+  if (/[0-9]/.test(c)) return 0.58
+  if (c === '_') return 0.5
+  return 0.56
+}
+
+/** 문자열이 글꼴 크기 f 에서 차지하는 대략 폭. */
+export const runW = (str, f) => [...str].reduce((a, c) => a + f * advance(c), 0)
+
+/** 강조 배경 — 글자 시작점은 고정이고 오른쪽 끝만 추정하므로 어긋나도 티가 안 난다. */
+export const mark = (x, y, text, color, fs = 15, opacity = 0.16) =>
+  `<rect x="${(x - 4).toFixed(1)}" y="${y - fs + 1}" width="${(runW(text, fs) + 8).toFixed(1)}"
+                 height="${fs + 7}" rx="2" fill="${color}" opacity="${opacity}" />`
+
 /** 장면 제목 옆에 붙는 도면 표제 (좌상단 고정). */
 export const plate = (x, y, text) => `
       <text class="co-sub" x="${x}" y="${y}" letter-spacing="3">${text}</text>

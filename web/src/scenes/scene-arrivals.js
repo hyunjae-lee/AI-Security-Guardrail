@@ -16,7 +16,7 @@
  *   #sa-path-deliver / #sa-path-drop
  */
 
-import { callout, svgWrap } from './_svg.js'
+import { callout, mark, runW, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
 import { sceneArrivals as t } from '../content/strings.js'
 
@@ -102,10 +102,30 @@ const quarantine = `
 
    검역대 옆 탁자.  가방에서 꺼낸 것이 여기 남고, 가방만 나간다. */
 
+/* 걸려 나온 것 세 가지.  같은 동그라미를 셋 놓으면 '세 개 걸렸다' 까지만
+   읽히고 무엇이 걸렸는지는 라벨을 읽어야 안다.  형태로 갈라 둔다 —
+   바깥으로 나가는 화살표(유출 링크) · 꼬리표(카나리아) · 신분증(개인정보). */
+const glyph = {
+  link: (x, y, c) => `
+          <path d="M ${x - 7} ${y + 5} h 14 v -6 M ${x + 7} ${y - 1} l -9 9"
+                fill="none" stroke="${c}" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round" />`,
+  tag: (x, y, c) => `
+          <path d="M ${x - 8} ${y - 5} h 9 l 7 6 -7 6 h -9 z" fill="none"
+                stroke="${c}" stroke-width="1.6" stroke-linejoin="round" />
+          <circle cx="${x + 2}" cy="${y + 1}" r="1.6" fill="${c}" />`,
+  id: (x, y, c) => `
+          <rect x="${x - 8}" y="${y - 6}" width="16" height="12" rx="2" fill="none"
+                stroke="${c}" stroke-width="1.6" />
+          <circle cx="${x - 3.5}" cy="${y - 1}" r="2.2" fill="${c}" />
+          <path d="M ${x + 1} ${y - 2.5} h 5 M ${x + 1} ${y + 1.5} h 5"
+                stroke="${c}" stroke-width="1.4" stroke-linecap="round" />`,
+}
+
 const FINDS = [
-  { id: 'sa-find-1', x: 372, color: '#E25749' },
-  { id: 'sa-find-2', x: 404, color: '#F0A63A' },
-  { id: 'sa-find-3', x: 436, color: '#E25749' },
+  { id: 'sa-find-1', x: 372, color: '#E25749', kind: 'link' },
+  { id: 'sa-find-2', x: 404, color: '#F0A63A', kind: 'id' },
+  { id: 'sa-find-3', x: 436, color: '#E25749', kind: 'tag' },
 ]
 
 const tray = `
@@ -120,15 +140,14 @@ const tray = `
           ],
           'f-r',
         )}
-        ${FINDS.map(
-          ({ id, x, color }) => `
+        ${FINDS.map(({ id, x, color, kind }) => {
+          const [gx, gy] = at(x + 10, 236, 45)
+          return `
         <g id="${id}">
           ${box(x, 226, 20, 20, 16, { z: 23 })}
-          <path d="M ${at(x + 10, 236, 45)[0]} ${at(x + 10, 236, 45)[1] - 4}
-                   m -6 0 a 6 6 0 1 1 12 0 a 6 6 0 1 1 -12 0"
-                fill="none" stroke="${color}" stroke-width="1.75" />
-        </g>`,
-        ).join('')}
+          ${glyph[kind](gx, gy - 4, color)}
+        </g>`
+        }).join('')}
       </g>`
 
 /* --------------------------------------------------------- 2갈래 출구 */
@@ -157,6 +176,115 @@ const gates = `
         <circle id="sa-lamp-${key}" cx="${at(24, y + 22, 58)[0]}"
                 cy="${at(24, y + 22, 58)[1]}" r="8" fill="${color}" />`,
         ).join('')}
+      </g>`
+
+/* ------------------------------------------------------- 입국 판독 화면
+
+   출국층의 판독 화면과 짝이다.  왼쪽이 돌아온 답변 원문, 오른쪽이 이용자에게
+   실제로 나가는 글이다.  두 칸을 나란히 두는 것이 이 장면의 요점 — 답변을
+   '검사했다' 가 아니라 **'무엇을 어떻게 바꿔서 내보냈다'** 를 글자로 보인다.
+
+   도착 가방 세 개는 서로 다른 답변이다.  판정이 갈리는 두 벌을 같은 자리에
+   겹쳐 두고 검역대에 들어온 가방의 것만 켠다 (#sa-sample-<판정>). */
+
+const PX = 560
+const PY = 16
+const PW = 864
+const PH = 292
+const COL2 = PX + 448 // 전달본 칸 시작
+const DIV_X = PX + 432 // 원문 | 전달본
+const RULE_Y = PY + 196 // 위(글) / 아래(판정) 가르는 선
+const FS = 15
+const LINE_H = 23
+
+/** 기본으로 켜 두는 판정 — 정지 화면(애니메이션 없음)에서 보이는 쪽. */
+const DEFAULT_SAMPLE = 'deliver'
+
+/* 조각 색.  hot/warm 은 '걸린 것', fix 는 '가드레일이 바꿔 놓은 자리',
+   stop 은 '전달되지 않았다'. 강조 이유가 서로 다르므로 색도 갈라 둔다. */
+const SEG = { hot: '#E25749', warm: '#F0A63A', fix: '#43BC9C', stop: '#E25749' }
+const SEV = { 정보: '#7FBF57', 보통: '#9C9B93', 높음: '#F0A63A', 치명: '#E25749' }
+const CHIP = { warm: '#F0A63A', hot: '#E25749' }
+
+/** 조각 단위로 이어 그리는 한 줄 — 강조 조각은 배경을 깔고 색을 준다.
+    'stop'(차단 안내문)만 예외로 색만 준다. 그건 걸린 조각이 아니라 대신 나가는
+    글이라, 배경까지 깔면 세 줄이 통째로 붉어져 무엇이 걸렸는지가 묻힌다. */
+const textLine = (x, y, segs) => {
+  let cx = x
+  return segs
+    .map(([text, kind]) => {
+      const color = SEG[kind]
+      const out = `${color && kind !== 'stop' ? mark(cx, y, text, color, FS) : ''}
+          <text x="${cx.toFixed(1)}" y="${y}" style="font-size:${FS}px;fill:${
+            color || '#ECEAE3'
+          }">${text}</text>`
+      // SVG 는 조각 앞의 공백을 지워 버리므로 간격은 좌표로 준다.
+      cx += runW(text, FS) + 5
+      return out
+    })
+    .join('')
+}
+
+const sampleView = (key, s) => {
+  const top = PY + 92
+  const detTop = PY + 228
+
+  const detected = s.detected
+    .map(([what, sev, note], i) => {
+      const color = SEV[sev] || '#9C9B93'
+      const y = detTop + i * 22
+      const sw = runW(sev, 12) + 16
+      return `
+          <text x="${PX + 16}" y="${y}" style="font-size:14px;fill:#ECEAE3">${what}</text>${
+            note
+              ? `
+          <text x="${PX + 176}" y="${y}" style="font-size:12px;fill:#8A8F9C">${note}</text>`
+              : ''
+          }
+          <rect x="${PX + 396 - sw}" y="${y - 12}" width="${sw.toFixed(1)}" height="17" rx="3"
+                fill="${color}" opacity="0.18" />
+          <text x="${PX + 396 - sw / 2}" y="${y}" text-anchor="middle"
+                style="font-size:12px;fill:${color}" font-weight="700">${sev}</text>`
+    })
+    .join('')
+
+  const chip = CHIP[s.tone]
+  return `
+        <g id="sa-sample-${key}"${key === DEFAULT_SAMPLE ? '' : ' opacity="0"'}>
+          ${s.answer.map((segs, i) => textLine(PX + 16, top + i * LINE_H, segs)).join('')}
+          ${s.delivered.map((segs, i) => textLine(COL2, top + i * LINE_H, segs)).join('')}
+          <text x="${COL2}" y="${RULE_Y - 14}" style="font-size:12px;fill:#8A8F9C">${
+            s.deliveredNote
+          }</text>
+          ${detected}
+          <text x="${COL2}" y="${PY + 236}" style="font-size:13px;fill:#9C9B93">${s.score}</text>
+          <rect x="${COL2}" y="${PY + 250}" width="${(runW(s.verdict, 13) + 30).toFixed(1)}"
+                height="26" rx="13" fill="none" stroke="${chip}" stroke-width="1.4" />
+          <text x="${COL2 + 15}" y="${PY + 268}" style="font-size:13px;fill:${chip}"
+                font-weight="700">${s.verdict}</text>
+        </g>`
+}
+
+const screen = `
+      <g id="sa-screen">
+        <rect x="${PX}" y="${PY}" width="${PW}" height="${PH}" rx="4"
+              fill="#0E0F13" stroke="#43BC9C" stroke-width="1.4" opacity="0.97" />
+        <path class="hair" d="M ${PX} ${PY + 40} H ${PX + PW}" />
+        <path class="hair" d="M ${PX} ${RULE_Y} H ${PX + PW}" />
+        <path class="hair" d="M ${DIV_X} ${PY + 48} V ${RULE_Y - 10}" />
+        <text x="${PX + 16}" y="${PY + 26}" class="co-sub" letter-spacing="2">${t.screen}</text>
+        <circle cx="${PX + PW - 18}" cy="${PY + 20}" r="4" class="gear-fill" />
+        <rect id="sa-screen-sweep" x="${PX}" y="${PY + 40}" width="${PW}" height="2"
+              fill="#43BC9C" opacity="0.25" />
+        <text x="${PX + 16}" y="${PY + 66}" style="font-size:12px;fill:#8A8F9C"
+              letter-spacing="1">${t.screenAnswerLabel}</text>
+        <text x="${COL2}" y="${PY + 66}" style="font-size:12px;fill:#8A8F9C"
+              letter-spacing="1">${t.screenDeliverLabel}</text>
+        <text x="${PX + 16}" y="${PY + 212}" style="font-size:12px;fill:#8A8F9C"
+              letter-spacing="1">${t.screenDetectedLabel}</text>
+        ${Object.entries(t.screenSamples)
+          .map(([key, s]) => sampleView(key, s))
+          .join('')}
       </g>`
 
 /* -------------------------------------------------------------- 가방 */
@@ -202,6 +330,7 @@ export function sceneArrivalsSvg() {
       ${bag('sa-bag-3', 566, 140, { z: BELT_Z })}
       ${gates}
       ${figure([640, 250])}
+      ${screen}
 
       ${callout({
         n: '01',
@@ -221,7 +350,7 @@ export function sceneArrivalsSvg() {
       ${callout({
         n: '03',
         from: at(563, 138, 112),
-        to: [860, 128],
+        to: [1010, 372],
         side: 'right',
         title: t.quarantine,
         sub: t.quarantineSub,
@@ -237,7 +366,7 @@ export function sceneArrivalsSvg() {
       ${callout({
         n: '05',
         from: at(24, 82, 58),
-        to: [560, 214],
+        to: [318, 386],
         side: 'right',
         title: t.deliver,
         cls: 'co-title--allow',
@@ -278,6 +407,14 @@ export function sceneArrivalsAnim(root, gsap) {
 
   const tl = gsap.timeline({ repeat: -1, repeatDelay: 0.8, defaults: { ease: 'none' } })
 
+  /* 판독 화면은 검역대에 들어온 가방의 것만 켠다 — 두 벌이 같이 켜지면
+     한 답변에 두 판정이 난 것처럼 읽힌다. */
+  const showSample = (key, t0) => {
+    Object.keys(t.screenSamples).forEach((k) => {
+      tl.to(q(`#sa-sample-${k}`), { opacity: k === key ? 1 : 0, duration: 0.25 }, t0)
+    })
+  }
+
   const runBag = (id, origin, verdict, findSel, t0) => {
     const el = q(`#${id}`)
     if (!el) return
@@ -288,6 +425,7 @@ export function sceneArrivalsAnim(root, gsap) {
     tl.to(el, { x: toQ.x, y: toQ.y, duration: 1.1 }, t0)
       // 검역 표시등이 판정 색으로 바뀐다.
       .to(q('#sa-lamp'), { fill: verdict === 'drop' ? '#E25749' : '#F0A63A', duration: 0.2 }, t0 + 1.1)
+    showSample(verdict, t0 + 1.05)
     if (findSel) {
       tl.fromTo(
         q(findSel),

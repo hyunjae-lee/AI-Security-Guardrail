@@ -19,7 +19,7 @@
  *   #s3-path-override / #s3-override-outlet  즉시 거부 우회로
  */
 
-import { callout, svgWrap } from './_svg.js'
+import { callout, mark, runW, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
 import { scene3 as t } from '../content/strings.js'
 
@@ -259,20 +259,6 @@ export const MAX_DETECTED = 3
 
 const SFS = 15
 
-/* 하이라이트 상자를 글자 위에 얹으려면 각 조각의 폭을 알아야 하는데, SVG 는
-   레이아웃을 알려 주지 않으므로 폰트 어드밴스를 직접 잰다.  Noto Sans KR 기준
-   대략치 — 전부 0.55em 으로 잡으면 공백·쉼표가 과대평가되어 조각 사이가
-   눈에 띄게 벌어진다 (그게 예전 판독 화면의 틈이었다). */
-const advance = (c) => {
-  if (/[가-힣ㄱ-ㅎㅏ-ㅣ一-鿿]/.test(c)) return 1.0
-  if (c === ' ') return 0.26
-  if (/[,.·:;'"]/.test(c)) return 0.28
-  if (/[-–—/|]/.test(c)) return 0.36
-  if (/[()[\]{}]/.test(c)) return 0.33
-  if (/[ilj!.]/.test(c)) return 0.3
-  return 0.56
-}
-const runW = (str, f) => [...str].reduce((a, c) => a + f * advance(c), 0)
 const TONE3 = { hot: '#E25749', warm: '#F0A63A' }
 const CHIP = { ok: '#7FBF57', warm: '#F0A63A', hot: '#E25749' }
 
@@ -290,10 +276,6 @@ const COL_VALUE_OFF = 130
 export const COL_VALUE_OFFSET = COL_VALUE_OFF
 const COL_VALUE = DIV + COL_VALUE_OFF
 
-/** 강조 배경 — 글자 시작점은 고정이고 오른쪽 끝만 추정하므로 어긋나도 티가 안 난다. */
-const mark = (x, y, text, color) =>
-  `<rect x="${(x - 4).toFixed(1)}" y="${y - SFS + 1}" width="${(runW(text, SFS) + 8).toFixed(1)}"
-                 height="${SFS + 7}" rx="2" fill="${color}" opacity="0.16" />`
 
 /* 심각도 색 — 초록(정보)에서 빨강(치명)으로.  '탐지됨' 과 '위험함' 은 다르다는
    것이 이 화면의 요점이라, 탐지되었어도 정보 등급이면 초록으로 둔다. */

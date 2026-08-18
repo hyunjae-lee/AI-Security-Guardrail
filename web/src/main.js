@@ -7,6 +7,7 @@
  */
 
 import './styles/main.css'
+import n2sfCover from './assets/n2sf-cover.webp'
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
 import MotionPathPlugin from 'gsap/MotionPathPlugin'
@@ -76,10 +77,19 @@ const placeholder = (scene) => `
 /** 설계 근거 카드 — 원문 인용. '설계 근거' 장면에만 붙는다. */
 const refsMarkup = () => `
         <aside class="scene__refs">
-          <span class="scene__refs-kicker">${guideline.kicker}</span>
-          <span class="scene__refs-source">${glue(guideline.source)}</span>
-          <span class="scene__refs-meta">${guideline.sourceMeta}</span>
-          <p class="scene__refs-note">${glue(guideline.quoteNote)}</p>
+          <div class="scene__refs-head">
+            <figure class="doc-cover">
+              <img src="${n2sfCover}" width="840" height="1148" loading="lazy"
+                   decoding="async" alt="${guideline.coverAlt}" />
+              <figcaption>${guideline.coverCaption}</figcaption>
+            </figure>
+            <div class="scene__refs-id">
+              <span class="scene__refs-kicker">${guideline.kicker}</span>
+              <span class="scene__refs-source">${glue(guideline.source)}</span>
+              <span class="scene__refs-meta">${guideline.sourceMeta}</span>
+              <p class="scene__refs-note">${glue(guideline.quoteNote)}</p>
+            </div>
+          </div>
           <ol>
             ${guideline.items
               .map(
