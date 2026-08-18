@@ -21,6 +21,7 @@
 
 import { callout, mark, runW, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
+import { checkpointGate, GATE_FACE } from './_places.js'
 import { scene3 as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 350, oy: 76, s: 1.12 })
@@ -79,43 +80,61 @@ const conveyor = `
 
 /* --------------------------------------------------- 여권·비자 확인 포털 */
 
-const passport = `
-      <g id="s3-passport">
-        ${box(146, 96, 14, 14, 96)}
-        ${box(146, 170, 14, 14, 96)}
-        ${box(146, 96, 14, 88, 14, { z: 96 })}
-        ${line(
-          [
-            [146, 96, 110],
-            [146, 184, 110],
-          ],
-          'gear',
-        )}
-        ${plane(
-          [
-            [153, 122, 88],
-            [153, 158, 88],
-            [153, 158, 70],
-            [153, 122, 70],
-          ],
-          'gear-fill',
-          'opacity="0.35"',
-        )}
-      </g>`
+/* 입국층·기록실과 같은 부품을 쓴다.  같은 장치는 장면이 달라도 같게 생겨야
+   '그 장치' 로 읽힌다.  회색 철골이던 것을 검사장 색으로 올려, 캠퍼스 설비가
+   아니라 가드레일 장비라는 것이 색으로도 먼저 오게 했다. */
+const passport = checkpointGate(iso, {
+  x: 142,
+  y: 84,
+  d: 116,
+  t: 24,
+  h: 112,
+  post: 26,
+  beam: 24,
+  rails: 56,
+  id: 's3-passport',
+})
 
 /* ------------------------------------------------------- X-ray 스캐너 */
 
+/* 터널 입구 프레임 한 벌 + 다리에 두른 경고 띠. */
+const hazardBand = (x0, y0, w, d) =>
+  [0, 1]
+    .map((k) => {
+      const z0 = 16 + k * 20
+      return plane(
+        [
+          [x0 + w, y0, z0],
+          [x0 + w, y0 + d, z0],
+          [x0 + w, y0 + d, z0 + 8],
+          [x0 + w, y0, z0 + 8],
+        ],
+        '',
+        'fill="#F0A63A" opacity="0.85"',
+      )
+    })
+    .join('')
+
 const xrayFrame = (x0) => `
-        ${box(x0, 92, 12, 12, 104)}
-        ${box(x0, 180, 12, 12, 104)}
-        ${box(x0, 92, 12, 100, 12, { z: 104 })}`
+        ${box(x0, 92, 14, 14, 104, GATE_FACE)}
+        ${box(x0, 178, 14, 14, 104, GATE_FACE)}
+        ${box(x0, 92, 14, 100, 14, { z: 104, ...GATE_FACE })}
+        ${hazardBand(x0, 92, 14, 14)}
+        ${hazardBand(x0, 178, 14, 14)}`
 
 const xray = `
       <g id="s3-xray">
         ${xrayFrame(300)}
-        ${box(312, 92, 146, 12, 12, { z: 104 })}
-        ${box(312, 180, 146, 12, 12, { z: 104 })}
+        ${box(314, 92, 144, 14, 14, { z: 104, ...GATE_FACE })}
+        ${box(314, 178, 144, 14, 14, { z: 104, ...GATE_FACE })}
         ${xrayFrame(458)}
+        <!-- 터널 위 표시등 줄 — 가동 중인 검사 장비 -->
+        ${[0.2, 0.5, 0.8]
+          .map((k) => {
+            const [lx, ly] = at(300 + 172 * k, 142, 122)
+            return `<circle cx="${lx}" cy="${ly}" r="4" class="gear-fill" opacity="0.85" />`
+          })
+          .join('')}
         ${line(
           [
             [300, 92, 116],
@@ -169,13 +188,13 @@ const gates = `
           '',
           `fill="${color}" opacity="0.75"`,
         )}
-        ${box(866, y, 12, 12, 68)}
-        ${box(866, y + 32, 12, 12, 68)}
-        ${box(866, y, 12, 44, 12, { z: 68 })}
-        <path d="M ${pt(866, y, 82)} L ${pt(866, y + 44, 82)}"
-              fill="none" stroke="${color}" stroke-width="2" />
-        <circle id="s3-lamp-${key}" cx="${at(872, y + 22, 92)[0]}"
-                cy="${at(872, y + 22, 92)[1]}" r="8" fill="${color}" />`,
+        ${box(866, y, 14, 12, 78, GATE_FACE)}
+        ${box(866, y + 32, 14, 12, 78, GATE_FACE)}
+        ${box(866, y, 14, 44, 14, { z: 78, ...GATE_FACE })}
+        <path d="M ${pt(880, y, 78)} L ${pt(880, y + 44, 78)}"
+              fill="none" stroke="${color}" stroke-width="2.4" />
+        <circle id="s3-lamp-${key}" cx="${at(873, y + 22, 104)[0]}"
+                cy="${at(873, y + 22, 104)[1]}" r="8" fill="${color}" />`,
         ).join('')}
       </g>`
 

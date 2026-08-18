@@ -11,13 +11,14 @@
  * M3 애니메이션 대상 id:
  *   #sa-bag-1 … #sa-bag-3    도착 가방
  *   #sa-belt-teeth           벨트 무늬
- *   #sa-lamp                 검역대 표시등
+ *   #sa-gate-lamp-1…3        검역대 상인방 표시등
  *   #sa-find-1 … #sa-find-3  적발 트레이에 쌓이는 것들
  *   #sa-path-deliver / #sa-path-drop
  */
 
 import { callout, mark, runW, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
+import { checkpointGate } from './_places.js'
 import { sceneArrivals as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 330, oy: 96, s: 1.12 })
@@ -68,34 +69,24 @@ const conveyor = `
       )}
       ${beltTeeth()}`
 
-/* -------------------------------------------------------------- 검역대 */
+/* -------------------------------------------------------------- 검역대
 
-const [lampX, lampY] = at(566, 140, 126)
+   출국층·기록실과 같은 부품(checkpointGate)을 쓴다.  장면마다 문틀을 따로
+   그리던 때는 같은 장치가 장면마다 다르게 생겨서 '그 장치' 로 안 읽혔다. */
 
 const quarantine = `
       <g id="sa-quarantine">
-        ${box(556, 96, 14, 14, 96)}
-        ${box(556, 170, 14, 14, 96)}
-        ${box(556, 96, 14, 88, 14, { z: 96 })}
-        ${line(
-          [
-            [556, 96, 112],
-            [556, 184, 112],
-          ],
-          'gear',
-        )}
-        <!-- 검역 스캔면 -->
-        ${plane(
-          [
-            [563, 100, 96],
-            [563, 180, 96],
-            [563, 180, 0],
-            [563, 100, 0],
-          ],
-          'gear-fill',
-          'opacity="0.14"',
-        )}
-        <circle id="sa-lamp" cx="${lampX}" cy="${lampY}" r="9" fill="#43BC9C" />
+        ${checkpointGate(iso, {
+          x: 548,
+          y: 84,
+          d: 112,
+          t: 28,
+          h: 122,
+          post: 26,
+          beam: 26,
+          rails: 64,
+          id: 'sa-gate',
+        })}
       </g>`
 
 /* --------------------------------------------------------- 적발 트레이
@@ -360,7 +351,7 @@ export function sceneArrivalsSvg() {
       })}
       ${callout({
         n: '03',
-        from: at(563, 138, 112),
+        from: at(576, 140, 148),
         to: [1010, 372],
         side: 'right',
         title: t.quarantine,
@@ -465,7 +456,7 @@ export function sceneArrivalsAnim(root, gsap, ScrollTrigger) {
       )
       // 검역 표시등이 판정 색으로 바뀐다.
       .to(
-        q('#sa-lamp'),
+        root.querySelectorAll('[id^="sa-gate-lamp-"]'),
         { fill: verdict === 'drop' ? '#E25749' : '#F0A63A', duration: 0.2 },
         t0 + 0.55,
       )
@@ -483,7 +474,7 @@ export function sceneArrivalsAnim(root, gsap, ScrollTrigger) {
   const divert = (id, origin, verdict, t0) => {
     const el = q(`#${id}`)
     if (!el) return
-    tl.to(q('#sa-lamp'), { fill: '#43BC9C', duration: 0.25 }, t0)
+    tl.to(root.querySelectorAll('[id^="sa-gate-lamp-"]'), { fill: '#43BC9C', duration: 0.25 }, t0)
       .to(el, { ...delta(origin, JUNCTION), duration: 0.7 }, t0)
       .to(el, { ...delta(origin, EXIT[verdict]), duration: 0.5 }, t0 + 0.7)
       .to(el, { opacity: 0, duration: 0.25 }, t0 + 1.15)

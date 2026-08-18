@@ -64,6 +64,105 @@ export function gateGlow(iso, plan, r, { id = 'gate-glow' } = {}) {
 }
 
 /* ==========================================================================
+   검사 관문 — 이 사이트의 가드레일 그 자체
+   --------------------------------------------------------------------------
+   장면마다 문틀을 따로 그리다 보니 형태가 조금씩 달랐고, 어떤 것은 기둥이
+   컨베이어를 관통해 서 있었다.  같은 장치가 장면마다 다르게 생기면 "그 장치"
+   로 안 읽힌다.  그래서 한 부품으로 모은다.
+
+   '가드레일' 로 읽히게 하는 요소를 형태에 박아 둔다:
+     · 레인 양옆에 서는 기둥 — 지나가는 길을 물리적으로 좁힌다
+     · 기둥에 두른 경고 띠 — 안전 설비의 표시
+     · 상인방의 표시등 줄 — 가동 중인 검사 장비
+     · 문 안을 가로지르는 스캔 커튼 — 지나가면 검사된다
+     · 문 앞뒤로 이어지는 방호 난간 — 옆으로 새는 길이 없다
+   ========================================================================== */
+
+const HAZARD = '#F0A63A'
+
+/**
+ * @param x,y   관문이 앉는 평면 위치 (y 는 레인을 가로지르는 방향의 시작)
+ * @param d     레인을 가로지르는 전체 폭 (기둥 두 개를 포함한다)
+ * @param t     진행 방향 두께
+ * @param h     통과 높이 (상인방 아래까지)
+ * @param post  기둥 한 개의 폭
+ * @param beam  상인방 두께
+ * @param rails 문 앞뒤로 뻗는 방호 난간 길이 (0 이면 안 그린다)
+ */
+export function checkpointGate(
+  iso,
+  { x, y, d, t = 22, h = 104, post = 26, beam = 24, z = 0, rails = 0, id = 'gate' },
+) {
+  const { at, box, plane, line } = iso
+  const inner0 = y + post
+  const inner1 = y + d - post
+  const top = z + h
+
+  /* 경고 띠 — 보이는 쪽(+x) 면에 두 줄. 색이 튀어야 안전 설비로 읽힌다. */
+  const hazard = (py) =>
+    [0, 1]
+      .map((k) => {
+        const z0 = z + 14 + k * 22
+        return plane(
+          [
+            [x + t, py, z0],
+            [x + t, py + post, z0],
+            [x + t, py + post, z0 + 9],
+            [x + t, py, z0 + 9],
+          ],
+          '',
+          `fill="${HAZARD}" opacity="0.85"`,
+        )
+      })
+      .join('')
+
+  /* 방호 난간 — 문 앞뒤로 이어지는 낮고 긴 벽.  기둥과 레일로 세워 보았더니
+     축소되면 탁자 다리 넷으로 보여서, 끊기지 않는 한 줄로 바꿨다.  옆으로
+     빠지는 길이 없다는 것을 형태가 말해야 한다. */
+  const barrier = rails
+    ? [inner0 - 6, inner1].map((by) => box(x - rails, by, t + rails * 2, 6, 20, { z, ...GATE_FACE })).join('')
+    : ''
+
+  const lamps = [0.28, 0.5, 0.72]
+    .map((k, i) => {
+      const [lx, ly] = at(x + t / 2, y + d * k, top + beam / 2)
+      return `<circle id="${id}-lamp-${i + 1}" cx="${lx}" cy="${ly}" r="4.2"
+                      class="gear-fill" opacity="0.9" />`
+    })
+    .join('')
+
+  return `
+      <g class="checkpoint" id="${id}">
+        ${barrier}
+        ${box(x, y, t, post, h, { z, ...GATE_FACE })}
+        ${box(x, y + d - post, t, post, h, { z, ...GATE_FACE })}
+        ${hazard(y)}
+        ${hazard(y + d - post)}
+        ${box(x, y, t, d, beam, { z: top, ...GATE_FACE })}
+        <!-- 상인방 아래 테두리 — 문이 '열려 있다' 를 선으로 굳힌다 -->
+        ${line(
+          [
+            [x + t, y + post, top],
+            [x + t, y + d - post, top],
+          ],
+          'gear',
+        )}
+        ${lamps}
+        <!-- 스캔 커튼 — 지나가는 것은 전부 이 면을 통과한다 -->
+        ${plane(
+          [
+            [x + t / 2, inner0, top],
+            [x + t / 2, inner1, top],
+            [x + t / 2, inner1, z],
+            [x + t / 2, inner0, z],
+          ],
+          'gear-fill',
+          `id="${id}-scan" opacity="0.28"`,
+        )}
+      </g>`
+}
+
+/* ==========================================================================
    캠퍼스
    ========================================================================== */
 

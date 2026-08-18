@@ -18,13 +18,13 @@
  *   #so-bag-1 … #so-bag-3   땅 아래로 내려갔다 올라오는 가방
  *   #so-route-1 … #so-route-3   그 경로
  *   #so-belt                 아래층 컨베이어 흐름
- *   #so-lamp-1 … #so-lamp-3  가동 표시등 (꺼지지 않는다 — 맥동만 한다)
- *   #so-scan                 검사대 스캔 빔
+ *   #so-gate-lamp-1 … 3   가동 표시등 (꺼지지 않는다 — 맥동만 한다)
+ *   #so-gate-scan            검사대 스캔 커튼
  */
 
 import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
-import { campus, globe, globeAnim, GATE_FACE, HOME_FACE } from './_places.js'
+import { campus, checkpointGate, globe, globeAnim, HOME_FACE } from './_places.js'
 import { sceneOutro as t } from '../content/strings.js'
 
 export const iso = isoSpace({ ox: 400, oy: 168, s: 1 })
@@ -66,9 +66,6 @@ const siteGround = `
 const FLOOR = -128 // 아래층 바닥
 const BELT = FLOOR + 10
 
-/** 아래층도 검사장 색 그대로 — 땅에 덮여 안 보일 뿐, 불이 꺼진 것은 아니다. */
-const DOWN_FACE = { top: 'gate-top', l: 'gate-l', r: 'gate-r', cls: 'gate-edge' }
-
 const underworld = `
       <g id="so-under">
         <!-- 바닥 -->
@@ -85,30 +82,21 @@ const underworld = `
           '',
           'id="so-belt" fill="#F0A63A" opacity="0.5"',
         )}
-        <!-- 검사대 — 닫힌 상자가 아니라 뚫린 문틀이어야 안이 돌아가는 게 보인다 -->
-        ${shadow(396, 200, 20, 76, { z: FLOOR, opacity: 0.45, grow: 2 })}
-        ${box(396, 200, 20, 20, 62, { z: FLOOR, ...DOWN_FACE })}
-        ${box(396, 256, 20, 20, 62, { z: FLOOR, ...DOWN_FACE })}
-        ${box(396, 200, 20, 76, 12, { z: FLOOR + 62, ...DOWN_FACE })}
-        <!-- 스캔 빔 — 계속 훑고 있다 -->
-        ${plane(
-          [
-            [406, 204, FLOOR + 62],
-            [406, 272, FLOOR + 62],
-            [406, 272, BELT],
-            [406, 204, BELT],
-          ],
-          'gear-fill',
-          'id="so-scan" opacity="0.18"',
-        )}
-        <!-- 가동 표시등 — 꺼지지 않는다 -->
-        ${[0, 1, 2]
-          .map((i) => {
-            const [lx, ly] = at(400 + i * 6, 210 + i * 26, FLOOR + 76)
-            return `<circle id="so-lamp-${i + 1}" cx="${lx}" cy="${ly}" r="4.6"
-                            class="gear-fill" opacity="0.9" />`
-          })
-          .join('')}
+        <!-- 검사대 — 위층 터미널과 같은 부품이다.  안 보이는 자리에 있을 뿐
+             같은 관문이라는 것이 형태로 읽혀야 한다 -->
+        ${shadow(392, 190, 28, 100, { z: FLOOR, opacity: 0.45, grow: 2 })}
+        ${checkpointGate(iso, {
+          x: 392,
+          y: 188,
+          d: 104,
+          t: 24,
+          h: 78,
+          post: 22,
+          beam: 20,
+          rails: 46,
+          z: FLOOR,
+          id: 'so-gate',
+        })}
         <text x="${at(406, 300, FLOOR + 4)[0]}" y="${at(406, 300, FLOOR + 4)[1] + 30}"
               text-anchor="middle" letter-spacing="3"
               style="font-size:16px;fill:#43BC9C" font-weight="700">${t.running}</text>
@@ -357,13 +345,13 @@ export function sceneOutroAnim(root, gsap) {
 
   // 스캔 빔 — 계속 훑는다.
   gsap.fromTo(
-    root.querySelector('#so-scan'),
+    root.querySelector('#so-gate-scan'),
     { opacity: 0.1 },
     { opacity: 0.3, duration: 1.1, ease: 'sine.inOut', repeat: -1, yoyo: true },
   )
 
   // 표시등 — 꺼지지 않는다. 0.45 아래로는 내려가지 않게 잡았다.
-  gsap.to(root.querySelectorAll('[id^="so-lamp-"]'), {
+  gsap.to(root.querySelectorAll('[id^="so-gate-lamp-"]'), {
     opacity: 0.45,
     duration: 1.2,
     ease: 'sine.inOut',

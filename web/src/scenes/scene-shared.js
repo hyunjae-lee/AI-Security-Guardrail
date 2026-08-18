@@ -14,14 +14,15 @@
  * 같은 규칙으로, '읽는 것' 은 눕히지 않는다.
  *
  * M3 애니메이션 대상 id:
- *   #sh-beam       검색대 스캔 빔
+ *   #sh-gate-scan  관문 스캔 커튼
+ *   #sh-gate-lamp-1…3  상인방 표시등
  *   #sh-feed       품목표 → 장비로 들어가는 경로
  *   #sh-blank-1/2  비어 있는 행
  */
 
 import { svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
-import { GATE_FACE, HOME_FACE } from './_places.js'
+import { checkpointGate, HOME_FACE } from './_places.js'
 import { sceneShared as t } from '../content/strings.js'
 
 const AMBER = '#F0A63A'
@@ -29,30 +30,30 @@ const TEAL = '#43BC9C'
 
 /* ------------------------------------------------------------ 왼쪽 · 장비 */
 
-export const iso = isoSpace({ ox: 238, oy: 262, s: 0.86 })
+export const iso = isoSpace({ ox: 250, oy: 288, s: 0.94 })
 const { at, box, slab, plane, grid } = iso
 
+/* 예전에는 두꺼운 벽 두 장에 지붕을 얹은 모양이었는데, 그 벽이 컨베이어를
+   관통해 서 있었다 — 가방이 벽을 뚫고 지나가는 그림이었다.  이제 기둥은
+   레인 양옆에 서고, 가방은 그 사이로 지나간다. */
 const machine = `
-      ${slab(0, 0, 190, 170, 12, { tone: 'home' })}
-      ${grid(0, 0, 190, 170, 50)}
-      <!-- 검색대 본체: 가운데가 뚫린 문틀 -->
-      ${box(30, 40, 26, 90, 96, GATE_FACE)}
-      ${box(134, 40, 26, 90, 96, GATE_FACE)}
-      ${box(30, 40, 130, 90, 22, { z: 96, ...GATE_FACE })}
-      <!-- 컨베이어와 그 위의 가방 -->
-      ${box(0, 74, 190, 22, 14, HOME_FACE)}
-      ${box(74, 78, 30, 15, 17, { z: 14, top: 'bag-top', l: 'bag-l', r: 'bag-r' })}
-      <!-- 스캔 빔 -->
-      ${plane(
-        [
-          [56, 44, 92],
-          [134, 44, 92],
-          [134, 126, 92],
-          [56, 126, 92],
-        ],
-        '',
-        `id="sh-beam" fill="${TEAL}" opacity="0.16"`,
-      )}`
+      ${slab(0, 0, 190, 190, 12, { tone: 'home' })}
+      ${grid(0, 0, 190, 190, 50)}
+      <!-- 컨베이어 (관문보다 먼저 그려 뒤로 보낸다) -->
+      ${box(0, 84, 190, 26, 16, HOME_FACE)}
+      ${checkpointGate(iso, {
+        x: 76,
+        y: 26,
+        d: 142,
+        t: 28,
+        h: 116,
+        post: 30,
+        beam: 28,
+        rails: 52,
+        id: 'sh-gate',
+      })}
+      <!-- 검사를 마치고 나가는 가방.  관문보다 앞(가까운 쪽)이라 나중에 그린다 -->
+      ${box(150, 88, 34, 18, 20, { z: 16, top: 'bag-top', l: 'bag-l', r: 'bag-r' })}`
 
 const bullet = (i, text) => {
   const y = 496 + i * 34
@@ -195,12 +196,22 @@ export function sceneSharedSvg() {
 export function sceneSharedAnim(root, gsap) {
   const tl = gsap.timeline({ repeat: -1, defaults: { ease: 'none' } })
 
-  gsap.to(root.querySelector('#sh-beam'), {
-    opacity: 0.34,
+  gsap.to(root.querySelector('#sh-gate-scan'), {
+    opacity: 0.36,
     duration: 1.3,
     ease: 'sine.inOut',
     repeat: -1,
     yoyo: true,
+  })
+
+  // 표시등은 꺼지지 않고 맥동만 한다 — 장비가 계속 돌고 있다는 신호.
+  gsap.to(root.querySelectorAll('[id^="sh-gate-lamp-"]'), {
+    opacity: 0.4,
+    duration: 1.1,
+    ease: 'sine.inOut',
+    repeat: -1,
+    yoyo: true,
+    stagger: 0.2,
   })
 
   tl.fromTo(

@@ -150,11 +150,32 @@ const portal = (() => {
   })
   const outline = `M ${pt(X0, 194, 0)} L ${arc.join(' L ')} L ${pt(X1, 194, 0)} Z`
   const [cx, cy] = at((X0 + X1) / 2, 194, H + R + 12)
+  /* 문설주에 두른 경고 띠 — 다른 장면의 관문과 같은 표시를 달아, 조감도의
+     이 작은 아치가 뒤에 나올 검사 관문과 같은 것임을 색으로 잇는다. */
+  const jamb = (jx) =>
+    [0, 1]
+      .map((k) => {
+        const z0 = 6 + k * 11
+        return plane(
+          [
+            [jx, 194, z0],
+            [jx + 7, 194, z0],
+            [jx + 7, 194, z0 + 6],
+            [jx, 194, z0 + 6],
+          ],
+          '',
+          'fill="#F0A63A" opacity="0.9"',
+        )
+      })
+      .join('')
+
   return `
         <g id="s2-portal">
           <path class="gate-deep" d="${outline}" />
           <path d="${outline}" fill="none" stroke="var(--c-gate-edge)"
                 stroke-width="2.2" stroke-linejoin="round" />
+          ${jamb(X0 - 9)}
+          ${jamb(X1 + 2)}
           <!-- 문 위 표시등 — 열려서 돌아가고 있다는 신호 -->
           <circle cx="${cx}" cy="${cy}" r="3.4" class="gear-fill" opacity="0.9" />
         </g>`
