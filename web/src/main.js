@@ -18,6 +18,7 @@ import {
   casesNote,
   glue,
   guideline,
+  headlines,
   latency,
   legend,
   placeholderKicker,
@@ -39,6 +40,14 @@ import { sceneSharedAnim, sceneSharedSvg } from './scenes/scene-shared.js'
 import { sceneOutroAnim, sceneOutroSvg } from './scenes/scene-outro.js'
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin)
+
+/* 카드뉴스 근거 화면 캡처. 파일 이름이 카드 id 라 정적 import 로는 못 묶고,
+   Vite 의 글롭으로 한 번에 받아 해시 붙은 최종 경로를 얻는다. */
+const SHOTS = import.meta.glob('./assets/captures/*.jpg', {
+  eager: true,
+  import: 'default',
+})
+const shotUrl = (id) => SHOTS[`./assets/captures/${id}.jpg`]
 
 /** 10개 장면 전부 인라인 SVG. */
 const STAGES = {
@@ -229,6 +238,99 @@ const casesMarkup = () => `
           </div>
         </details>`
 
+/* 카드뉴스 「지금 바깥에서 벌어지는 일」 — SCENE 01 에만 붙는다.
+   인트로가 할 일은 설명이 아니라 공감이다. 남 얘기로 넘기기 전에, 이미 벌어진
+   일을 출처와 함께 한 장씩 보여 준다. 그림은 글자 없이 도형만으로 그린다. */
+const chevron = (dir) => `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="${dir === 'prev' ? 'M15 5 L8 12 L15 19' : 'M9 5 L16 12 L9 19'}" />
+        </svg>`
+
+const expandIcon = `
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M9 4H4v5M15 4h5v5M15 20h5v-5M9 20H4v-5" />
+              </svg>`
+
+/** 캡처를 크게 띄우는 팝업. 내용은 열 때 채운다 — 카드마다 판을 새로 만들지 않는다. */
+const lightboxMarkup = () => `
+  <dialog class="lightbox" data-hl-dialog aria-label="${headlines.openLabel}">
+    <button class="lightbox__close" type="button" data-lb-close
+            aria-label="${headlines.closeLabel}">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M6 6 L18 18 M18 6 L6 18" />
+      </svg>
+    </button>
+    <div class="lightbox__body">
+      <figure class="lightbox__figure">
+        <div class="lightbox__frame">
+          <img class="lightbox__img" data-lb-img alt="" />
+          <span class="lightbox__mark" data-lb-mark></span>
+        </div>
+        <figcaption class="lightbox__note">
+          <b>${headlines.noteLabel}</b> <span data-lb-note></span>
+        </figcaption>
+      </figure>
+      <div class="lightbox__side">
+        <span class="hcard__tag" data-lb-tag></span>
+        <p class="lightbox__big" data-lb-big></p>
+        <h4 class="lightbox__head" data-lb-head></h4>
+        <p class="lightbox__text" data-lb-text></p>
+        <div class="lightbox__meta">
+          <a class="lightbox__source" data-lb-src target="_blank" rel="noopener"></a>
+          <span class="lightbox__date" data-lb-date></span>
+        </div>
+        <div class="lightbox__pager">
+          <span class="headlines__count"><b data-lb-now>1</b> / ${headlines.cards.length}</span>
+          <button class="headlines__nav" type="button" data-lb-prev
+                  aria-label="${headlines.prevLabel}">${chevron('prev')}</button>
+          <button class="headlines__nav" type="button" data-lb-next
+                  aria-label="${headlines.nextLabel}">${chevron('next')}</button>
+        </div>
+      </div>
+    </div>
+  </dialog>`
+
+const headlineCard = (card, i) => `
+        <li class="hcard hcard--${card.tone}" data-hl-card aria-label="${i + 1} / ${headlines.cards.length}">
+          <figure class="hcard__fig">
+            <button class="hcard__zoom" type="button" data-hl-open="${i}"
+                    aria-label="${headlines.openLabel} — ${card.head}">
+              <img class="hcard__shot" src="${shotUrl(card.shot)}" alt="${card.alt}"
+                   width="800" height="450" loading="${i < 2 ? 'eager' : 'lazy'}" decoding="async" />
+              <span class="hcard__stamp">${headlines.shotLabel}</span>
+              <span class="hcard__expand" aria-hidden="true">${expandIcon}</span>
+            </button>
+          </figure>
+          <div class="hcard__body">
+            <span class="hcard__tag">${card.tag}</span>
+            <p class="hcard__big">${glue(card.big)}</p>
+            <h4 class="hcard__head">${glue(card.head)}</h4>
+            <p class="hcard__text">${glue(card.body)}</p>
+          </div>
+          <footer class="hcard__foot">
+            <a class="hcard__source" href="${card.url}" target="_blank" rel="noopener">${card.source}</a>
+            <span class="hcard__date">${card.date}</span>
+          </footer>
+        </li>`
+
+const headlinesMarkup = () => `
+      <aside class="headlines" aria-label="${headlines.navLabel}">
+        <div class="headlines__bar">
+          <span class="headlines__count" aria-live="polite">
+            <b data-hl-now>1</b> / ${headlines.cards.length}
+          </span>
+          <button class="headlines__nav" type="button" data-hl-prev
+                  aria-label="${headlines.prevLabel}" disabled>${chevron('prev')}</button>
+          <button class="headlines__nav" type="button" data-hl-next
+                  aria-label="${headlines.nextLabel}">${chevron('next')}</button>
+        </div>
+        <ol class="headlines__track" data-hl-track tabindex="0"
+            aria-label="${headlines.navLabel}">
+          ${headlines.cards.map(headlineCard).join('\n          ')}
+        </ol>
+        <p class="headlines__closing">${glue(headlines.closing)}</p>
+      </aside>`
+
 const sceneMarkup = (scene) => `
   <section class="scene" id="${scene.id}" aria-labelledby="${scene.id}-title">
     <div class="scene__inner">
@@ -239,6 +341,8 @@ const sceneMarkup = (scene) => `
           <span>${scene.label}</span>
         </p>
         <h2 class="scene__title" id="${scene.id}-title">${glue(scene.title).replace(/\n/g, '<br>')}</h2>${
+          scene.id === 'intro' ? headlinesMarkup() : ''
+        }${
           scene.lead
             ? `
         <div class="scene__lead">
@@ -371,6 +475,7 @@ function setMotionPreferenceQuietly() {
 function render() {
   document.querySelector('#app').innerHTML = scenes.map(sceneMarkup).join('\n')
   document.body.insertAdjacentHTML('beforeend', chromeMarkup())
+  document.body.insertAdjacentHTML('beforeend', lightboxMarkup())
 }
 
 /** 현재 장면을 우측 레일과 상단 바에 동시에 반영. */
@@ -419,7 +524,7 @@ function setupReveals() {
   scenes.forEach((scene) => {
     const section = document.querySelector(`#${scene.id}`)
     const targets = section.querySelectorAll(
-      '.scene__eyebrow, .scene__title, .scene__lead, .scene__stage, .scene__caption, .reveal, .scene__refs, .legend, .cases, .summary, .scene__cta',
+      '.scene__eyebrow, .scene__title, .scene__lead, .scene__stage, .scene__caption, .reveal, .scene__refs, .legend, .cases, .headlines, .summary, .scene__cta',
     )
 
     gsap.from(targets, {
@@ -445,8 +550,136 @@ function setupSceneAnims() {
   })
 }
 
+
+/** 카드뉴스 캐러셀 — 좌우 버튼 · 키보드 · 스크롤 위치 동기화.
+ *  이동은 네이티브 스크롤에 맡기고(스냅은 CSS), 여기서는 어디까지 왔는지만
+ *  맞춘다. 모션이 꺼져 있으면 부드러운 스크롤 대신 즉시 이동한다. */
+function setupHeadlines() {
+  const track = document.querySelector('[data-hl-track]')
+  if (!track) return
+
+  const cards = [...track.querySelectorAll('[data-hl-card]')]
+  const prev = document.querySelector('[data-hl-prev]')
+  const next = document.querySelector('[data-hl-next]')
+  const now = document.querySelector('[data-hl-now]')
+  const behavior = motionOn ? 'smooth' : 'auto'
+
+  /** 트랙 왼쪽 끝에 가장 가까운 카드 = 지금 보고 있는 카드. */
+  const currentIndex = () => {
+    const left = track.scrollLeft
+    let best = 0
+    let gap = Infinity
+    cards.forEach((card, i) => {
+      const d = Math.abs(card.offsetLeft - track.offsetLeft - left)
+      if (d < gap) {
+        gap = d
+        best = i
+      }
+    })
+    return best
+  }
+
+  const go = (i) => {
+    const card = cards[Math.max(0, Math.min(cards.length - 1, i))]
+    track.scrollTo({ left: card.offsetLeft - track.offsetLeft, behavior })
+  }
+
+  const sync = () => {
+    const i = currentIndex()
+    now.textContent = String(i + 1)
+    // 소수점 오차로 끝에서 버튼이 살아 있는 일이 없게 1px 여유를 둔다.
+    prev.disabled = track.scrollLeft <= 1
+    next.disabled = track.scrollLeft >= track.scrollWidth - track.clientWidth - 1
+  }
+
+  prev.addEventListener('click', () => go(currentIndex() - 1))
+  next.addEventListener('click', () => go(currentIndex() + 1))
+
+  let ticking = false
+  track.addEventListener('scroll', () => {
+    if (ticking) return
+    ticking = true
+    requestAnimationFrame(() => {
+      sync()
+      ticking = false
+    })
+  })
+
+  window.addEventListener('resize', sync)
+  sync()
+}
+
+/** 캡처 팝업 — 카드 그림을 누르면 원문 화면을 크게 띄우고, 어디를 봐야 하는지
+ *  네모로 짚어 준다. 옆에는 같은 설명을 싣되 핵심 구절만 형광펜으로 남긴다.
+ *  <dialog> 를 쓰므로 ESC 닫기와 초점 가두기는 브라우저가 해 준다. */
+function setupLightbox() {
+  const dialog = document.querySelector('[data-hl-dialog]')
+  if (!dialog) return
+
+  const el = (sel) => dialog.querySelector(sel)
+  const img = el('[data-lb-img]')
+  const mark = el('[data-lb-mark]')
+  const parts = {
+    note: el('[data-lb-note]'),
+    tag: el('[data-lb-tag]'),
+    big: el('[data-lb-big]'),
+    head: el('[data-lb-head]'),
+    text: el('[data-lb-text]'),
+    src: el('[data-lb-src]'),
+    date: el('[data-lb-date]'),
+    now: el('[data-lb-now]'),
+  }
+  let at = 0
+
+  const show = (i) => {
+    at = (i + headlines.cards.length) % headlines.cards.length
+    const card = headlines.cards[at]
+    dialog.dataset.tone = card.tone
+    img.src = shotUrl(card.shot)
+    img.alt = card.alt
+    mark.style.left = `${card.mark.x}%`
+    mark.style.top = `${card.mark.y}%`
+    mark.style.width = `${card.mark.w}%`
+    mark.style.height = `${card.mark.h}%`
+    parts.note.textContent = card.note
+    parts.tag.textContent = card.tag
+    parts.big.textContent = card.big
+    parts.head.textContent = card.head
+    parts.text.innerHTML = glue(card.detail)
+    parts.src.textContent = card.source
+    parts.src.href = card.url
+    parts.date.textContent = card.date
+    parts.now.textContent = String(at + 1)
+  }
+
+  const open = (i) => {
+    show(i)
+    dialog.showModal()
+  }
+
+  document.querySelectorAll('[data-hl-open]').forEach((btn) => {
+    btn.addEventListener('click', () => open(Number(btn.dataset.hlOpen)))
+  })
+
+  el('[data-lb-close]').addEventListener('click', () => dialog.close())
+  el('[data-lb-prev]').addEventListener('click', () => show(at - 1))
+  el('[data-lb-next]').addEventListener('click', () => show(at + 1))
+
+  // 판 바깥(배경)을 누르면 닫는다.
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) dialog.close()
+  })
+
+  dialog.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') show(at + 1)
+    if (e.key === 'ArrowLeft') show(at - 1)
+  })
+}
+
 render()
 setupNav()
+setupHeadlines()
+setupLightbox()
 setupProgress()
 setupMotionToggle()
 
