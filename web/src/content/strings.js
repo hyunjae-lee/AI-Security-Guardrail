@@ -946,3 +946,165 @@ export const sceneBasis = {
   remedySub: ['둘을 직접 잇지 말고 사이에 통제 지점을 둔다', '앞으로 만들 검사대가 바로 이것이다'],
   gateLabel: '연계체계',
 }
+
+/* ==========================================================================
+   SCENE 01 부속 · 카드뉴스 「지금 바깥에서 벌어지는 일」
+   --------------------------------------------------------------------------
+   인트로의 목적은 설득이 아니라 공감이다. "우리 얘기 아니다" 를 먼저 무너뜨려야
+   뒤의 검사대 이야기가 들린다. 그래서 주장 대신 확인 가능한 사실만 싣는다 —
+   전부 공식 발표·법원 결정·정부 자료·연례 보고서에서 나온 것이고, 카드마다
+   출처와 날짜를 붙였다. 추정·전망은 한 장도 넣지 않는다.
+
+   그림은 원문 화면을 그대로 찍은 캡처다 (tools/capture-sources.mjs 로 다시 만들 수 있다).
+   shot 은 캡처 파일 이름, url 은 그 캡처를 찍은 원문 주소, alt 는 캡처의 스크린리더 설명이다.
+   ========================================================================== */
+export const headlines = {
+  navLabel: '지금 바깥에서 벌어지는 일',
+  prevLabel: '이전 카드',
+  nextLabel: '다음 카드',
+  shotLabel: '원문 화면 캡처',
+  openLabel: '캡처 크게 보기',
+  closeLabel: '닫기',
+  noteLabel: '여기를 보세요',
+  originLabel: '원문 열기',
+  closing:
+    '여덟 장에 공통점이 하나 있습니다 — <b>대단한 해킹이 하나도 없습니다.</b> 붙여넣기 한 번, 공유 버튼 한 번, 받은 메일 한 통, 화상회의 한 번, 그리고 아무도 누른 적 없는 기본값이었습니다. 조심해서 쓰자는 다짐만으로는 걸러지지 않는 것들입니다.',
+  cards: [
+    {
+      id: 'samsung',
+      detail:
+        '<b>삼성전자</b> 반도체 부문이 사내에서 ChatGPT 사용을 허용한 것은 2023년 3월 11일이었습니다. <mark class="hl">20일이 지나기 전에 세 건</mark>이 터졌습니다. 설비 결함을 찾아내는 소스코드를 붙여 넣어 최적화를 물었고, 설비 계측·수율 데이터를 넣었고, 사내 회의 녹취를 통째로 넣어 회의록을 만들게 했습니다. <mark class="hl">해킹이 아니라 전부 업무 중 붙여넣기</mark>였습니다. 회사는 2023년 5월 사내 기기와 내부망에서 생성형 AI 사용을 전면 금지했습니다.',
+      note: '기사 제목과 게재일. 2023년 4월 6일자입니다.',
+      mark: { x: 1, y: 13, w: 86, h: 17 },
+      tag: '실제 사고',
+      tone: 'block',
+      big: '20일 만에 3건',
+      head: '허용하자마자 새어 나갔습니다',
+      body: '삼성전자 반도체 부문이 ChatGPT 사용을 허용한 지 20일 만에 설비 점검 소스코드와 사내 회의 녹취가 외부로 넘어갔습니다. 해킹이 아니라 업무 중 붙여넣기였습니다. 회사는 이어 2023년 5월 사내 생성형 AI를 전면 금지했습니다.',
+      source: 'The Register 보도',
+      date: '2023.04.06',
+      shot: 'samsung',
+      url: 'https://www.theregister.com/2023/04/06/samsung_reportedly_leaked_its_own/',
+      alt: 'The Register 기사 화면 캡처 — 제목 「Samsung reportedly leaked its own secrets through ChatGPT」.',
+    },
+    {
+      id: 'indexed',
+      detail:
+        '<b>OpenAI</b>가 <b>ChatGPT</b>에 두었던 공유 기능에는, 만들어진 링크를 검색엔진이 수집하도록 허용하는 선택지가 함께 붙어 있었습니다. 그 결과 <mark class="hl">공유된 대화 4,500건 이상이 구글 검색 결과에 그대로 노출</mark>됐습니다. 이름과 이력서, 가족 이야기, 건강 상태까지 섞여 있었습니다. OpenAI 최고정보보안책임자는 이를 "짧게 끝난 실험"이라 부르며, <mark class="hl">기사가 나간 지 몇 시간 만에 기능을 없앴습니다.</mark>',
+      note: '기사 제목. 아래 기울임 문단은 기사가 나간 몇 시간 뒤 OpenAI가 그 기능을 없앴다는 추가 기록입니다.',
+      mark: { x: 50, y: 15, w: 48, h: 22 },
+      tag: '실제 사고',
+      tone: 'block',
+      big: '4,500건 이상',
+      head: '공유한 대화가 구글 검색에 떴습니다',
+      body: '"공유" 버튼 한 번 누른 대화가 검색 결과에 그대로 올라왔습니다. 이름·이력서·건강 이야기까지 섞여 있었고, OpenAI는 문제가 된 기능을 없앴습니다.',
+      source: 'TechCrunch 보도',
+      date: '2025.07.31',
+      shot: 'indexed',
+      url: 'https://techcrunch.com/2025/07/31/your-public-chatgpt-queries-are-getting-indexed-by-google-and-other-search-engines/',
+      alt: 'TechCrunch 기사 화면 캡처 — 제목 「Your public ChatGPT queries are getting indexed by Google and other search engines」.',
+    },
+    {
+      id: 'echoleak',
+      detail:
+        '<b>마이크로소프트</b>의 업무용 AI 비서 <b>Microsoft 365 Copilot</b>에서 발견된 취약점 <b>CVE-2025-32711</b> 입니다. 공격자가 메일 본문에 지시문을 숨겨 보내면, <mark class="hl">받는 사람이 그 메일을 열지 않아도</mark> Copilot 이 다른 질문에 답하는 과정에서 그 메일을 읽고 지시를 따랐습니다. 그렇게 이용자의 메일과 문서 내용이 외부로 실려 나갔습니다. 마이크로소프트는 서버 쪽에서 이를 막았고 실제 악용은 확인되지 않았습니다. 그래도 남는 사실은 하나입니다 — <mark class="hl">사람이 한 번도 실수하지 않아도 자료는 나갈 수 있습니다.</mark>',
+      note: '논문 제목에 박힌 Zero-Click(무클릭)과 투고일. 그 아래 초록에 CVE 번호와 Microsoft 365 Copilot 이 나옵니다.',
+      mark: { x: 1, y: 30, w: 88, h: 17 },
+      tag: '실제 사고',
+      tone: 'block',
+      big: '클릭 0회',
+      head: '받은 메일 한 통으로 문서가 빠져나갔습니다',
+      body: '마이크로소프트의 업무용 AI 비서 Microsoft 365 Copilot 에서 발견된 취약점입니다(CVE-2025-32711). 공격자가 메일에 숨겨 둔 지시문을, 이용자가 그 메일을 열지 않아도 AI가 읽고 따라 했습니다. 그 결과 이용자의 메일·문서 내용이 바깥으로 실려 나갔습니다. 제조사가 패치했고 실제 악용은 확인되지 않았지만, 사람이 실수하지 않아도 자료가 나갈 수 있다는 것이 확인됐습니다.',
+      source: 'arXiv 논문 — EchoLeak 분석',
+      date: '2025.09.06',
+      shot: 'echoleak',
+      url: 'https://arxiv.org/abs/2509.10540',
+      alt: 'arXiv 논문 초록 화면 캡처 — 「EchoLeak: The First Real-World Zero-Click Prompt Injection Exploit in a Production LLM System」.',
+    },
+    {
+      id: 'deepfake',
+      detail:
+        '영국의 엔지니어링 기업 <b>Arup</b> 의 <b>홍콩</b> 지사 재무 담당 직원이, 영국 본사 최고재무책임자와 동료들이 참석한 화상회의에 들어갔습니다. 회의에서 받은 지시대로 그는 <mark class="hl">15차례에 걸쳐 약 2,500만 달러</mark>를 홍콩 내 다섯 개 계좌로 보냈습니다. <mark class="hl">그 회의에서 진짜 사람은 본인 한 명뿐이었습니다.</mark> 나머지는 공개된 화상회의 영상과 음성을 학습해 만들어 낸 합성 영상이었습니다. <b>홍콩 경찰</b> 발표이며, 회사 이름은 넉 달 뒤 <b>CNN</b> 보도로 알려졌습니다.',
+      note: '기사 제목. 회사 이름과 피해 규모가 그대로 적혀 있습니다.',
+      mark: { x: 3, y: 17, w: 84, h: 17 },
+      tag: '실제 사고',
+      tone: 'block',
+      big: '2,500만 달러',
+      head: '화상회의에 나온 사람이 전원 가짜였습니다',
+      body: '영국 엔지니어링 기업 Arup 의 홍콩 지사 직원이 본사 재무책임자와 동료들이 참석한 화상회의를 거쳐 15차례에 걸쳐 약 2,500만 달러를 송금했습니다. 회의 화면에 있던 사람은 본인을 빼고 전부 AI로 합성한 영상이었습니다. 목소리와 얼굴이 더는 확인 수단이 아닙니다.',
+      source: 'CNN 보도 · 홍콩 경찰 발표',
+      date: '2024.05.16',
+      shot: 'deepfake',
+      url: 'https://www.cnn.com/2024/05/16/tech/arup-deepfake-scam-loss-hong-kong-intl-hnk',
+      alt: 'CNN 기사 화면 캡처 — 홍콩에서 벌어진 2,500만 달러 딥페이크 사기 사건 보도.',
+    },
+    {
+      id: 'terms',
+      detail:
+        '<b>Anthropic</b> 이 2025년 8월 28일 소비자 약관과 개인정보처리방침을 고쳤습니다. 바뀐 것은 기본값입니다 — <mark class="hl">이용자가 따로 거부하지 않으면</mark> <b>Claude</b> 와 나눈 대화와 코딩 기록을 모델 학습에 쓰고, <mark class="hl">비식별 처리해 최대 5년간 보관</mark>합니다. 거부하면 종전대로 30일 보관이고 학습에는 쓰지 않습니다. 대상은 Free·Pro·Max 이용자이고, 기존 이용자가 선택해야 하는 기한은 2025년 10월 8일이었습니다. <mark class="hl">그전까지 Anthropic 은 소비자 대화를 학습에 쓰지 않는다고 밝혀 왔습니다.</mark>',
+      note: '공지 제목과 날짜. 남의 분석이 아니라 Anthropic 자사 발표입니다.',
+      mark: { x: 18, y: 15, w: 64, h: 28 },
+      tag: '조용히 바뀐 기본값',
+      tone: 'bag',
+      big: '최대 5년 보관',
+      head: '약관이 바뀌면 보관 기간도 바뀝니다',
+      body: 'Anthropic은 소비자 약관을 고쳐, 이용자가 거부하지 않으면 대화를 모델 학습에 쓰고 최대 5년간 보관하도록 기본값을 바꿨습니다. 거부는 이용자가 직접 설정에서 꺼야 했습니다.',
+      source: 'Anthropic 공식 공지',
+      date: '2025.08.28',
+      shot: 'terms',
+      url: 'https://www.anthropic.com/news/updates-to-our-consumer-terms',
+      alt: 'Anthropic 공식 공지 화면 캡처 — 제목 「Updates to Consumer Terms and Privacy Policy」, 2025년 8월 28일자.',
+    },
+    {
+      id: 'court',
+      detail:
+        '<b>뉴욕타임스</b> 를 비롯한 언론사들이 <b>OpenAI</b> 를 상대로 낸 저작권 소송에서, 원고 측은 증거로 이용자 대화 기록을 요구했습니다. 캡처는 OpenAI 가 2025년 6월 5일에 낸 공식 입장문입니다. 이후 <mark class="hl">2026년 1월 5일 미국 뉴욕남부연방지방법원은 개인 식별 정보를 지운 대화 로그 2,000만 건을 제출하라는 명령을 확정</mark>했습니다. OpenAI 는 대화의 대부분이 이 사건과 무관하다며 반대했지만 받아들여지지 않았습니다. <mark class="hl">내가 당사자가 아닌 재판에서, 내가 쓴 대화가 증거로 불려 나갑니다.</mark>',
+      note: 'OpenAI가 직접 올린 입장문의 제목과 날짜입니다.',
+      mark: { x: 24, y: 15, w: 52, h: 45 },
+      tag: '조용히 바뀐 기본값',
+      tone: 'bag',
+      big: '2,000만 건 제출',
+      head: '법원이 대화 기록을 불러냈습니다',
+      body: '뉴욕타임스 소송에서 이용자 대화 기록을 내놓으라는 요구를 받자 OpenAI가 낸 공식 입장문입니다(캡처). 이후 2026년 1월 미국 연방법원은 개인 식별을 지운 대화 로그 2,000만 건을 실제로 제출하라는 명령을 확정했습니다.',
+      source: 'OpenAI 공식 입장문',
+      date: '2025.06.05',
+      shot: 'court',
+      url: 'https://openai.com/index/response-to-nyt-data-demands/',
+      alt: 'OpenAI 공식 입장문 화면 캡처 — 뉴욕타임스의 대화 기록 제출 요구에 대한 대응을 밝힌 페이지.',
+    },
+    {
+      id: 'stealer',
+      detail:
+        '<b>IBM X-Force</b> 가 해마다 내는 위협 보고서입니다. 계정을 터는 방식은 단순합니다 — 인포스틸러 악성코드가 <mark class="hl">브라우저에 저장해 둔 로그인 정보를 통째로 긁어</mark> 갑니다. 그렇게 <mark class="hl">다크웹에 올라온 ChatGPT 계정 정보가 30만 건 이상</mark>으로 집계됐습니다. 계정이 넘어가면 그 안에 쌓아 둔 대화 기록도 같이 넘어갑니다. <mark class="hl">지난달에 붙여 넣은 학생 명단이 오늘 남의 손에 있을 수 있다는 뜻입니다.</mark>',
+      note: '보고서 표지. 이 수치가 실린 IBM X-Force 연례 보고서입니다.',
+      mark: { x: 2, y: 3, w: 42, h: 15 },
+      tag: '숫자로 보면',
+      tone: 'bag',
+      big: '30만 건',
+      head: 'AI 계정이 다크웹에서 팔립니다',
+      body: '악성코드가 브라우저에 저장된 로그인 정보를 통째로 긁어 갑니다. 계정이 넘어가면 그 안에 쌓아 둔 대화 기록도 같이 넘어갑니다. IBM X-Force는 다크웹에 올라온 ChatGPT 계정 정보를 30만 건 이상으로 집계했습니다.',
+      source: 'IBM X-Force Threat Intelligence Index 2026',
+      date: '2026',
+      shot: 'stealer',
+      url: 'https://www.ibm.com/reports/threat-intelligence',
+      alt: 'IBM 공식 보고서 페이지 화면 캡처 — X-Force Threat Intelligence Index 2026.',
+    },
+    {
+      id: 'shadow',
+      detail:
+        '신원·접근 관리 기업 <b>Okta</b> 가 의뢰하고 <b>Apprize360</b> 이 2026년 3월에 수행한 조사입니다. <b>미국·영국·호주·캐나다·일본·프랑스·독일</b> 7개국에서 경영진 292명과 실무자 492명이 답했습니다. <mark class="hl">조사 대상 조직의 절반 이상이 지난 1년 안에 AI 관련 보안 사고나 아차 사고를 겪었습니다.</mark> 그런데 <mark class="hl">경영진 78%</mark> 는 조직의 AI 사용 현황을 명확히 파악하고 있다고 답한 반면, 실무자 응답 기준 실제는 <mark class="hl">23%</mark> 였습니다. 승인받지 않은 AI 도구에 사내 문서와 인사 정보를 넣었고, <mark class="hl">16%는 로그인 정보까지</mark> 입력했습니다.',
+      note: '기사 제목 바로 아래 부제. 조사 대상 조직의 절반 이상이 사고나 아차 사고를 겪었다는 대목입니다.',
+      mark: { x: 1, y: 14, w: 90, h: 23 },
+      tag: '숫자로 보면',
+      tone: 'bag',
+      big: '절반 이상',
+      head: '이미 겪은 조직이 절반을 넘습니다',
+      body: '조사 대상 조직의 절반 이상이 지난 1년 안에 AI 관련 보안 사고나 아차 사고를 겪었습니다. 그런데 경영진 78%는 조직의 AI 사용 현황을 명확히 파악하고 있다고 답한 반면, 실무자 응답 기준 실제는 23%였습니다. 승인받지 않은 AI 도구에 사내 문서와 인사 정보를 넣었고, 16%는 로그인 정보까지 입력했습니다.',
+      source: 'The Register 보도 · Okta 의뢰 조사(7개국 784명)',
+      date: '2026.05.27',
+      shot: 'shadow',
+      url: 'https://www.theregister.com/ai-ml/2026/05/27/bosses-blinded-by-confidence-about-shadow-ai-use-by-workers/5247275',
+      alt: 'The Register 기사 화면 캡처 — 제목 「Bosses blinded by confidence about shadow AI use by workers」.',
+    },
+  ],
+}
