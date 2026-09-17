@@ -1,306 +1,98 @@
 /**
- * SCENE 05 · 활주로 — 국경을 넘는 왕복 노선.
+ * SCENE 06 · 활주로 — "여기서부터는 우리 관제 밖입니다"
  *
- * 터미널에서 이륙한 편이 국경을 넘어 공장으로 갔다가 답변 화물을 싣고 돌아온다.
- * 국경 바깥은 우리가 볼 수 없는 구간이라, 그 너머 전체에 어두운 장막을 덮어
- * "여기서부터 관제 밖" 을 톤으로 말한다.
+ * 문장 하나: **국경을 넘은 뒤는 볼 수 없다.**  그래서 국경 오른쪽은 안개로
+ * 덮고, 그 안에 있는 것은 지구본 하나뿐이다.  왼쪽(우리 쪽)은 또렷하고
+ * 오른쪽(바깥)은 흐리다는 대비가 이 장면의 전부다.
  *
- * M3 애니메이션 대상 id:
- *   #sr-plane-out / #sr-plane-in   나가는 편 · 돌아오는 편
- *   #sr-arc-out / #sr-arc-in       두 편의 항로
- *   #sr-veil                       관제 밖 장막
+ * 바닥의 시간 막대는 발표에서 반드시 나오는 질문 — "검사를 끼우면 느려지지
+ * 않느냐" — 에 대한 답이다.  말로 미루지 않고 같은 그림 안에 둔다.
  */
 
-import { callout, svgWrap } from './_svg.js'
-import { isoSpace } from './_iso.js'
-import { globe, globeAnim } from './_places.js'
-import { sceneRunway as t } from '../content/strings.js'
+import { svgWrap } from './_svg.js'
 import { C } from './_palette.js'
+import { VB, arrow, bag, border, card, chip, gate, globe, lines, note, title } from './_flat.js'
+import { sceneRunway as t } from '../content/strings.js'
 
-export const iso = isoSpace({ ox: 330, oy: 130, s: 1 })
-const { at, box, slab, line, plane, grid, cutHatch, curve } = iso
+const BORDER_X = 610
+const GATE_X = 268
+const OUT_Y = 212
+const IN_Y = 372
+const GLOBE = { x: 1010, y: 292, r: 132 }
 
-/* 영토 구분 */
-const HOME = { top: 'home-top', l: 'home-l', r: 'home-r', cls: 'home-edge' }
-const AWAY = { top: 'away-top', l: 'away-l', r: 'away-r', cls: 'away-edge' }
+/* 국경 밖 — 안개. 이 면이 이 장면의 논지다. */
+const haze = `
+      <rect id="sr-haze" x="${BORDER_X}" y="64" width="${1440 - BORDER_X - 40}" height="472" rx="18"
+            fill="${C.veil}" opacity="0.14" />`
 
-/* ------------------------------------------------------------ 우리 쪽 */
+const here = `
+      ${gate(GATE_X, 292, 0.98, { id: 'sr-gate' })}
+      ${title(GATE_X, 292 + 156, t.depart)}
+      ${note(GATE_X, 292 + 188, t.departSub)}`
 
-const terminal = `
-      ${slab(0, 60, 200, 200, 16, { tone: 'home' })}
-      ${grid(0, 60, 200, 200, 50)}
-      ${cutHatch(0, 60, 200, 200, 16, 'l')}
-      ${cutHatch(0, 60, 200, 200, 16, 'r')}
-      ${plane(
-        [
-          [24, 186, 1],
-          [190, 186, 1],
-          [190, 216, 1],
-          [24, 216, 1],
-        ],
-        'f-r',
-      )}
-      ${line(
-        [
-          [36, 201, 2],
-          [178, 201, 2],
-        ],
-        'route',
-      )}
-      ${box(34, 96, 104, 56, 52, HOME)}
-      ${line(
-        [
-          [34, 96, 52],
-          [138, 96, 52],
-          [138, 152, 52],
-          [34, 152, 52],
-        ],
-        'gear',
-        true,
-      )}
-      ${box(150, 78, 18, 18, 96, HOME)}
-      ${box(144, 72, 30, 30, 12, { z: 96, ...HOME })}`
+const crossing = `
+      ${border(BORDER_X, 64, 536, { id: 'sr-border' })}
+      ${note(BORDER_X, 44, t.border)}
+      ${arrow(GATE_X + 108, OUT_Y, GLOBE.x - GLOBE.r - 24, OUT_Y, { tone: C.bag, sw: 4, id: 'sr-out' })}
+      ${bag(GATE_X + 160, OUT_Y, 0.58, { id: 'sr-bag-out' })}
+      ${arrow(GLOBE.x - GLOBE.r - 24, IN_Y, GATE_X + 108, IN_Y, { tone: C.ink3, sw: 4, id: 'sr-in' })}
+      ${note(GLOBE.x - GLOBE.r - 40, IN_Y + 38, t.arrive, { anchor: 'end' })}`
 
-/* ------------------------------------------------------------ 저쪽 */
+const outland = `
+      ${globe(GLOBE.x, GLOBE.y, GLOBE.r, { id: 'sr-globe' })}
+      <text x="${GLOBE.x}" y="${GLOBE.y + GLOBE.r + 54}" text-anchor="middle" class="d-title"
+            style="fill:var(--c-text)">${t.outside}</text>
+      ${lines(GLOBE.x, GLOBE.y + GLOBE.r + 90, t.outsideSub, { gap: 28 })}`
 
-const outland = globe(iso, [700, 150], 116, { id: 'sr-globe' })
+/* 시간 막대 — 막대의 면은 물체색, 글자는 잉크. 흰 판 위에서 대비가 무너지지 않게. */
+const BAR = { x: 96, y: 604, w: 1248, h: 40 }
+const SEG_OUT = 84
+const SEG_IN = 84
 
-/* ------------------------------------------------------------ 항공기 */
-
-/** 아이소메트릭 여객기 — 동체 + 후퇴익 + 수평/수직 미익 + 기수.
-    지면보다 밝은 craft-* 면을 써야 공중의 물체로 읽힌다. */
-const CRAFT = { top: 'craft-top', l: 'craft-l', r: 'craft-r' }
-
-const aircraft = (x, y, z) => `
-      <g>
-        ${box(x, y, 88, 20, 18, { z, cls: 'craft', ...CRAFT })}
-        ${plane(
-          [
-            [x + 30, y - 34, z + 9],
-            [x + 52, y - 34, z + 9],
-            [x + 44, y + 54, z + 9],
-            [x + 22, y + 54, z + 9],
-          ],
-          'craft-top',
-        )}
-        ${plane(
-          [
-            [x + 2, y - 14, z + 18],
-            [x + 16, y - 14, z + 18],
-            [x + 12, y + 34, z + 18],
-            [x - 2, y + 34, z + 18],
-          ],
-          'craft-l',
-        )}
-        ${box(x + 3, y + 7, 12, 7, 26, { z: z + 18, cls: 'craft', ...CRAFT })}
-        ${plane(
-          [
-            [x + 88, y + 3, z + 9],
-            [x + 104, y + 10, z + 9],
-            [x + 88, y + 17, z + 9],
-          ],
-          'craft-r',
-        )}
-      </g>`
-
-/** 화물 — 나갈 땐 가방(질의), 돌아올 땐 상자(답변). */
-const cargo = (x, y, z, kind) =>
-  kind === 'bag'
-    ? box(x, y, 24, 16, 18, { z, cls: 'cargo', top: 'bag-top', l: 'bag-l', r: 'bag-r' })
-    : box(x, y, 26, 18, 20, { z, cls: 'cargo' })
-
-/* --------------------------------------------------------- 관제 밖 장막
-
-   국경선을 화면좌표로 계산해 그 너머 전체를 덮는다.  평면 폴리곤으로는
-   높이가 있는 물체를 덮지 못하므로 화면좌표로 그린다. */
-
-const [bx1, by1] = at(380, -160, 0)
-const [bx2, by2] = at(380, 460, 0)
-const dx = bx2 - bx1
-const dy = by2 - by1
-const veil = `
-      <polygon id="sr-veil" fill="${C.veil}" opacity="0.17"
-               points="${bx1 - dx},${by1 - dy} ${bx2 + dx},${by2 + dy} ${bx2 + dx + 900},${by2 + dy} ${bx1 - dx + 900},${by1 - dy}" />`
-
-const border = `
-      ${line(
-        [
-          [380, -160],
-          [380, 460],
-        ],
-        'border-line',
-      )}
-      ${Array.from({ length: 11 }, (_, i) =>
-        line(
-          [
-            [380, -140 + i * 58],
-            [358, -140 + i * 58],
-          ],
-          'hair',
-        ),
-      ).join('')}`
-
-/* ------------------------------------------------------------------ 조립 */
-
-/* ------------------------------------------------- 시간이 어디에 쓰이나
-
-   이 장면에서 반드시 나오는 질문 — "검사를 끼우면 느려지는 것 아니냐".
-   답을 다른 데로 미루지 않고 같은 그림 안에 둔다.  수속에 쓰는 시간과 비행
-   시간을 나란히 놓으면 비유가 그대로 근거가 된다.
-
-   막대를 실제 비율로 그리지 않는 이유는 그림에 직접 적어 둔다 — 실제 비율이면
-   검사 구간은 1픽셀도 안 되어 아예 안 보인다.  그 사실 자체가 논지지만,
-   비율을 속인 그림으로 오해되면 안 되므로 주기로 못 박는다. */
-
-const BAR_Y = 762
-const BAR_X = 96
-const BAR_W = 1248
-const BAR_H = 34
-const SEG_OUT = 76 // 검사 구간 — 실제 비율보다 크게 그린 것
-const SEG_IN = 76
-
-/* 면은 물체색, 글자는 잉크 — 같은 뜻을 두 층으로 나눠 칠한다.
-   면 색을 그대로 글자에 쓰면 흰 판 위에서 대비가 무너진다. */
-const seg = (x, w, fill, ink, label, value, side) => `
-      <rect x="${x}" y="${BAR_Y}" width="${w}" height="${BAR_H}" rx="3"
-            fill="${fill}" opacity="0.22" stroke="${fill}" stroke-width="1.25" />
-      <text x="${x + w / 2}" y="${BAR_Y + 22}" text-anchor="middle"
-            style="font-size:15px;fill:${ink}" font-weight="700">${value}</text>
-      <text x="${x + w / 2}" y="${BAR_Y - 12}" text-anchor="${side}"
-            style="font-size:16px;fill:var(--c-label)">${label}</text>`
+const seg = (x, w, fill, ink, label, value, anchor) => `
+      <rect x="${x}" y="${BAR.y}" width="${w}" height="${BAR.h}" rx="10"
+            fill="${fill}" opacity="0.2" stroke="${fill}" stroke-width="1.5" />
+      <text x="${x + w / 2}" y="${BAR.y + 27}" text-anchor="middle" class="d-note"
+            style="fill:${ink}" font-weight="700">${value}</text>
+      <text x="${x + w / 2}" y="${BAR.y - 16}" text-anchor="${anchor}" class="d-note"
+            style="fill:var(--c-muted)">${label}</text>`
 
 const timeBar = `
       <g id="sr-timebar">
-        <text x="${BAR_X}" y="${BAR_Y - 46}" letter-spacing="2"
-              style="font-size:17px;fill:var(--c-bag-ink)" font-weight="700">${t.timeLabel}</text>
-        <path class="hair" d="M ${BAR_X} ${BAR_Y - 34} H ${BAR_X + BAR_W}" />
-        ${seg(BAR_X, SEG_OUT, C.bag, C.bagInk, t.timeOut, t.timeOutVal, 'start')}
-        ${seg(
-          BAR_X + SEG_OUT + 6,
-          BAR_W - SEG_OUT - SEG_IN - 12,
-          C.ink3,
-          C.ink2,
-          t.timeAway,
-          t.timeAwayVal,
-          'middle',
-        )}
-        ${seg(BAR_X + BAR_W - SEG_IN, SEG_IN, C.bag, C.bagInk, t.timeIn, t.timeInVal, 'end')}
-        <text x="${BAR_X}" y="${BAR_Y + BAR_H + 26}"
-              style="font-size:17px;fill:var(--c-text)">${t.timeNote}</text>
-        <text x="${BAR_X}" y="${BAR_Y + BAR_H + 48}"
-              style="font-size:14px;fill:var(--c-muted)">${t.timeScaleNote}</text>
+        <text x="${BAR.x}" y="${BAR.y - 54}" class="d-label" style="fill:${C.bagInk}">${t.timeLabel}</text>
+        ${seg(BAR.x, SEG_OUT, C.bag, C.bagInk, t.timeOut, t.timeOutVal, 'start')}
+        ${seg(BAR.x + SEG_OUT + 8, BAR.w - SEG_OUT - SEG_IN - 16, C.ink3, C.ink2, t.timeAway, t.timeAwayVal, 'middle')}
+        ${seg(BAR.x + BAR.w - SEG_IN, SEG_IN, C.bag, C.bagInk, t.timeIn, t.timeInVal, 'end')}
+        ${note(BAR.x, BAR.y + BAR.h + 32, t.timeScaleNote, { anchor: 'start' })}
       </g>`
 
 export function sceneRunwaySvg() {
-  const body = `
-      ${terminal}
-
-      <!-- 항로 -->
-      ${curve(
-        [
-          [196, 180, 24],
-          [340, 90, 206],
-          [576, 96, 96],
-        ],
-        'route',
-        'id="sr-arc-out"',
-      )}
-      ${curve(
-        [
-          [576, 240, 96],
-          [360, 282, 172],
-          [196, 214, 24],
-        ],
-        'route',
-        'id="sr-arc-in" style="stroke:${C.gear}" opacity="0.45"',
-      )}
-
-      ${outland}
-      ${veil}
-      ${border}
-      <text x="${at(380, -180, 0)[0]}" y="${at(380, -180, 0)[1] - 14}"
-            text-anchor="middle" class="co-sub" letter-spacing="6">${t.border}</text>
-
-      <!-- 나가는 편 (아직 국경 안쪽). 화물이 함께 움직여야 하므로 한 그룹. -->
-      <g id="sr-plane-out">
-        ${aircraft(266, 86, 178)}
-        ${cargo(292, 88, 196, 'bag')}
-      </g>
-      <!-- 돌아오는 편 (국경을 막 넘어옴) -->
-      <g id="sr-plane-in">
-        ${aircraft(408, 250, 142)}
-        ${cargo(434, 252, 160, 'crate')}
-      </g>
-
-      ${callout({
-        n: '01',
-        from: at(310, 96, 200),
-        to: [640, 74],
-        side: 'right',
-        title: t.depart,
-        sub: t.departSub,
-        cls: 'co-title--bag',
-      })}
-      ${callout({
-        n: '02',
-        from: at(452, 260, 164),
-        to: [930, 214],
-        side: 'right',
-        title: t.arrive,
-        sub: t.arriveSub,
-      })}
-      ${callout({
-        n: '03',
-        from: at(700, 150, 150),
-        to: [1080, 560],
-        side: 'right',
-        title: t.outside,
-        sub: t.outsideSub,
-      })}
-      ${timeBar}`
-
   return svgWrap({
-    id: 'sr',
-    viewBox: '0 0 1440 872',
+    id: 'scene-runway',
+    viewBox: VB,
     title: t.svgTitle,
     desc: t.svgDesc,
-    body,
+    body: `
+      ${haze}
+      ${here}
+      ${crossing}
+      ${outland}
+      ${timeBar}`,
   })
 }
 
-/* ==========================================================================
-   M3 — 두 편이 항로를 따라 오간다. 스크롤과 무관한 상시 루프.
-   ========================================================================== */
-
-export function sceneRunwayAnim(root, gsap) {
-  globeAnim(root, gsap, 'sr-globe', 116)
-
-  const fly = (sel, pathSel, delay, dur) => {
-    const el = root.querySelector(sel)
-    const path = root.querySelector(pathSel)
-    if (!el || !path) return
-    gsap
-      .timeline({ repeat: -1, repeatDelay: 1.2, delay })
-      .fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.5 })
-      .to(
-        el,
-        {
-          duration: dur,
-          ease: 'none',
-          motionPath: { path, align: path, alignOrigin: [0.5, 0.5] },
-        },
-        0,
-      )
-      .to(el, { opacity: 0, duration: 0.5 }, dur - 0.5)
-  }
-
-  fly('#sr-plane-out', '#sr-arc-out', 0, 6)
-  fly('#sr-plane-in', '#sr-arc-in', 3, 6)
-
-  gsap.to([root.querySelector('#sr-arc-out'), root.querySelector('#sr-arc-in')], {
-    strokeDashoffset: -40,
-    duration: 2.4,
-    ease: 'none',
-    repeat: -1,
+export function sceneRunwayAnim(root, gsap, ScrollTrigger) {
+  const tl = gsap.timeline({
+    scrollTrigger: { trigger: root, start: 'top 68%', once: true },
+    defaults: { ease: 'power3.out' },
   })
+  tl.from('#sr-gate', { opacity: 0, y: 24, duration: 0.6 })
+    .from('#sr-border', { opacity: 0, duration: 0.45 }, '-=0.25')
+    /* 안개가 나중에 덮인다 — 또렷하던 것이 흐려져야 '볼 수 없다' 가 사건이 된다. */
+    .from('#sr-haze', { opacity: 0, duration: 0.9 }, '-=0.1')
+    .from('#sr-out, #sr-bag-out', { opacity: 0, x: -50, duration: 0.65 }, '-=0.6')
+    .from('#sr-globe', { opacity: 0, scale: 0.9, transformOrigin: '50% 50%', duration: 0.7 }, '-=0.35')
+    .from('#sr-in', { opacity: 0, x: 50, duration: 0.65 }, '-=0.3')
+    .from('#sr-timebar', { opacity: 0, y: 18, duration: 0.7 }, '-=0.2')
+  ScrollTrigger.refresh()
 }

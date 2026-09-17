@@ -332,6 +332,10 @@ const headlinesMarkup = () => `
         <p class="headlines__closing">${glue(headlines.closing)}</p>
       </aside>`
 
+/* 장면 화면 — 발표용이라 화면에 남기는 것은 셋뿐이다.
+   제목 · 한 줄 · 그림.  나머지 설명(리드 문단, 「실제로는」 패널, 근거 카드,
+   지연 표, 판정 사례, 대조표, 정리)은 전부 「자세히」 팝업으로 들어간다.
+   발표자는 그림을 띄워 놓고 말하고, 필요할 때만 팝업을 연다. */
 const sceneMarkup = (scene) => `
   <section class="scene${TILE[scene.id] ? ` ${TILE[scene.id]}` : ''}" id="${scene.id}" aria-labelledby="${scene.id}-title">
     <div class="scene__inner">
@@ -343,36 +347,59 @@ const sceneMarkup = (scene) => `
         </p>
         <h2 class="scene__title" id="${scene.id}-title">${titleLines(scene.title)}</h2>${
           scene.id === 'intro' ? headlinesMarkup() : ''
-        }${
-          scene.lead
-            ? `
-        <div class="scene__lead">
-          ${scene.lead.map((para) => `<p>${glue(para)}</p>`).join('\n          ')}
-        </div>`
-            : ''
         }
+        <p class="scene__brief">${glue(scene.brief)}</p>
       </header>
       <div class="scene__stage">${
         STAGES[scene.id] ? STAGES[scene.id]() : placeholder(scene)
       }</div>
       <footer class="scene__foot">
-        <div class="scene__foot-main">
-          <p class="scene__caption">${glue(scene.caption)}</p>${revealMarkup(scene)}
-        </div>${
-          scene.id === 'overview' ? legendMarkup() : ''
-        }${scene.id === 'outro' ? summaryMarkup() : ''}${
-          scene.cta
-            ? `
-        <a class="scene__cta" href="${scene.cta.href}" target="_blank" rel="noopener">${scene.cta.label}</a>`
-            : ''
-        }
-      </footer>${scene.id === 'basis' ? refsMarkup() : ''}${
-        scene.id === 'runway' ? latencyMarkup() : ''
-      }${
-        scene.id === 'departures' ? casesMarkup() : ''
-      }
+        <p class="scene__caption">${glue(scene.caption)}</p>
+        <div class="scene__acts">
+          <button class="scene__more" type="button" data-deck="${scene.id}">
+            ${site.deckOpen}
+          </button>${
+            scene.cta
+              ? `
+          <a class="scene__cta" href="${scene.cta.href}" target="_blank" rel="noopener">${scene.cta.label}</a>`
+              : ''
+          }
+        </div>
+      </footer>
     </div>
   </section>`
+
+/* 「자세히」 팝업 — 장면마다 하나씩 들어 있고, 한 번에 하나만 열린다.
+   내용을 장면 안에 숨겨 두지 않고 여기 미리 다 그려 둔다 — 열 때 만들면
+   발표 중에 첫 클릭이 한 박자 늦는다. */
+const deckMarkup = () => `
+  <dialog class="deck" data-deck-dialog aria-labelledby="deck-title">
+    <div class="deck__head">
+      <p class="deck__eyebrow"><span data-deck-num></span><span data-deck-label></span></p>
+      <h3 class="deck__title" id="deck-title" data-deck-title></h3>
+      <button class="deck__close" type="button" data-deck-close aria-label="${site.deckClose}">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M6 6 L18 18 M18 6 L6 18" />
+        </svg>
+      </button>
+    </div>
+    <div class="deck__body">
+      ${scenes
+        .map(
+          (scene) => `
+      <section class="deck__pane" data-deck-pane="${scene.id}" hidden>
+        <div class="deck__lead">
+          ${(scene.lead || []).map((para) => `<p>${glue(para)}</p>`).join('\n          ')}
+        </div>${revealMarkup(scene)}${scene.id === 'overview' ? legendMarkup() : ''}${
+          scene.id === 'outro' ? summaryMarkup() : ''
+        }${scene.id === 'basis' ? refsMarkup() : ''}${scene.id === 'runway' ? latencyMarkup() : ''}${
+          scene.id === 'departures' ? casesMarkup() : ''
+        }
+      </section>`,
+        )
+        .join('')}
+    </div>
+  </dialog>`
 
 /* ---------------------------------------------------------------- 모션 설정
 
@@ -477,6 +504,7 @@ function render() {
   document.querySelector('#app').innerHTML = scenes.map(sceneMarkup).join('\n')
   document.body.insertAdjacentHTML('beforeend', chromeMarkup())
   document.body.insertAdjacentHTML('beforeend', lightboxMarkup())
+  document.body.insertAdjacentHTML('beforeend', deckMarkup())
 }
 
 /** 현재 장면을 우측 레일과 상단 바에 동시에 반영. */
@@ -554,7 +582,7 @@ function setupReveals() {
 
     // 2) 나머지 덩어리는 아래에서 올라온다.
     const targets = section.querySelectorAll(
-      '.scene__eyebrow, .scene__lead, .scene__caption, .reveal, .scene__refs, .legend, .cases, .headlines, .summary, .scene__cta',
+      '.scene__eyebrow, .scene__brief, .scene__caption, .scene__acts, .headlines',
     )
     if (targets.length) {
       gsap.from(targets, {
@@ -687,6 +715,45 @@ function setupHeadlines() {
   sync()
 }
 
+/** 「자세히」 팝업 — 장면마다 버튼 하나. 발표 중에 필요할 때만 연다.
+ *  판은 하나뿐이고 장면별 내용만 갈아 끼운다. <dialog> 라 ESC 닫기와
+ *  초점 가두기는 브라우저가 해 준다. */
+function setupDeck() {
+  const dialog = document.querySelector('[data-deck-dialog]')
+  if (!dialog) return
+
+  const panes = [...dialog.querySelectorAll('[data-deck-pane]')]
+  const num = dialog.querySelector('[data-deck-num]')
+  const label = dialog.querySelector('[data-deck-label]')
+  const heading = dialog.querySelector('[data-deck-title]')
+
+  const open = (id) => {
+    const scene = scenes.find((sc) => sc.id === id)
+    if (!scene) return
+    num.textContent = `SCENE ${scene.num}`
+    label.textContent = scene.label
+    // 제목의 줄 나눔(\n)은 팝업에서 한 줄로 편다 — 판 폭이 장면보다 좁다.
+    heading.textContent = glue(scene.title).replace(/\n/g, ' ')
+    panes.forEach((pane) => {
+      pane.hidden = pane.dataset.deckPane !== id
+    })
+    dialog.showModal()
+    dialog.scrollTop = 0
+    dialog.querySelector('.deck__body').scrollTop = 0
+  }
+
+  document.querySelectorAll('[data-deck]').forEach((btn) => {
+    btn.addEventListener('click', () => open(btn.dataset.deck))
+  })
+
+  dialog.querySelector('[data-deck-close]').addEventListener('click', () => dialog.close())
+
+  // 판 바깥(배경)을 누르면 닫는다.
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) dialog.close()
+  })
+}
+
 /** 캡처 팝업 — 카드 그림을 누르면 원문 화면을 크게 띄우고, 어디를 봐야 하는지
  *  네모로 짚어 준다. 옆에는 같은 설명을 싣되 핵심 구절만 형광펜으로 남긴다.
  *  <dialog> 를 쓰므로 ESC 닫기와 초점 가두기는 브라우저가 해 준다. */
@@ -758,6 +825,7 @@ render()
 setupNav()
 setupHeadlines()
 setupLightbox()
+setupDeck()
 setupProgress()
 setupMotionToggle()
 

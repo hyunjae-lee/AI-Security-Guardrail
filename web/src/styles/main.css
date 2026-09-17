@@ -367,9 +367,26 @@ html[data-motion='off'] {
   display: inline-block;
 }
 
-/* --- 리드 문단 --------------------------------------------------------- */
+/* --- 화면에 남는 한 줄 -------------------------------------------------
+   발표 화면이라 제목 아래에 놓이는 글은 한 문장뿐이다.  나머지는 「자세히」
+   팝업으로 간다 — 그림 옆에 읽을거리가 쌓이면 아무도 안 읽는다. */
+.scene__brief {
+  margin: 0;
+  max-width: 34em;
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-light);
+  line-height: 1.45;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-label);
+  word-break: keep-all;
+  text-wrap: balance;
+}
 
-.scene__lead {
+/* --- 리드 문단 (팝업 안) ----------------------------------------------- */
+
+.scene__lead,
+.deck__lead {
   word-break: keep-all;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(30rem, 100%), 1fr));
@@ -377,7 +394,8 @@ html[data-motion='off'] {
   align-items: start;
 }
 
-.scene__lead p {
+.scene__lead p,
+.deck__lead p {
   margin: 0;
   max-width: 38em;
   font-family: var(--font-display);
@@ -389,7 +407,8 @@ html[data-motion='off'] {
   text-wrap: balance;
 }
 
-.scene__lead b {
+.scene__lead b,
+.deck__lead b {
   color: var(--c-text);
   font-weight: var(--fw-semibold);
 }
@@ -627,6 +646,37 @@ html[data-motion='off'] {
   max-width: 58em;
   text-wrap: balance;
   color: var(--c-text);
+}
+
+/* 장면 발치의 버튼 묶음 — 「자세히」 와 (있다면) 데모 링크. */
+.scene__acts {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  flex-wrap: wrap;
+}
+
+/* 「자세히」 — 이 사이트에서 가장 자주 눌리는 버튼이라 알약 그대로 간다.
+   파란 테두리의 고스트 알약: 주된 행동(데모 열기)과 급을 나눈다. */
+.scene__more {
+  appearance: none;
+  cursor: pointer;
+  padding: 11px 22px;
+  border: 1px solid var(--link);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--link);
+  font-family: inherit;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--ls-body);
+  line-height: 1.24;
+  transition: transform 0.18s var(--ease-out);
+}
+
+.scene__more:active {
+  transform: scale(0.95);
 }
 
 /* --- 파란 알약 CTA ------------------------------------------------------ */
@@ -1810,5 +1860,162 @@ details[open] > .reveal__summary::after {
 
   .doc-cover {
     width: min(11rem, 60%);
+  }
+}
+
+
+/* ==========================================================================
+   「자세히」 팝업 — 장면마다 하나
+   --------------------------------------------------------------------------
+   발표 화면에서 본문을 걷어 낸 대신, 걷어 낸 것을 전부 여기 담는다.
+   리드 문단 · 「실제로는」 패널 · 근거 카드 · 지연 표 · 판정 사례 · 대조표 · 정리.
+   머리는 고정되고 몸통만 스크롤한다 — 발표 중에 어느 장면인지 놓치지 않게.
+   ========================================================================== */
+
+.deck {
+  width: min(1100px, 92vw);
+  max-width: none;
+  max-height: 88vh;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-lg);
+  background: var(--a-canvas);
+  color: var(--a-ink);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.deck::backdrop {
+  background: rgb(0 0 0 / 0.48);
+  backdrop-filter: saturate(140%) blur(6px);
+}
+
+.deck__head {
+  position: relative;
+  flex: 0 0 auto;
+  padding: clamp(1.75rem, 3vw, 2.5rem) clamp(1.75rem, 3vw, 2.75rem) var(--sp-lg);
+  border-bottom: 1px solid var(--a-divider);
+  background: var(--a-parchment);
+}
+
+.deck__eyebrow {
+  margin: 0 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.224px;
+  color: var(--a-ink-48);
+}
+
+.deck__eyebrow span:first-child {
+  color: var(--a-blue);
+}
+
+.deck__title {
+  margin: 0;
+  max-width: 22em;
+  font-family: var(--font-display);
+  font-size: var(--fs-display);
+  font-weight: var(--fw-semibold);
+  line-height: 1.15;
+  letter-spacing: -0.012em;
+  color: var(--a-ink);
+  word-break: keep-all;
+}
+
+.deck__close {
+  position: absolute;
+  top: var(--sp-md);
+  right: var(--sp-md);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--a-chip);
+  color: var(--a-ink);
+  cursor: pointer;
+  transition: transform 0.18s var(--ease-out);
+}
+
+.deck__close:active {
+  transform: scale(0.95);
+}
+
+.deck__close svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.deck__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: clamp(1.75rem, 3vw, 2.5rem) clamp(1.75rem, 3vw, 2.75rem)
+    clamp(2rem, 3.5vw, 3rem);
+}
+
+/* 팝업 안에서는 장면 안에서 쓰던 여백 규칙이 과하다 — 한 단으로 눕히고 좁힌다. */
+.deck__lead {
+  display: grid;
+  gap: var(--sp-md);
+}
+
+.deck__lead p {
+  max-width: none;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  color: var(--a-ink-80);
+}
+
+.deck__pane > .reveal,
+.deck__pane > .legend,
+.deck__pane > .cases,
+.deck__pane > .summary,
+.deck__pane > .scene__refs,
+.deck__pane > .latency {
+  margin-top: var(--sp-xl);
+  max-width: none;
+  flex: none;
+}
+
+/* 팝업 바탕이 흰 판이므로, 그 안의 카드는 파치먼트로 한 단 낮춘다. */
+.deck__pane .reveal__body,
+.deck__pane .legend__body,
+.deck__pane .cases__body,
+.deck__pane .summary,
+.deck__pane .scene__refs,
+.deck__pane .latency {
+  background: var(--a-parchment);
+}
+
+.deck__pane .reveal__body {
+  grid-template-columns: 1fr;
+}
+
+.deck__pane .case {
+  background: var(--a-canvas);
+}
+
+.deck__pane .cases__grid {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 640px) {
+  .deck {
+    width: 100vw;
+    max-height: 92vh;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
   }
 }
