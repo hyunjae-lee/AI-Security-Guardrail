@@ -1,62 +1,196 @@
 /**
- * SCENE 08 · 기록실 — "기록부에는 판정만 남습니다"
+ * SCENE 07 · 기록실 — 판정만 남는 출입국 기록부.
  *
- * 문장 하나: **내용 칸이 비어 있다.**
- * 그래서 그림은 표 한 장이면 된다.  채워진 세 칸과 비어 있는 한 칸의 대비가
- * 전부다.  방·선반·스탬프 기계 같은 것을 그리면 그 대비가 묻힌다.
+ * 왼쪽에 아이소메트릭 기록실(서가 + 검인대), 오른쪽에 기록부 자체를 크게 띄운다.
+ * 핵심 연출은 '내용' 칸이 비어 있다는 것 — 무엇이 들어 있었는지는 남기지 않는다.
+ *
+ * 근거: 부록1 N2SF-IF-M2 「정보흐름 로그 기록 및 보존」
+ *       — 정보흐름 통제 활동(허용/차단 등)을 로깅하고 일정 기간 보관한다.
+ *         남기는 것은 '통제 활동' 이지 흘러간 내용물이 아니다.
+ *
+ * M3 애니메이션 대상 id:
+ *   #sk-stamp           내려찍히는 판정 스탬프
+ *   #sk-row-1 … #sk-row-4   한 줄씩 채워지는 기록
+ *   #sk-blank-*         비워 두는 내용 칸
  */
 
-import { svgWrap } from './_svg.js'
-import { C } from './_palette.js'
-import { VB, card, chip, note, table, title } from './_flat.js'
+import { callout, svgWrap } from './_svg.js'
+import { isoSpace } from './_iso.js'
 import { sceneRecords as t } from '../content/strings.js'
+import { C } from './_palette.js'
 
-const T = { x: 150, y: 150, w: 1140 }
-const COLS = [...t.cols, t.colBlank]
-const WIDTHS = [200, 330, 250, 360]
-/* 마지막 열은 값이 아니라 '남기지 않았다' 는 표시다 — 문자열을 그대로 넣는다. */
-const ROWS = t.rows.map((r) => [...r, t.blankMark])
+export const iso = isoSpace({ ox: 300, oy: 150, s: 0.8 })
+const { at, box, slab, line, plane, grid, cutHatch, shadow } = iso
 
-const VERDICT_INK = { 통과: C.allowInk, 치환: C.bagInk, 거부: C.blockInk }
+/* -------------------------------------------------------------- 기록실 */
+
+const room = `
+      ${box(-12, -12, 624, 12, 90, { cls: 'wall' })}
+      ${box(-12, 0, 12, 400, 90, { cls: 'wall' })}
+      ${slab(0, 0, 600, 400, 24)}
+      ${grid(0, 0, 600, 400, 80)}
+      ${cutHatch(0, 0, 600, 400, 24, 'l', 34)}
+      ${cutHatch(0, 0, 600, 400, 24, 'r', 34)}
+      <!-- 서가 -->
+      ${[0, 1, 2].map((i) => box(60 + i * 130, 30, 96, 46, 108)).join('')}
+      ${[0, 1, 2]
+        .map((i) =>
+          [0, 1, 2]
+            .map((r) =>
+              plane(
+                [
+                  [64 + i * 130, 76, 92 - r * 30],
+                  [152 + i * 130, 76, 92 - r * 30],
+                  [152 + i * 130, 76, 78 - r * 30],
+                  [64 + i * 130, 76, 78 - r * 30],
+                ],
+                'f-r',
+              ),
+            )
+            .join(''),
+        )
+        .join('')}
+      <!-- 검인대 -->
+      ${box(190, 236, 190, 104, 44)}
+      ${plane(
+        [
+          [200, 246, 45],
+          [370, 246, 45],
+          [370, 330, 45],
+          [200, 330, 45],
+        ],
+        'f-r',
+      )}`
+
+const [stampX, stampY] = at(286, 288, 45)
+
+/* 검인대 상판이 z=44 이고 M3 에서 스탬프가 16 만큼 내려찍는다.  쉬는 자리를
+   44+16=60 에 두어야 내려찍었을 때 상판에 정확히 닿는다.  46 에 두면 14 만큼
+   책상을 뚫고 들어간다 (예전 값). */
+const STAMP_REST = 60
+
+const stamp = `
+      ${shadow(258, 262, 56, 52, { z: 44, lift: STAMP_REST - 44, opacity: 0.4 })}
+      <g id="sk-stamp">
+        ${box(258, 262, 56, 52, 26, { z: STAMP_REST, cls: 'stamp-air' })}
+        ${box(276, 280, 20, 20, 44, { z: STAMP_REST + 26 })}
+        ${box(264, 268, 44, 44, 12, { z: STAMP_REST + 70 })}
+      </g>`
+
+/* ------------------------------------------------------------- 기록부
+
+   도면 옆에 붙는 표. 화면좌표로 그려야 표가 반듯하게 읽힌다. */
+
+const LX = 712 // 표 좌측
+const LW = 640 // 표 폭
+const LY = 118 // 표 상단
+const ROW_H = 68
+const COLS = [0, 136, 342, 494] // 시각 / 유형 / 판정 / 내용(빈칸)
+
+const VERDICT_COLOR = { 통과: C.allowInk, 치환: C.bagInk, 거부: C.blockInk }
+
+const ledger = `
+      <g id="sk-ledger">
+        <rect x="${LX}" y="${LY}" width="${LW}" height="${ROW_H * (t.rows.length + 1) + 16}"
+              rx="4" fill="${C.panelSoft}" stroke="${C.panelLine}" stroke-width="1.25" />
+        <text x="${LX + 22}" y="${LY - 16}" class="co-sub" letter-spacing="3">${t.ledger}</text>
+
+        <!-- 머리글 -->
+        ${t.cols
+          .map(
+            (c, i) =>
+              `<text x="${LX + 22 + COLS[i]}" y="${LY + 40}" class="co-sub"
+                     letter-spacing="2" style="font-size:17px">${c}</text>`,
+          )
+          .join('')}
+        <text x="${LX + 22 + COLS[3]}" y="${LY + 40}" class="co-sub"
+              letter-spacing="2" style="font-size:17px;fill:${C.blockInk}">${t.colBlank}</text>
+        <path class="hair" d="M ${LX + 16} ${LY + 56} H ${LX + LW - 16}" />
+
+        <!-- 내용 칸 전체를 사선으로 지운다 -->
+        <g opacity="0.5">
+          ${Array.from({ length: 14 }, (_, i) => {
+            const x0 = LX + 12 + COLS[3] + i * 14
+            return `<path d="M ${x0} ${LY + 62} L ${x0 - 22} ${LY + ROW_H * (t.rows.length + 1) + 10}"
+                          stroke="${C.block}" stroke-width="1" opacity="0.35" />`
+          }).join('')}
+        </g>
+
+        ${t.rows
+          .map(([time, kind, verdict], i) => {
+            const y = LY + 56 + ROW_H * (i + 1)
+            return `
+        <g id="sk-row-${i + 1}">
+          <text x="${LX + 22 + COLS[0]}" y="${y}" class="co-sub" style="font-size:19px">${time}</text>
+          <text x="${LX + 22 + COLS[1]}" y="${y}" class="co-sub" style="font-size:19px;fill:${C.ink}">${kind}</text>
+          <text x="${LX + 22 + COLS[2]}" y="${y}" class="co-title" style="font-size:19px;fill:${VERDICT_COLOR[verdict] || C.ink2}">${verdict}</text>
+          <text id="sk-blank-${i + 1}" x="${LX + 22 + COLS[3]}" y="${y}" class="co-sub"
+                opacity="0.75" style="font-size:16px;fill:${C.blockInk}">${t.blankMark}</text>
+        </g>
+        ${i < t.rows.length - 1 ? `<path class="hair" d="M ${LX + 16} ${y + 18} H ${LX + LW - 16}" opacity="0.35" />` : ''}`
+          })
+          .join('')}
+      </g>`
+
+/* ------------------------------------------------------------------ 조립 */
 
 export function sceneRecordsSvg() {
   const body = `
-      ${table(T.x, T.y, T.w, COLS, ROWS, WIDTHS, {
-        id: 'sk-ledger',
-        rowH: 72,
-        ink: (ri, ci) => (ci === 2 ? VERDICT_INK[ROWS[ri][2]] : null),
+      ${room}
+      ${stamp}
+      ${ledger}
+
+      ${callout({
+        n: '01',
+        from: [stampX, stampY - 118],
+        to: [318, 626],
+        side: 'right',
+        title: t.stamp,
+        sub: t.stampSub,
       })}
-      ${title(T.x, T.y - 34, t.ledger, { anchor: 'start' })}
+      ${callout({
+        n: '02',
+        from: [LX + 22 + COLS[3] + 40, LY + 34],
+        to: [LX + 60, 56],
+        side: 'right',
+        title: t.note,
+        sub: t.noteSub,
+        cls: 'co-title--block',
+      })}`
 
-      <!-- 비어 있는 칸 — 파선 상자로 '여기는 비워 둔 자리' 임을 말한다. -->
-      ${ROWS.map((_, i) => {
-        const y = T.y + 62 + 72 * i + 16
-        const x = T.x + WIDTHS[0] + WIDTHS[1] + WIDTHS[2] + 22
-        return `<rect id="sk-blank-${i + 1}" x="${x}" y="${y}" width="${WIDTHS[3] - 44}" height="40" rx="8"
-                      fill="none" stroke="${C.blockInk}" stroke-width="1.5" stroke-dasharray="7 6" opacity="0.7" />`
-      }).join('')}
-
-      ${chip(T.x + T.w - 180, T.y + 62 + 72 * ROWS.length + 66, t.note, { tone: C.blockInk, id: 'sk-note' })}
-      ${note(T.x + T.w - 180, T.y + 62 + 72 * ROWS.length + 112, t.noteSub)}
-
-      ${card(T.x, T.y + 62 + 72 * ROWS.length + 44, 420, 96, { fill: C.panelSoft, stroke: C.panelLine })}
-      <text x="${T.x + 30}" y="${T.y + 62 + 72 * ROWS.length + 88}" class="d-label"
-            style="fill:var(--c-text)">${t.stamp}</text>
-      <text x="${T.x + 30}" y="${T.y + 62 + 72 * ROWS.length + 118}" class="d-note"
-            style="fill:var(--c-muted)">${t.stampSub}</text>`
-
-  return svgWrap({ id: 'scene-records', viewBox: VB, title: t.svgTitle, desc: t.svgDesc, body })
+  return svgWrap({
+    id: 'sk',
+    viewBox: '0 0 1440 684',
+    title: t.svgTitle,
+    desc: t.svgDesc,
+    body,
+  })
 }
 
-export function sceneRecordsAnim(root, gsap, ScrollTrigger) {
-  const tl = gsap.timeline({
-    scrollTrigger: { trigger: root, start: 'top 68%', once: true },
-    defaults: { ease: 'power3.out' },
+/* ==========================================================================
+   M3 — 스탬프가 내려찍힐 때마다 기록이 한 줄씩 늘어난다.
+   내용 칸은 끝까지 비어 있는 것이 이 장면의 요점이다.
+   ========================================================================== */
+
+export function sceneRecordsAnim(root, gsap) {
+  const rows = t.rows.map((_, i) => root.querySelector(`#sk-row-${i + 1}`)).filter(Boolean)
+  gsap.set(rows, { opacity: 0 })
+
+  const tl = gsap.timeline({ repeat: -1, repeatDelay: 1.4 })
+
+  rows.forEach((row, i) => {
+    const t0 = i * 1.1
+    tl.to(root.querySelector('#sk-stamp'), { y: 16, duration: 0.22, ease: 'power2.in' }, t0)
+      .to(root.querySelector('#sk-stamp'), { y: 0, duration: 0.32, ease: 'power2.out' }, t0 + 0.22)
+      .fromTo(
+        row,
+        { opacity: 0, x: -14 },
+        { opacity: 1, x: 0, duration: 0.45, ease: 'power2.out' },
+        t0 + 0.24,
+      )
   })
-  tl.from('#sk-ledger', { opacity: 0, y: 24, duration: 0.7 })
-    .from('[id^="sk-ledger-row-"]', { opacity: 0, x: -18, duration: 0.45, stagger: 0.08 }, '-=0.35')
-    /* 비어 있는 칸은 맨 나중에 켠다 — 채워진 칸을 먼저 읽어야 '비었다' 가 보인다. */
-    .from('[id^="sk-blank-"]', { opacity: 0, duration: 0.5, stagger: 0.07 }, '+=0.1')
-    .from('#sk-note', { opacity: 0, y: -12, duration: 0.5 }, '-=0.2')
-  ScrollTrigger.refresh()
+
+  tl.to(rows, { opacity: 0, duration: 0.5 }, rows.length * 1.1 + 1.2)
+
+  return tl
 }
