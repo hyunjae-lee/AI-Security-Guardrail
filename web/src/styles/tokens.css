@@ -1,49 +1,112 @@
-/* 디자인 토큰 — CLAUDE.md '비주얼 디자인 시스템' 확정값 + 아이소메트릭 면 음영.
+/* 디자인 토큰 — 두 층으로 나뉜다.
+
+   1) 지면(page) : Apple 디자인 언어.  흰/파치먼트 캔버스, 단 하나의 강조색
+      (Action Blue), SF Pro 계열 타이포, 장식 크롬 없음.
+   2) 도면(plate): 기존 다크 아이소메트릭 팔레트 그대로.  도면은 이 사이트의
+      '제품 사진' 이라 제 색을 유지하고, 밝은 타일 위에 단 하나 허용된
+      드롭섀도로 얹힌다.  도면 안쪽 색은 .scene__stage 스코프에서 되살린다
+      (아래 '도면 스코프' 참고 — styles/plate.css 가 이 값을 쓴다).
+
    색·타이포는 전부 여기서만 정의하고, 다른 CSS/JS 는 변수만 참조한다. */
 
 :root {
-  /* --- 표면 (다크 톤, CLAUDE.md 확정) --- */
-  --c-bg: #131418;
-  --c-panel: #1c1e24;
-  --c-line: #3c3e46;
-  --c-text: #eceae3;
-  --c-muted: #9c9b93;
-  /* 도면 안 라벨 전용. 일러스트는 축소 렌더되므로 본문보다 대비를 더 준다.
-     (보조 #9C9B93 그대로 쓰면 축소 후 읽히지 않는다) */
-  --c-label: #d3d1c8;
-  --c-leader: #737a8b;
+  /* === 1) 지면 — Apple ================================================== */
+
+  /* --- 강조색: 하나뿐이다 --- */
+  --a-blue: #0066cc; /* Action Blue — 모든 '누를 수 있는 것' */
+  --a-blue-focus: #0071e3; /* 키보드 포커스 링 */
+  --a-blue-on-dark: #2997ff; /* 어두운 타일 위 링크 */
+
+  /* --- 표면 --- */
+  --a-canvas: #ffffff;
+  --a-parchment: #f5f5f7; /* 애플 특유의 오프화이트 */
+  --a-pearl: #fafafc; /* 고스트 버튼 바탕 */
+  --a-tile-1: #272729; /* 어두운 타일 */
+  --a-tile-2: #2a2a2c;
+  --a-tile-3: #252527;
+  --a-black: #000000;
+  --a-chip: rgba(210, 210, 215, 0.64); /* 사진 위에 뜨는 반투명 칩 */
+
+  /* --- 글자 --- */
+  --a-ink: #1d1d1f; /* 제목·본문. 순흑이 아닌 이유는 지면이 인쇄물이 아니라
+                       사진처럼 읽히게 하기 위해서다. */
+  --a-ink-80: #333333;
+  --a-ink-48: #7a7a7a;
+  --a-on-dark: #ffffff;
+  --a-muted-on-dark: #cccccc;
+
+  /* --- 괘선 --- */
+  --a-divider: #f0f0f0; /* 링처럼 쓰는 아주 옅은 선 */
+  --a-hairline: #e0e0e0; /* 카드·칩의 1px 실선 */
+
+  /* --- 유일한 그림자 --------------------------------------------------
+     제품 이미지가 바닥에 앉을 때만 쓴다.  카드·버튼·글자에는 절대 쓰지 않는다. */
+  --shadow-product: 3px 5px 30px 0 rgba(0, 0, 0, 0.22);
+
+  /* --- 모서리 --- */
+  --r-xs: 5px;
+  --r-sm: 8px;
+  --r-md: 11px;
+  --r-lg: 18px;
+  --r-pill: 9999px;
+
+  /* --- 간격 (8px 기준) --- */
+  --sp-xxs: 4px;
+  --sp-xs: 8px;
+  --sp-sm: 12px;
+  --sp-md: 17px;
+  --sp-lg: 24px;
+  --sp-xl: 32px;
+  --sp-xxl: 48px;
+  --sp-section: 80px;
+
+  /* === 지면 토큰 별칭 ====================================================
+     기존 CSS 가 참조하던 이름을 그대로 두고 값만 밝은 쪽으로 옮긴다.
+     도면 안에서는 .scene__stage 스코프가 이 이름들을 다시 어둡게 덮는다. */
+  --c-bg: var(--a-canvas);
+  --c-panel: var(--a-canvas);
+  --c-line: var(--a-hairline);
+  --c-hair: var(--a-divider);
+  --c-text: var(--a-ink);
+  --c-muted: var(--a-ink-48);
+  --c-label: var(--a-ink-80);
+  --c-leader: var(--a-ink-48);
+
+  /* === 2) 도면 — 다크 아이소메트릭 (값 변경 금지) ========================= */
+
+  /* 도면 안에서 되살릴 원래 글자·괘선 색 */
+  --plate-bg: #131418;
+  --plate-panel: #1c1e24;
+  --plate-line: #3c3e46;
+  --plate-hair: #2a2e37;
+  --plate-text: #eceae3;
+  --plate-muted: #9c9b93;
+  --plate-label: #d3d1c8;
+  --plate-leader: #737a8b;
 
   /* --- 아이소메트릭 면 음영 --------------------------------------------
-     확정 팔레트(#131418 ~ #3C3E46) 안에서 파생한 3면 명도.
-     윗면이 가장 밝고, 좌면(+y) 중간, 우면(+x) 가장 어둡다. 광원은 좌상단. */
+     광원은 좌상단.  윗면이 가장 밝고, 좌면(+y) 중간, 우면(+x) 가장 어둡다. */
   --c-face-top: #363b46;
   --c-face-l: #2a2e37;
   --c-face-r: #202329;
   --c-face-deep: #1a1d23; /* 국경 바깥(외부 AI) — 한 단계 더 가라앉은 면 */
 
-  /* --- 영토 구분 ---------------------------------------------------------
-     우리 영토는 청록(설비·통제)이 아주 옅게 물든 한색, 국경 밖은 보랏빛으로
-     채도를 뺀 색으로 나눈다. 시맨틱 4색(호박·청록·빨강·초록)과 색상환에서
-     겹치지 않아 판정 색을 침범하지 않는다. */
+  /* --- 영토 구분 --------------------------------------------------------- */
   --c-home-top: #384954;
   --c-home-l: #2b3742;
   --c-home-r: #202a33;
-  --c-home-g-top: #28343e; /* 대지는 그 위 건물보다 한 단계 어둡게 */
+  --c-home-g-top: #28343e;
   --c-home-g-l: #212b34;
   --c-home-g-r: #1a2229;
   --c-home-edge: #5b7d8a;
 
-  /* 검사장(가드레일 게이트웨이) — 이 사이트의 답이 되는 구조물이다.
-     예전 값은 캠퍼스의 청회색과 명도가 겹쳐, 답이 되는 건물이 배경 건물 하나로
-     묻혔다.  한 단계 더 밝히고 초록 쪽으로 돌려 이 건물만의 색으로 굳힌다 —
-     캠퍼스(청회색)·국경 밖(보랏빛)과 색상환에서 서로 떨어져 있어야 세 영역이
-     축소된 화면에서도 갈린다. */
+  /* 검사장(가드레일 게이트웨이) — 이 사이트의 답이 되는 구조물. */
   --c-gate-top: #5cbba2;
   --c-gate-l: #42897b;
   --c-gate-r: #2c6259;
   --c-gate-edge: #43bc9c;
-  --c-gate-glass: #8fe6cd; /* 유리 커튼월 — 면이 아니라 빛으로 읽히는 자리 */
-  --c-gate-deep: #1d3b39; /* 볼트 안쪽·처마 밑 그늘 */
+  --c-gate-glass: #8fe6cd;
+  --c-gate-deep: #1d3b39;
 
   --c-away-top: #3e3648;
   --c-away-l: #322b3c;
@@ -53,31 +116,67 @@
   --c-away-g-r: #1e1a26;
   --c-away-edge: #6d5f7c;
   --c-edge: #565b68; /* 입체 모서리 하이라이트 */
-  --c-hair: #2a2e37;
-  --c-stage: #0e0f13; /* 도면이 앉는 판 — 배경보다 깊게 파 그림을 띄운다 */ /* 도면 그리드·보조 괘선 */
+  --c-stage: #0e0f13; /* 도면이 앉는 판 */
 
-  /* --- 시맨틱 (급식실 비유 자산과 동일 체계) --- */
+  /* --- 시맨틱 (도면 안에서 쓰는 값) --- */
   --c-bag: #f0a63a; /* 질의 · 여행 가방 */
   --c-gear: #43bc9c; /* 가드레일 설비 · 직원 */
   --c-block: #e25749; /* 차단 · 경보 */
   --c-allow: #7fbf57; /* 허용 */
 
-  /* --- 타이포 --- */
-  --font-sans: 'Noto Sans KR', system-ui, -apple-system, 'Apple SD Gothic Neo',
-    sans-serif;
-  /* 번호·치수처럼 도면틱한 요소는 추가 폰트 다운로드 없이 시스템 모노로. */
+  /* 같은 뜻을 밝은 지면에서 글자로 쓸 때의 값.  다크용 원색은 흰 바탕에서
+     대비가 무너지므로, 의미는 같고 명도만 내린 짝을 따로 둔다.
+     (이것은 강조색이 아니라 '판정' 이라는 뜻을 나르는 색이다 —
+      누를 수 있는 것은 여전히 Action Blue 하나뿐이다.) */
+  --c-bag-ink: #8a5a06;
+  --c-gear-ink: #0d7a63;
+  --c-block-ink: #b3251a;
+  --c-allow-ink: #3f7a24;
+
+  /* --- 타이포 -----------------------------------------------------------
+     SF Pro 는 애플 전용이라 배포할 수 없다.  system-ui/-apple-system 이
+     맥·iOS 에서 진짜 SF Pro 로 풀리고, 그 밖의 플랫폼에서는 Inter 가 받는다.
+     한글 글리프는 Inter 에 없으므로 자연히 다음 차례인 Noto Sans KR 로
+     떨어진다(맥에서는 시스템 한글 서체가 먼저 받는다). */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
+    Inter, 'Noto Sans KR', system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', Inter,
+    'Noto Sans KR', system-ui, sans-serif;
+  /* 도면 안의 글자 — 글자 폭 추정표(_svg.js 의 advance)가 이 서체 기준이라
+     지면 서체를 따라가면 안 된다. */
+  --font-plate: 'Noto Sans KR', system-ui, sans-serif;
+  /* 숫자·치수는 자릿수가 흔들리지 않아야 한다. */
   --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
 
+  /* 크기 사다리 — 애플 값(56/40/28/21/17/14/12/10)을 반응형으로 편 것 */
+  --fs-hero: clamp(1.75rem, 3.4vw, 3.5rem); /* 28 → 56 */
+  --fs-title: clamp(1.75rem, 3.4vw, 3.5rem);
+  --fs-display: clamp(1.5rem, 2.3vw, 2.5rem); /* 24 → 40 */
+  --fs-lead: clamp(1.1875rem, 1.5vw, 1.5rem); /* 19 → 24 */
+  --fs-tagline: 1.3125rem; /* 21 */
+  --fs-body: 1.0625rem; /* 17 — 16 이 아니다. 읽는 속도가 달라진다. */
+  --fs-caption: 1.0625rem; /* 장면 캡션도 본문 급으로 둔다 */
+  --fs-small: 0.875rem; /* 14 */
+  --fs-meta: 0.875rem; /* 14 — 예전의 12px 대문자 메타를 캡션 급으로 올림 */
+  --fs-fine: 0.75rem; /* 12 */
   --fs-num: 0.75rem;
-  --fs-eyebrow: 0.8125rem;
-  --fs-title: clamp(2.1rem, 3.9vw, 3.9rem);
-  --fs-caption: clamp(1.0625rem, 1.32vw, 1.25rem);
-  --fs-meta: 0.75rem;
+  --fs-eyebrow: 0.875rem;
 
-  --ls-eyebrow: 0.26em;
-  --ls-meta: 0.18em;
-  --lh-title: 1.22;
-  --lh-body: 1.7;
+  /* 굵기 사다리는 300 / 400 / 600 / 700 — 500 은 쓰지 않는다. */
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* 자간 — 큰 글씨일수록 좁힌다("Apple tight"). 12px 이하에는 쓰지 않는다. */
+  --ls-tight: -0.01em;
+  --ls-body: -0.022em; /* 17px 에서 -0.374px */
+  --ls-eyebrow: 0.01em;
+  --ls-meta: 0.01em;
+
+  --lh-title: 1.1;
+  /* 애플 본문은 1.47 이지만 한글은 그 값에서 답답해진다. 한 칸만 연다. */
+  --lh-body: 1.62;
 
   /* --- 레이아웃 --- */
   --w-content: 1560px;
@@ -86,4 +185,19 @@
 
   /* --- 모션 --- */
   --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* === 도면 스코프 =========================================================
+   판 안쪽은 원래의 다크 팔레트로 되돌린다.  도면 SVG 는 --c-text/--c-label/
+   --c-muted/--c-line/--c-leader 를 그대로 참조하므로, 이 한 블록만으로
+   plate.css 전체가 예전과 똑같이 그려진다. */
+.scene__stage {
+  --c-bg: var(--plate-bg);
+  --c-panel: var(--plate-panel);
+  --c-line: var(--plate-line);
+  --c-hair: var(--plate-hair);
+  --c-text: var(--plate-text);
+  --c-muted: var(--plate-muted);
+  --c-label: var(--plate-label);
+  --c-leader: var(--plate-leader);
 }

@@ -1,7 +1,18 @@
 @import './tokens.css';
+@import './plate.css';
 
 /* ==========================================================================
-   기본
+   지면 — Apple 디자인 언어
+   --------------------------------------------------------------------------
+   원칙 다섯 가지. 어긋나는 규칙을 새로 넣기 전에 여기부터 읽을 것.
+
+   1. 누를 수 있는 것은 전부 Action Blue 하나다. 두 번째 강조색은 없다.
+   2. 장면은 가장자리까지 꽉 찬 타일이고, 밝은 타일과 어두운 타일이
+      번갈아 온다. 색이 바뀌는 것 자체가 구분선이다 — 테두리를 긋지 않는다.
+   3. 그림자는 딱 하나, 도면(제품)이 바닥에 앉을 때만 쓴다.
+      카드·버튼·글자에는 쓰지 않는다.
+   4. 장식용 그러데이션 없음. 분위기는 그림이 만든다.
+   5. 굵기 사다리는 300 / 400 / 600 / 700. 500 은 쓰지 않는다.
    ========================================================================== */
 
 *,
@@ -11,31 +22,22 @@
 }
 
 html {
-  /* 스크롤 스냅은 쓰지 않는다 — M3 에서 단면 장면을 ScrollTrigger 로 pin + scrub
-     할 예정이라, CSS scroll-snap 이 스크럽 구간과 충돌한다. */
   scroll-behavior: smooth;
+  /* 타일 경계에서 배경이 잠깐 비지 않게 최하층을 파치먼트로 깐다. */
+  background: var(--a-parchment);
 }
 
 body {
   margin: 0;
+  background: var(--a-parchment);
   color: var(--c-text);
   font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-regular);
   line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-
-  /* 도면 그리드 + 비네트. 정적 배경이라 스크롤 중 재계산 비용이 없다. */
-  background-color: var(--c-bg);
-  background-image:
-    radial-gradient(
-      ellipse 90% 70% at 50% 0%,
-      rgba(67, 188, 156, 0.05),
-      transparent 70%
-    ),
-    linear-gradient(var(--c-hair) 1px, transparent 1px),
-    linear-gradient(90deg, var(--c-hair) 1px, transparent 1px);
-  background-size: 100% 100%, 88px 88px, 88px 88px;
-  background-attachment: fixed;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -54,15 +56,21 @@ html[data-motion='off'] {
   scroll-behavior: auto;
 }
 
+:root {
+  --link: var(--a-blue);
+}
+
 .skip-link {
   position: absolute;
   left: -9999px;
   top: 0;
   z-index: 100;
-  padding: 0.75rem 1.25rem;
-  background: var(--c-gear);
-  color: var(--c-bg);
-  font-weight: 700;
+  padding: 11px 22px;
+  border-radius: var(--r-pill);
+  background: var(--a-blue);
+  color: var(--a-on-dark);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-regular);
   text-decoration: none;
 }
 
@@ -71,13 +79,26 @@ html[data-motion='off'] {
   top: 1rem;
 }
 
+/* 포커스 링은 요소의 모서리를 그대로 따라간다 — 여기서 radius 를 지정하면
+   알약 버튼이 초점을 받는 순간 네모가 된다. */
 :focus-visible {
-  outline: 1px solid var(--c-gear);
-  outline-offset: 4px;
+  outline: 2px solid var(--a-blue-focus);
+  outline-offset: 3px;
+}
+
+/* 누름 반응은 전 화면 공통으로 살짝 줄어드는 것 하나다. */
+.motion-toggle:active,
+.motion-notice__go:active,
+.motion-notice__close:active,
+.scene__cta:active,
+.headlines__nav:active:not(:disabled),
+.lightbox__close:active,
+.reveal__summary:active {
+  transform: scale(0.95);
 }
 
 /* ==========================================================================
-   상단 바 — 워드마크 / 현재 장면 / 스크롤 진행선
+   상단 바 — 서리 유리 서브내비
    ========================================================================== */
 
 .topbar {
@@ -88,64 +109,67 @@ html[data-motion='off'] {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
   padding: 0 var(--pad-x);
-  background: linear-gradient(var(--c-bg) 55%, transparent);
-  font-size: var(--fs-meta);
-  letter-spacing: var(--ls-meta);
-  text-transform: uppercase;
-  color: var(--c-muted);
+  background: rgba(245, 245, 247, 0.8);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--a-ink);
 }
 
 .topbar__mark {
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  color: var(--c-text);
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-body);
+  white-space: nowrap;
 }
 
 .topbar__now {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-small);
+  letter-spacing: -0.224px;
+  color: var(--a-ink-48);
+  white-space: nowrap;
 }
 
 .topbar__now b {
-  color: var(--c-bag);
-  font-weight: 700;
+  color: var(--link);
+  font-weight: var(--fw-semibold);
 }
 
 .topbar__right {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--sp-md);
 }
 
-/* 모션 토글 — 상단 바의 메타 텍스트와 같은 급으로 두어, 읽는 흐름을 끊지 않되
-   '동작 줄이기' 때문에 화면이 멈춰 있을 때 되돌릴 자리가 항상 보이게 한다. */
+/* 모션 토글 — 진주빛 캡슐. 화면이 멈춰 보일 때 되돌릴 자리가 여기뿐이라
+   상단 바에서 사라지지 않게 둔다. */
 .motion-toggle {
   appearance: none;
   cursor: pointer;
-  padding: 0.25rem 0.6rem;
-  border: 1px solid var(--c-line);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--c-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  letter-spacing: var(--ls-meta);
-  text-transform: uppercase;
+  padding: 8px 14px;
+  border: 0;
+  box-shadow: 0 0 0 1px var(--a-divider) inset;
+  border-radius: var(--r-md);
+  background: var(--a-pearl);
+  color: var(--a-ink-80);
+  font-family: inherit;
+  font-size: var(--fs-small);
+  letter-spacing: -0.224px;
+  line-height: 1.29;
+  white-space: nowrap;
+  transition: transform 0.18s var(--ease-out);
 }
 
 .motion-toggle b {
-  color: var(--c-gear);
-  font-weight: 700;
+  color: var(--link);
+  font-weight: var(--fw-semibold);
 }
 
 .motion-toggle[aria-pressed='false'] b {
-  color: var(--c-muted);
-}
-
-.motion-toggle:hover {
-  border-color: var(--c-gear);
-  color: var(--c-text);
+  color: var(--a-ink-48);
 }
 
 /* 첫 방문에서 모션이 꺼져 있을 때만 뜨는 안내. 한 번 답하면 다시 뜨지 않는다. */
@@ -158,14 +182,13 @@ html[data-motion='off'] {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.85rem 1.1rem;
-  border: 1px solid var(--c-line);
-  border-radius: 0.5rem;
-  background: var(--c-panel);
-  box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 45%);
-  color: var(--c-label);
-  font-size: 0.875rem;
+  gap: var(--sp-sm);
+  padding: var(--sp-md) var(--sp-lg);
+  border: 1px solid var(--a-hairline);
+  border-radius: var(--r-lg);
+  background: var(--a-canvas);
+  color: var(--a-ink-80);
+  font-size: var(--fs-small);
 }
 
 .motion-notice__text {
@@ -175,57 +198,78 @@ html[data-motion='off'] {
 }
 
 .motion-notice__text b {
-  color: var(--c-text);
+  color: var(--a-ink);
+  font-weight: var(--fw-semibold);
 }
 
 .motion-notice__go,
 .motion-notice__close {
   appearance: none;
   cursor: pointer;
-  padding: 0.45rem 0.9rem;
-  border-radius: 999px;
-  font-size: 0.8125rem;
-  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: var(--r-pill);
+  font-family: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-regular);
+  transition: transform 0.18s var(--ease-out);
 }
 
 .motion-notice__go {
-  border: 1px solid var(--c-gear);
-  background: var(--c-gear);
-  color: var(--c-bg);
+  border: 1px solid var(--a-blue);
+  background: var(--a-blue);
+  color: var(--a-on-dark);
 }
 
 .motion-notice__close {
-  border: 1px solid var(--c-line);
+  border: 1px solid var(--a-blue);
   background: transparent;
-  color: var(--c-muted);
-}
-
-.motion-notice__close:hover {
-  color: var(--c-text);
+  color: var(--a-blue);
 }
 
 .progress {
   position: fixed;
   inset: 0 auto auto 0;
   z-index: 41;
-  height: 1px;
+  height: 2px;
   width: 100%;
   transform: scaleX(0);
   transform-origin: 0 50%;
-  background: var(--c-bag);
+  background: var(--a-blue);
 }
 
 /* ==========================================================================
-   장면(섹션)
+   장면(섹션) — 가장자리까지 꽉 찬 타일
+   밝은 타일 ↔ 어두운 타일이 번갈아 온다. 색이 바뀌는 것이 곧 구분선이다.
    ========================================================================== */
 
 .scene {
   position: relative;
   min-height: 100svh;
-  padding: calc(var(--bar-h) + clamp(2rem, 5vh, 4rem)) var(--pad-x)
-    clamp(2.5rem, 5vh, 4rem);
+  padding: calc(var(--bar-h) + clamp(2.5rem, 6vh, 5rem)) var(--pad-x)
+    clamp(3rem, 6vh, 5rem);
   display: flex;
   justify-content: center;
+  background: var(--a-canvas);
+}
+
+.scene--parchment {
+  background: var(--a-parchment);
+}
+
+.scene--dark {
+  background: var(--a-tile-1);
+  --c-text: var(--a-on-dark);
+  --c-label: var(--a-muted-on-dark);
+  --c-muted: var(--a-muted-on-dark);
+  --c-line: rgba(255, 255, 255, 0.16);
+  --c-hair: rgba(255, 255, 255, 0.09);
+  --c-panel: var(--a-tile-2);
+  --link: var(--a-blue-on-dark);
+}
+
+/* 스크롤 맨 아래 타일은 한 단계 더 가라앉혀 끝이라는 것을 말한다. */
+.scene--dark-deep {
+  background: var(--a-tile-3);
 }
 
 /* 우측 번호 레일이 뜨는 폭에서는 도면 라벨이 그 아래로 들어가지 않게 비워 둔다. */
@@ -241,40 +285,14 @@ html[data-motion='off'] {
   max-width: var(--w-content);
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: clamp(1.25rem, 2.4vh, 2rem);
+  gap: clamp(1.75rem, 3.2vh, 2.75rem);
 }
 
 /* 그리드·플렉스 항목의 기본 min-width 는 auto(=내용의 최소 폭)라, 도면 SVG 처럼
-   본래 폭이 넓은 내용이 들어가면 칸이 화면 밖까지 늘어난다. 좁은 화면에서 가로
-   스크롤이 생기고 상단 바가 밀려 나가던 원인이 이것이다. */
+   본래 폭이 넓은 내용이 들어가면 칸이 화면 밖까지 늘어난다. */
 .scene__inner > *,
 .scene__foot > * {
   min-width: 0;
-}
-
-/* 프레임 모서리 틱 — 도면 트리밍 마크 */
-.scene__inner::before,
-.scene__inner::after {
-  content: '';
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border: 1px solid var(--c-line);
-  pointer-events: none;
-}
-
-.scene__inner::before {
-  top: -14px;
-  left: -18px;
-  border-right: 0;
-  border-bottom: 0;
-}
-
-.scene__inner::after {
-  bottom: -14px;
-  right: -18px;
-  border-left: 0;
-  border-top: 0;
 }
 
 /* --- 머리 --- */
@@ -289,23 +307,21 @@ html[data-motion='off'] {
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  font-size: var(--fs-eyebrow);
-  letter-spacing: var(--ls-eyebrow);
-  text-transform: uppercase;
+  gap: 0.75rem;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.224px;
+  line-height: 1.29;
   color: var(--c-muted);
 }
 
 .scene__num {
-  font-family: var(--font-mono);
-  font-size: var(--fs-num);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--c-bag);
+  font-weight: var(--fw-semibold);
+  color: var(--link);
 }
 
 .scene__eyebrow-rule {
-  flex: 0 0 clamp(28px, 5vw, 72px);
+  flex: 0 0 clamp(20px, 3.5vw, 44px);
   height: 1px;
   background: var(--c-line);
 }
@@ -313,22 +329,51 @@ html[data-motion='off'] {
 .scene__title {
   margin: 0;
   /* ch(=숫자 0 폭)는 한글에서 실제 글자 폭과 무관하므로 em 으로 잡는다. */
-  max-width: 18em;
+  max-width: 16em;
+  font-family: var(--font-display);
   font-size: var(--fs-title);
-  font-weight: 900;
+  font-weight: var(--fw-semibold);
   line-height: var(--lh-title);
-  letter-spacing: -0.026em;
+  letter-spacing: -0.012em;
+  color: var(--c-text);
   /* 한글은 keep-all 이 없으면 어절 한가운데서 잘린다. 줄 나눔 위치는
      strings.js 의 개행(\n)으로 직접 지정한다. */
   word-break: keep-all;
   text-wrap: balance;
 }
 
-/* --- 무대 --- */
+/* --- 리드 문단 --------------------------------------------------------- */
+
+.scene__lead {
+  word-break: keep-all;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(30rem, 100%), 1fr));
+  gap: 0.75rem clamp(2rem, 4vw, 4rem);
+  align-items: start;
+}
+
+.scene__lead p {
+  margin: 0;
+  max-width: 38em;
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-light);
+  line-height: 1.5;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-label);
+  text-wrap: balance;
+}
+
+.scene__lead b {
+  color: var(--c-text);
+  font-weight: var(--fw-semibold);
+}
+
+/* --- 무대(도면) -------------------------------------------------------
+   도면은 이 사이트의 제품 사진이다.  밝은 타일 위에서는 시스템에 하나뿐인
+   드롭섀도를 받아 바닥에 앉고, 어두운 타일에서는 그림자 없이 면으로 읽힌다. */
 
 .scene__stage {
-  /* 남는 세로 공간에서 늘어나지 않게 — 늘어나면 판만 커지고 그림은 그대로라
-     그림이 빈 상자 안에 떠 있는 꼴이 된다. */
   align-self: center;
   /* 도면은 본문 단보다 넓게 — 가로 폭이 렌더 배율을 정하므로 폭이 곧 글씨 크기다.
      오른쪽 번호 레일(96px) 자리까지 일부 되찾는다. */
@@ -337,10 +382,16 @@ html[data-motion='off'] {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--c-line);
-  border-radius: 3px;
+  border: 0;
+  border-radius: var(--r-lg);
   background: var(--c-stage);
+  box-shadow: var(--shadow-product);
   padding: clamp(0.75rem, 1.8vh, 1.5rem) clamp(0.75rem, 1.4vw, 1.5rem);
+  overflow: hidden;
+}
+
+.scene--dark .scene__stage {
+  box-shadow: none;
 }
 
 /* 일러스트는 뷰박스 기준 축소 렌더라, 무대가 낮으면 도면 글씨가 그대로 작아진다.
@@ -366,45 +417,42 @@ html[data-motion='off'] {
   margin: 0;
   word-break: keep-all;
   text-wrap: balance;
-  position: relative;
-  padding-left: 1.375rem;
-  max-width: 56em;
+  max-width: 54em;
   font-size: var(--fs-caption);
+  line-height: var(--lh-body);
   color: var(--c-muted);
 }
 
-.scene__caption::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.75em;
-  width: 10px;
-  height: 1px;
-  background: var(--c-bag);
-}
+/* ==========================================================================
+   카드 — 흰 판 + 1px 헤어라인 + 18px 모서리. 그림자는 없다.
+   ========================================================================== */
 
-/* 설계 근거 카드 — 도면의 표제란처럼 얇은 괘선으로 묶는다. */
-.scene__refs {
-  /* 설계 근거는 이 장면의 논지 그 자체라 옆구리가 아니라 한 행을 통째로 쓴다.
-     조항 세 개는 가로로 늘어놓아야 '분류-이동-생산/저장' 이 한눈에 병렬로 읽힌다. */
+.scene__refs,
+.latency {
   margin-top: clamp(1.75rem, 3vw, 2.75rem);
-  padding: clamp(1.25rem, 2.4vw, 2rem) clamp(1.25rem, 2.4vw, 2rem)
-    clamp(1.1rem, 2vw, 1.5rem);
-  border: 1px solid var(--c-line);
-  border-left: 3px solid var(--c-gate-edge);
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.014);
+  padding: clamp(1.5rem, 2.6vw, 2.25rem);
+  border: 1px solid transparent;
+  border-radius: var(--r-lg);
+  background: var(--a-parchment);
   word-break: keep-all;
-  font-size: 1rem;
+  font-size: var(--fs-body);
   color: var(--c-muted);
 }
 
-/* 표지 + 서지사항을 한 덩어리로. 표지는 종이 한 장으로 보여야 하므로 밝은
-   면 그대로 두고, 어두운 배경 위에 뜨도록 그림자만 준다. */
+/* 파치먼트 타일 위에서는 카드가 흰 판이 되어야 면이 갈린다. */
+.scene--parchment .scene__refs,
+.scene--parchment .latency {
+  background: var(--a-canvas);
+}
+
+.scene--dark .scene__refs,
+.scene--dark .latency {
+  background: var(--a-tile-2);
+}
+
+/* 표지 + 서지사항을 한 덩어리로. */
 .scene__refs-head {
   display: flex;
-  /* 표지는 세로로 긴데 서지사항은 네 줄뿐이라, 위로 붙이면 표지 오른쪽이
-     통째로 빈다. 가운데 맞춤으로 두고 표지를 작게 잡아 빈자리를 줄인다. */
   align-items: center;
   gap: clamp(1rem, 2.4vw, 1.9rem);
 }
@@ -420,64 +468,66 @@ html[data-motion='off'] {
   margin: 0;
 }
 
+/* 표지는 우리가 그린 그림이 아니라 종이 한 장이다 — 도면과 같은 자격으로
+   시스템의 유일한 그림자를 받는다. */
 .doc-cover img {
   display: block;
   width: 100%;
   height: auto;
-  border: 1px solid var(--c-line);
-  border-radius: 2px;
-  box-shadow: 0 0.75rem 1.75rem rgb(0 0 0 / 55%);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-product);
 }
 
 .doc-cover figcaption {
-  margin-top: 0.55rem;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.04em;
+  margin-top: 0.7rem;
+  font-size: var(--fs-fine);
+  letter-spacing: -0.12px;
   line-height: 1.5;
-  color: var(--c-leader);
+  color: var(--c-muted);
   text-align: center;
 }
 
-.scene__refs-kicker {
+.scene__refs-kicker,
+.latency__kicker,
+.legend__kicker,
+.summary__kicker {
   display: block;
-  margin-bottom: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  letter-spacing: var(--ls-meta);
-  text-transform: uppercase;
-  color: var(--c-gear);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.224px;
+  color: var(--link);
 }
 
 .scene__refs-source {
   display: block;
+  margin-top: 0.35rem;
   color: var(--c-text);
-  font-weight: 700;
-  line-height: 1.5;
+  font-size: var(--fs-tagline);
+  font-weight: var(--fw-semibold);
+  line-height: 1.19;
+  letter-spacing: 0.231px;
 }
 
 .scene__refs-meta {
   display: block;
-  margin-top: 0.25rem;
-  font-size: var(--fs-meta);
-  letter-spacing: 0.03em;
+  margin-top: 0.5rem;
+  font-size: var(--fs-small);
   color: var(--c-muted);
 }
 
 .scene__refs b {
-  color: var(--c-gear);
-  font-weight: 700;
+  color: var(--c-text);
+  font-weight: var(--fw-semibold);
 }
 
 .scene__refs-note {
   margin: 0.9rem 0 0;
-  font-size: var(--fs-meta);
-  letter-spacing: 0.02em;
-  color: var(--c-bag);
+  font-size: var(--fs-small);
+  color: var(--c-muted);
 }
 
 .scene__refs ol {
-  margin: 1.1rem 0 0;
+  margin: 1.5rem 0 0;
   padding: 0;
   list-style: none;
   counter-reset: ref;
@@ -489,7 +539,7 @@ html[data-motion='off'] {
 .scene__refs li {
   counter-increment: ref;
   position: relative;
-  padding-left: 1.9rem;
+  padding-left: 2rem;
   line-height: 1.6;
 }
 
@@ -497,77 +547,74 @@ html[data-motion='off'] {
   content: counter(ref, decimal-leading-zero);
   position: absolute;
   left: 0;
-  top: 0.1em;
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  color: var(--c-bag);
+  top: 0.05em;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: var(--link);
 }
 
 .scene__refs-code {
   display: block;
   margin-bottom: 0.4rem;
-  font-weight: 700;
-  color: var(--c-gear);
+  font-weight: var(--fw-semibold);
+  color: var(--c-text);
 }
 
-/* 원문 인용 — 요약과 눈으로 구분되도록 괘선을 붙이고 살짝 눕힌다. */
+/* 원문 인용 — 요약과 눈으로 구분되도록 괘선을 붙인다. */
 .scene__refs blockquote {
   margin: 0;
-  padding-left: 0.875rem;
+  padding-left: var(--sp-sm);
   border-left: 2px solid var(--c-line);
-  font-style: italic;
   text-wrap: pretty;
   color: var(--c-label);
 }
 
 .scene__refs cite {
   display: block;
-  margin-top: 0.45rem;
-  padding-left: 0.875rem;
-  font-family: var(--font-mono);
+  margin-top: 0.5rem;
+  padding-left: var(--sp-sm);
   font-style: normal;
-  font-size: var(--fs-meta);
-  letter-spacing: 0.03em;
+  font-size: var(--fs-fine);
   color: var(--c-muted);
 }
 
 .scene__refs-closing {
-  margin: 1.25rem 0 0;
-  padding-top: 1rem;
-  border-top: 1px solid var(--c-hair);
+  margin: 1.5rem 0 0;
+  padding-top: var(--sp-md);
+  border-top: 1px solid var(--c-line);
   max-width: 58em;
   text-wrap: balance;
   color: var(--c-text);
 }
 
+/* --- 파란 알약 CTA ------------------------------------------------------ */
+
 .scene__cta {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 0.625rem;
-  padding: 0.75rem 1.5rem;
-  border: 1px solid var(--c-gear);
-  color: var(--c-gear);
-  font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  gap: 0.5rem;
+  padding: 11px 22px;
+  border-radius: var(--r-pill);
+  background: var(--a-blue);
+  color: var(--a-on-dark);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--ls-body);
+  line-height: 1.24;
   text-decoration: none;
-  transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out);
+  transition: transform 0.18s var(--ease-out);
 }
 
 .scene__cta::after {
-  content: '↗';
-  font-size: 0.9em;
-}
-
-.scene__cta:hover,
-.scene__cta:focus-visible {
-  background: var(--c-gear);
-  color: var(--c-bg);
+  content: '›';
+  font-size: 1.15em;
+  line-height: 1;
 }
 
 /* ==========================================================================
-   일러스트 자리표시 (M4 에서 실제 SVG 로 교체)
+   일러스트 자리표시 (도면이 아직 없는 장면용)
    ========================================================================== */
 
 .placeholder {
@@ -578,23 +625,15 @@ html[data-motion='off'] {
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  border: 1px dashed var(--c-line);
-  background: repeating-linear-gradient(
-    -45deg,
-    transparent 0 10px,
-    rgba(60, 62, 70, 0.16) 10px 11px
-  );
   color: var(--c-muted);
   text-align: center;
   padding: 2rem;
 }
 
 .placeholder__label {
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  letter-spacing: var(--ls-meta);
-  text-transform: uppercase;
-  color: var(--c-line);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: var(--c-muted);
 }
 
 .placeholder__note {
@@ -602,7 +641,7 @@ html[data-motion='off'] {
   word-break: keep-all;
   text-wrap: balance;
   max-width: 30em;
-  font-size: 0.9375rem;
+  font-size: var(--fs-body);
 }
 
 /* ==========================================================================
@@ -632,10 +671,10 @@ html[data-motion='off'] {
   justify-content: flex-end;
   gap: 0.75rem;
   text-decoration: none;
-  color: var(--c-line);
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  letter-spacing: 0.06em;
+  color: rgba(0, 0, 0, 0.22);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-fine);
+  letter-spacing: -0.12px;
   transition: color 0.25s var(--ease-out);
 }
 
@@ -648,10 +687,9 @@ html[data-motion='off'] {
 }
 
 .dotnav__name {
-  font-family: var(--font-sans);
-  font-size: var(--fs-meta);
-  letter-spacing: var(--ls-meta);
-  color: var(--c-muted);
+  font-size: var(--fs-fine);
+  letter-spacing: -0.12px;
+  color: var(--a-ink-48);
   opacity: 0;
   transform: translateX(4px);
   transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out);
@@ -659,7 +697,7 @@ html[data-motion='off'] {
 
 .dotnav__link:hover,
 .dotnav__link:focus-visible {
-  color: var(--c-muted);
+  color: var(--a-ink-48);
 }
 
 .dotnav__link:hover .dotnav__name,
@@ -669,7 +707,7 @@ html[data-motion='off'] {
 }
 
 .dotnav__link[aria-current='true'] {
-  color: var(--c-bag);
+  color: var(--a-blue);
 }
 
 .dotnav__link[aria-current='true'] .dotnav__tick {
@@ -679,12 +717,1031 @@ html[data-motion='off'] {
 .dotnav__link[aria-current='true'] .dotnav__name {
   opacity: 1;
   transform: none;
-  color: var(--c-text);
+  color: var(--a-ink);
 }
 
 @media (max-width: 900px) {
   .dotnav__name {
     display: none;
+  }
+}
+
+/* ==========================================================================
+   "실제로는" 접이식 패널
+   본문은 비유어, 기술 용어는 여기에만. 기본은 접힌 상태라 흐름을 방해하지 않는다.
+   ========================================================================== */
+
+.scene__foot-main {
+  flex: 1 1 24rem;
+  min-width: 0;
+}
+
+.reveal {
+  margin-top: var(--sp-md);
+  word-break: keep-all;
+}
+
+/* 접이식 손잡이는 파란 글자 링크로 — 이 사이트에서 파란색은 언제나
+   "누를 수 있다" 는 뜻이다. */
+.reveal__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  list-style: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--ls-body);
+  color: var(--link);
+  transition: transform 0.18s var(--ease-out);
+}
+
+.reveal__summary::-webkit-details-marker {
+  display: none;
+}
+
+.reveal__summary::after {
+  content: '⌄';
+  display: inline-block;
+  font-size: 1.05em;
+  line-height: 1;
+  transform: translateY(-0.12em);
+  transition: transform 0.2s var(--ease-out);
+}
+
+.reveal[open] > .reveal__summary::after,
+details[open] > .reveal__summary::after {
+  transform: translateY(-0.12em) rotate(180deg);
+}
+
+.reveal__body,
+.legend__body,
+.cases__body {
+  margin-top: var(--sp-md);
+  padding: clamp(1.25rem, 2.2vw, 1.75rem);
+  border-radius: var(--r-lg);
+  background: var(--a-parchment);
+}
+
+.scene--parchment .reveal__body,
+.scene--parchment .legend__body,
+.scene--parchment .cases__body {
+  background: var(--a-canvas);
+}
+
+.scene--dark .reveal__body,
+.scene--dark .legend__body,
+.scene--dark .cases__body {
+  background: var(--a-tile-2);
+}
+
+/* 리드와 같은 두 단 구성 — 접었다 폈을 때 본문 폭이 달라지지 않게. */
+.reveal__body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(28rem, 100%), 1fr));
+  gap: 0.75rem clamp(2rem, 4vw, 4rem);
+  align-items: start;
+}
+
+.reveal__body p {
+  text-wrap: balance;
+  margin: 0;
+  max-width: 42em;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--c-label);
+}
+
+/* ==========================================================================
+   비유 대조표 (범례) — 그림을 읽는 열쇠
+   ========================================================================== */
+
+.legend {
+  flex: 2 1 28rem;
+  min-width: 0;
+  max-width: 46rem;
+  margin-top: 0;
+  word-break: keep-all;
+}
+
+.legend__title {
+  margin: 0.4rem 0 var(--sp-sm);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  color: var(--c-text);
+}
+
+.legend__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-small);
+}
+
+.legend__table th {
+  text-align: left;
+  padding: 0 0 0.55rem;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.224px;
+  color: var(--c-muted);
+  border-bottom: 1px solid var(--c-line);
+}
+
+.legend__table td {
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--c-hair);
+  color: var(--c-muted);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.legend__table td:first-child {
+  width: 46%;
+  padding-right: 1.25rem;
+}
+
+/* 오른쪽이 비유어 — 이쪽이 그림에서 보게 될 말이다. */
+.legend__table td:last-child {
+  color: var(--c-text);
+  font-weight: var(--fw-semibold);
+}
+
+.legend__table tr:last-child td {
+  border-bottom: 0;
+}
+
+.legend__note {
+  margin: var(--sp-sm) 0 0;
+  font-size: var(--fs-small);
+  color: var(--c-muted);
+}
+
+/* ==========================================================================
+   마무리 정리
+   ========================================================================== */
+
+.summary {
+  flex: 2 1 28rem;
+  min-width: 0;
+  max-width: 44rem;
+  word-break: keep-all;
+  padding: clamp(1.25rem, 2.2vw, 1.75rem);
+  border-radius: var(--r-lg);
+  background: var(--a-parchment);
+}
+
+.scene--parchment .summary {
+  background: var(--a-canvas);
+}
+
+.scene--dark .summary {
+  background: var(--a-tile-2);
+}
+
+.summary__list {
+  margin: var(--sp-sm) 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: sum;
+}
+
+.summary__list li {
+  counter-increment: sum;
+  position: relative;
+  padding-left: 2rem;
+  margin-top: var(--sp-md);
+}
+
+.summary__list li::before {
+  content: counter(sum, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.15rem;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: var(--link);
+}
+
+.summary__list b {
+  display: block;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  color: var(--c-text);
+}
+
+.summary__list span {
+  text-wrap: balance;
+  display: block;
+  margin-top: 0.25rem;
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  color: var(--c-muted);
+}
+
+/* ==========================================================================
+   판정 사례 카드
+   실제 엔진 출력을 그대로 싣는다 — 질문 → 탐지 → 판정 → 모델이 받은 것 → 왜.
+   ========================================================================== */
+
+.cases {
+  min-width: 0;
+  word-break: keep-all;
+}
+
+.cases__note {
+  margin: 0 0 var(--sp-md);
+  font-size: var(--fs-small);
+  color: var(--c-muted);
+}
+
+.cases__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(26rem, 1fr));
+  gap: var(--sp-lg);
+}
+
+.case {
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-lg);
+  padding: var(--sp-lg);
+  background: var(--a-canvas);
+}
+
+.scene--dark .case {
+  background: var(--a-tile-2);
+}
+
+.case__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+/* 판정 색은 강조색이 아니라 '뜻' 이다 — 글자에만 얹고 테두리로는 칠하지 않는다. */
+.case__verdict {
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-body);
+}
+
+.case--allow .case__verdict {
+  color: var(--c-allow-ink);
+}
+.case--mask .case__verdict {
+  color: var(--c-bag-ink);
+}
+.case--block .case__verdict {
+  color: var(--c-block-ink);
+}
+
+.case__role {
+  font-size: var(--fs-fine);
+  color: var(--a-ink-48);
+  white-space: nowrap;
+}
+
+/* 실제 입력한 문장 — 인용부호 대신 왼쪽 괘선으로 구분 */
+.case__prompt {
+  text-wrap: balance;
+  margin: 0 0 var(--sp-md);
+  padding-left: var(--sp-sm);
+  border-left: 2px solid var(--a-hairline);
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  color: var(--a-ink);
+}
+
+.case__rows {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.45rem 0.75rem;
+  font-size: var(--fs-small);
+}
+
+.case__rows dt {
+  font-size: var(--fs-fine);
+  color: var(--a-ink-48);
+  padding-top: 0.15rem;
+}
+
+.case__rows dd {
+  margin: 0;
+  color: var(--a-ink-80);
+  line-height: 1.6;
+}
+
+.case__hits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.case__hits li {
+  margin-bottom: 0.3rem;
+}
+
+.case__hits b {
+  color: var(--a-ink);
+  font-weight: var(--fw-semibold);
+}
+
+/* 심각도 배지 */
+.case__hits em {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 1px 7px;
+  border-radius: var(--r-pill);
+  background: var(--a-parchment);
+  font-size: var(--fs-fine);
+  font-style: normal;
+  color: var(--a-ink-48);
+  vertical-align: 1px;
+}
+
+.case__hits span {
+  display: block;
+  font-size: var(--fs-fine);
+  color: var(--a-ink-48);
+}
+
+/* 모델이 실제로 받은 문자열 — 마스킹이 '삭제가 아닌 변환' 임을 보여 주는 자리 */
+.case__fwd {
+  font-family: var(--font-mono);
+  font-size: var(--fs-fine);
+  line-height: 1.7;
+  color: var(--c-gear-ink);
+  word-break: break-all;
+}
+
+.case__why {
+  text-wrap: balance;
+  margin: var(--sp-md) 0 0;
+  padding-top: var(--sp-sm);
+  border-top: 1px solid var(--a-divider);
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  color: var(--a-ink-48);
+}
+
+/* ==========================================================================
+   실측 지연 카드 — 활주로 장면
+   숫자가 논지인 카드라 표를 먼저 크게 보여 주고, 비교와 비례는 옆단으로 뺀다.
+   ========================================================================== */
+
+.latency__title {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-display);
+  font-weight: var(--fw-semibold);
+  line-height: 1.1;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+}
+
+.latency__lead {
+  margin: 0.75rem 0 0;
+  max-width: 52em;
+  text-wrap: balance;
+  color: var(--c-label);
+}
+
+.latency__grid {
+  margin-top: var(--sp-xl);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: 1.5rem clamp(1.5rem, 3vw, 2.75rem);
+  align-items: start;
+}
+
+.latency__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-small);
+}
+
+.latency__table th,
+.latency__table td {
+  padding: 0.6rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--c-hair);
+}
+
+.latency__table th {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.224px;
+  color: var(--c-muted);
+}
+
+/* 숫자는 자릿수가 흔들리지 않게 고정폭 + 우측 정렬 */
+.latency__table .num,
+.latency__compare b {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.latency__table td:first-child {
+  color: var(--c-label);
+}
+
+.latency__table td.num {
+  color: var(--c-text);
+}
+
+.latency__total td {
+  border-bottom: 0;
+  border-top: 1px solid var(--c-line);
+  font-weight: var(--fw-semibold);
+}
+
+.latency__total td.num {
+  color: var(--link);
+}
+
+.latency__block h4 {
+  margin: 0 0 var(--sp-sm);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  color: var(--c-text);
+}
+
+.latency__compare {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-small);
+}
+
+.latency__compare li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--c-hair);
+  color: var(--c-label);
+}
+
+.latency__compare li:last-child {
+  border-bottom: 0;
+}
+
+.latency__compare b {
+  color: var(--c-text);
+  font-weight: var(--fw-semibold);
+}
+
+.latency__note {
+  margin: var(--sp-sm) 0 0;
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  text-wrap: pretty;
+  color: var(--c-muted);
+}
+
+.latency__note b {
+  color: var(--c-text);
+  font-weight: var(--fw-semibold);
+}
+
+.latency__method {
+  margin-top: var(--sp-lg);
+  padding-top: var(--sp-md);
+  border-top: 1px solid var(--c-hair);
+}
+
+/* ==========================================================================
+   SCENE 01 부속 · 카드뉴스 「지금 바깥에서 벌어지는 일」
+   --------------------------------------------------------------------------
+   가로로 넘기는 카드 묶음. 이동은 네이티브 스크롤 + CSS 스냅에 맡기고, JS 는
+   버튼과 현재 위치만 맞춘다. 카드마다 --tone 을 세우고 분류·숫자가 그 값을 따른다.
+   ========================================================================== */
+
+.headlines {
+  margin: var(--sp-lg) 0 0.5rem;
+  min-width: 0;
+  word-break: keep-all;
+}
+
+.headlines__bar {
+  /* 머리말 없이 바로 카드로 넘어간다 — 여기 남는 것은 위치 표시와 이동 버튼뿐. */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin: 0 0 var(--sp-md);
+}
+
+.headlines__ctrl {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+}
+
+.headlines__count {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-small);
+  color: var(--a-ink-48);
+  margin-right: 0.35rem;
+}
+
+.headlines__count b {
+  color: var(--a-ink);
+  font-weight: var(--fw-semibold);
+}
+
+/* 사진 위를 떠다니는 원형 칩과 같은 규격 — 44px, 완전한 원. */
+.headlines__nav {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--a-chip);
+  color: var(--a-ink);
+  cursor: pointer;
+  transition: transform 0.18s var(--ease-out), opacity 0.18s var(--ease-out);
+}
+
+.headlines__nav svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.headlines__nav:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+/* --- 트랙 ---------------------------------------------------------------- */
+.headlines__track {
+  display: flex;
+  gap: var(--sp-lg);
+  margin: 0;
+  padding: 0 0 0.75rem;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.headlines__track::-webkit-scrollbar {
+  display: none;
+}
+
+.headlines__track:focus-visible {
+  outline: 2px solid var(--a-blue-focus);
+  outline-offset: 4px;
+}
+
+/* --- 카드 — 애플 액세서리 그리드와 같은 규격 ----------------------------- */
+.hcard {
+  --tone: var(--c-gear-ink);
+  flex: 0 0 clamp(19rem, 23vw, 22.5rem);
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--a-hairline);
+  border-radius: var(--r-lg);
+  background: var(--a-canvas);
+  overflow: hidden;
+}
+
+.hcard--block {
+  --tone: var(--c-block-ink);
+}
+.hcard--bag {
+  --tone: var(--c-bag-ink);
+}
+.hcard--gear {
+  --tone: var(--c-gear-ink);
+}
+
+.hcard__fig {
+  position: relative;
+  margin: 0;
+  background: var(--a-parchment);
+  border-bottom: 1px solid var(--a-divider);
+  overflow: hidden;
+}
+
+/* 캡처는 남의 원문 화면이다 — 손대지 않고 그대로 보인다. */
+.hcard__shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* 캡처라는 것을 밝히는 배지 — 우리가 그린 그림이 아니라 남의 화면이다. */
+.hcard__stamp {
+  position: absolute;
+  top: var(--sp-xs);
+  left: var(--sp-xs);
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-fine);
+  letter-spacing: -0.12px;
+  color: var(--a-ink);
+  background: var(--a-chip);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.hcard__body {
+  padding: var(--sp-lg) var(--sp-lg) var(--sp-sm);
+  flex: 1;
+}
+
+.hcard__tag {
+  display: inline-block;
+  margin-bottom: 0.7rem;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+  font-size: var(--fs-fine);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.12px;
+  color: var(--tone);
+}
+
+.hcard__big {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: var(--fw-semibold);
+  line-height: 1.1;
+  letter-spacing: var(--ls-tight);
+  color: var(--tone);
+}
+
+.hcard__head {
+  margin: 0 0 0.55rem;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  line-height: 1.35;
+  letter-spacing: var(--ls-body);
+  color: var(--a-ink);
+}
+
+.hcard__text {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  color: var(--a-ink-48);
+}
+
+.hcard__foot {
+  /* 출처가 길면 날짜가 잘려 나가므로 가로로 붙이지 않고 두 줄로 쌓는다. */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: var(--sp-sm) var(--sp-lg) var(--sp-md);
+  font-size: var(--fs-fine);
+  letter-spacing: -0.12px;
+  color: var(--a-ink-48);
+}
+
+.hcard__source {
+  min-width: 0;
+  color: var(--a-blue);
+  text-decoration: none;
+}
+
+.hcard__source:hover,
+.hcard__source:focus-visible {
+  text-decoration: underline;
+}
+
+.hcard__date {
+  color: var(--a-ink-48);
+}
+
+.headlines__closing {
+  margin: var(--sp-xl) 0 0;
+  max-width: 68ch;
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-light);
+  line-height: 1.5;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-label);
+}
+
+.headlines__closing b {
+  color: var(--c-text);
+  font-weight: var(--fw-semibold);
+}
+
+/* ==========================================================================
+   캡처 팝업 (SCENE 01 카드뉴스)
+   왼쪽은 캡처 + 볼 곳 표시, 오른쪽은 같은 설명에 형광펜만 얹은 것.
+   <dialog> 라 ESC·초점 가두기는 공짜.
+   ========================================================================== */
+
+.hcard__zoom {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+  position: relative;
+  color: inherit;
+}
+
+.hcard__zoom:focus-visible {
+  outline: 2px solid var(--a-blue-focus);
+  outline-offset: -2px;
+}
+
+.hcard__expand {
+  position: absolute;
+  right: var(--sp-xs);
+  bottom: var(--sp-xs);
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  background: var(--a-chip);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.2s var(--ease-out);
+}
+
+.hcard__zoom:hover .hcard__expand,
+.hcard__zoom:focus-visible .hcard__expand {
+  opacity: 1;
+}
+
+.hcard__expand svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--a-ink);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.lightbox {
+  --tone: var(--c-gear-ink);
+  width: min(1500px, 94vw);
+  max-width: none;
+  max-height: 92vh;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-lg);
+  background: var(--a-canvas);
+  color: var(--a-ink);
+  overflow: visible;
+}
+
+.lightbox[data-tone='block'] {
+  --tone: var(--c-block-ink);
+}
+.lightbox[data-tone='bag'] {
+  --tone: var(--c-bag-ink);
+}
+.lightbox[data-tone='gear'] {
+  --tone: var(--c-gear-ink);
+}
+
+.lightbox::backdrop {
+  background: rgb(0 0 0 / 0.48);
+  backdrop-filter: saturate(140%) blur(6px);
+}
+
+.lightbox__close {
+  position: absolute;
+  top: var(--sp-sm);
+  right: var(--sp-sm);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--a-chip);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--a-ink);
+  cursor: pointer;
+  z-index: 2;
+  transition: transform 0.18s var(--ease-out);
+}
+
+.lightbox__close svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.lightbox__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(24rem, 1fr);
+  max-height: 92vh;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.lightbox__figure {
+  margin: 0;
+  padding: var(--sp-lg);
+  background: var(--a-parchment);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.lightbox__frame {
+  position: relative;
+  line-height: 0;
+  border-radius: var(--r-sm);
+  /* 표시 네모가 만드는 바깥 음영(box-shadow)이 액자를 넘어 팝업 전체를
+     덮지 않도록 여기서 자른다. 음영은 캡처 안에서만 스포트라이트로 작동한다. */
+  overflow: hidden;
+}
+
+.lightbox__img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 캡처 위에 "여기" 를 짚는 네모. 좌표는 카드마다 strings 의 mark 가 갖는다. */
+.lightbox__mark {
+  position: absolute;
+  border: 2px solid var(--tone);
+  border-radius: 3px;
+  box-shadow: 0 0 0 9999px rgb(0 0 0 / 0.38);
+  pointer-events: none;
+}
+
+.lightbox__note {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  color: var(--a-ink-48);
+  word-break: keep-all;
+}
+
+.lightbox__note b {
+  color: var(--tone);
+  font-weight: var(--fw-semibold);
+  margin-right: 0.35rem;
+}
+
+.lightbox__side {
+  padding: clamp(1.75rem, 2.6vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.55rem;
+  overflow-y: auto;
+  word-break: keep-all;
+}
+
+/* 세로 flex 안에서 분류 뱃지가 칸 너비만큼 늘어나지 않게 한다. */
+.lightbox__side .hcard__tag {
+  align-self: flex-start;
+  margin-bottom: 0.35rem;
+}
+
+.lightbox__big {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 2.6vw, 2.5rem);
+  font-weight: var(--fw-semibold);
+  line-height: 1.1;
+  letter-spacing: var(--ls-tight);
+  color: var(--tone);
+}
+
+.lightbox__head {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-semibold);
+  line-height: 1.3;
+  letter-spacing: var(--ls-tight);
+  color: var(--a-ink);
+}
+
+.lightbox__text {
+  margin: 0.75rem 0 0;
+  font-size: var(--fs-body);
+  line-height: 1.75;
+  letter-spacing: var(--ls-body);
+  color: var(--a-ink-80);
+}
+
+/* 고유명사·기관명은 검은 굵은 글씨로 세운다 (형광펜과 층을 나눈다). */
+.lightbox__text b {
+  color: var(--a-ink);
+  font-weight: var(--fw-semibold);
+}
+
+/* 형광펜 — 밝은 지면에서는 진짜 형광펜처럼 바탕을 칠하고 글자는 검게 둔다.
+   글자색까지 물들이면 위의 <b> 와 층이 섞인다. */
+.hl {
+  background: color-mix(in srgb, var(--tone) 22%, transparent);
+  color: inherit;
+  font-weight: var(--fw-semibold);
+  border-radius: 3px;
+  padding: 0 0.18em;
+}
+
+.lightbox__meta {
+  margin-top: auto;
+  padding-top: var(--sp-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: var(--fs-fine);
+  letter-spacing: -0.12px;
+  color: var(--a-ink-48);
+  border-top: 1px solid var(--a-divider);
+}
+
+.lightbox__source {
+  color: var(--a-blue);
+  text-decoration: none;
+}
+
+.lightbox__source:hover,
+.lightbox__source:focus-visible {
+  text-decoration: underline;
+}
+
+.lightbox__date {
+  color: var(--a-ink-48);
+}
+
+.lightbox__pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-xs);
+  padding-top: var(--sp-sm);
+}
+
+/* ==========================================================================
+   좁은 화면
+   ========================================================================== */
+
+@media (max-width: 980px) {
+  .lightbox__body {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+
+  .lightbox__figure {
+    border-bottom: 1px solid var(--a-divider);
+  }
+
+  .lightbox__side {
+    overflow: visible;
+  }
+}
+
+@media (max-width: 900px) {
+  .hcard {
+    flex-basis: min(84vw, 21rem);
+  }
+
+  .headlines__bar {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 834px) {
+  .scene {
+    padding-top: calc(var(--bar-h) + 2rem);
+    padding-bottom: var(--sp-xxl);
   }
 }
 
@@ -712,1269 +1769,5 @@ html[data-motion='off'] {
 
   .doc-cover {
     width: min(11rem, 60%);
-  }
-}
-
-/* ==========================================================================
-   일러스트 SVG 공통
-   ========================================================================== */
-
-.illus {
-  /* 컨테이너보다 커지지 않도록 못 박는다. 도면 내용은 전부 뷰박스 안에 있으므로
-     기본값(hidden)으로 두어 밖으로 새는 것도 막는다. */
-  max-width: 100%;
-}
-
-.illus text {
-  font-family: var(--font-sans);
-  fill: var(--c-label);
-  font-size: 20px;
-}
-
-/* 아이소메트릭 입체 3면 */
-.illus .f-top {
-  fill: var(--c-face-top);
-}
-.illus .f-l {
-  fill: var(--c-face-l);
-}
-.illus .f-r {
-  fill: var(--c-face-r);
-}
-.illus .f-deep {
-  fill: var(--c-face-deep);
-}
-.illus .solid {
-  stroke: var(--c-edge);
-  stroke-width: 1.15;
-  stroke-linejoin: round;
-}
-
-/* 영토 구분 — 우리 쪽(한색) / 국경 밖(보랏빛 무채색) */
-.illus .home-top { fill: var(--c-home-top); }
-.illus .home-l { fill: var(--c-home-l); }
-.illus .home-r { fill: var(--c-home-r); }
-.illus .home-g-top { fill: var(--c-home-g-top); }
-.illus .home-g-l { fill: var(--c-home-g-l); }
-.illus .home-g-r { fill: var(--c-home-g-r); }
-.illus .solid.home-edge { stroke: var(--c-home-edge); }
-
-/* 검사장 — 유일한 통제 지점. 주변보다 밝게 띄운다. */
-.illus .gate-top { fill: var(--c-gate-top); }
-.illus .gate-l { fill: var(--c-gate-l); }
-.illus .gate-r { fill: var(--c-gate-r); }
-.illus .solid.gate-edge { stroke: var(--c-gate-edge); stroke-width: 1.5; }
-.illus .gate-glass { fill: var(--c-gate-glass); }
-.illus .gate-deep { fill: var(--c-gate-deep); }
-
-.illus .away-top { fill: var(--c-away-top); }
-.illus .away-l { fill: var(--c-away-l); }
-.illus .away-r { fill: var(--c-away-r); }
-.illus .away-g-top { fill: var(--c-away-g-top); }
-.illus .away-g-l { fill: var(--c-away-g-l); }
-.illus .away-g-r { fill: var(--c-away-g-r); }
-.illus .solid.away-edge { stroke: var(--c-away-edge); }
-
-/* 지면 · 대지 */
-.illus .ground-top {
-  fill: #282c34;
-}
-.illus .ground-l {
-  fill: #22252c;
-}
-.illus .ground-r {
-  fill: #1a1d22;
-}
-
-/* 컨베이어 — 바닥보다 한 단계 밝게 띄워야 흐름선으로 읽힌다 */
-.illus .belt-top {
-  fill: #4b5265;
-}
-.illus .belt-l {
-  fill: #333846;
-}
-.illus .belt-r {
-  fill: #272b34;
-}
-
-/* 항공기 — 어두운 지면 위 공중에 뜨므로 한 단계 더 밝게 잡는다 */
-.illus .craft-top {
-  fill: #626b7e;
-}
-.illus .craft-l {
-  fill: #4d5466;
-}
-.illus .craft-r {
-  fill: #3a4150;
-}
-
-/* 설비(청록) */
-.illus .gear {
-  fill: none;
-  stroke: var(--c-gear);
-  stroke-width: 1.75;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-}
-.illus .gear-fill {
-  fill: var(--c-gear);
-}
-
-/* 가방(호박) */
-.illus .bag-top {
-  fill: #f7bd62;
-}
-.illus .bag-l {
-  fill: #e09a33;
-}
-.illus .bag-r {
-  fill: #b97a22;
-}
-
-/* 콜아웃(지시선 + 번호 배지 + 라벨) */
-.illus .co-leader {
-  fill: none;
-  stroke: var(--c-leader);
-  stroke-width: 1.4;
-}
-.illus .co-dot {
-  fill: var(--c-bag);
-}
-.illus .co-badge {
-  /* 판 색으로 채워 지시선이 배지를 뚫고 지나가지 않게 한다. */
-  fill: var(--c-stage);
-  stroke: var(--c-bag);
-  stroke-width: 1.4;
-}
-.illus .co-num {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 700;
-  fill: var(--c-bag);
-}
-.illus .co-title {
-  font-size: 25px;
-  font-weight: 700;
-  fill: var(--c-text);
-  letter-spacing: -0.01em;
-}
-.illus .co-sub {
-  font-size: 19px;
-  fill: var(--c-label);
-}
-.illus .co-title--block {
-  fill: var(--c-block);
-}
-.illus .co-title--allow {
-  fill: var(--c-allow);
-}
-.illus .co-title--bag {
-  fill: var(--c-bag);
-}
-
-/* 도면 보조선 */
-.illus .hair {
-  fill: none;
-  stroke: var(--c-line);
-  stroke-width: 1;
-  opacity: 0.7;
-}
-.illus .hatch {
-  stroke: var(--c-line);
-  stroke-width: 1;
-  opacity: 0.4;
-}
-.illus .border-line {
-  /* 국경은 이 사이트의 주인공 중 하나다. 흐리면 '국경에 검사대가 없다' 는
-     콜아웃이 가리킬 대상을 잃는다. */
-  fill: none;
-  stroke: var(--c-label);
-  stroke-width: 2;
-  stroke-dasharray: 10 7;
-  stroke-linecap: butt;
-  opacity: 0.95;
-}
-.illus .route {
-  fill: none;
-  stroke: var(--c-bag);
-  stroke-width: 1.25;
-  stroke-dasharray: 4 6;
-  opacity: 0.5;
-}
-
-/* ==========================================================================
-   "실제로는" 접이식 패널 (M5)
-   본문은 비유어, 기술 용어는 여기에만. 기본은 접힌 상태라 흐름을 방해하지 않는다.
-   ========================================================================== */
-
-.scene__foot-main {
-  flex: 1 1 24rem;
-  min-width: 0;
-}
-
-.reveal {
-  margin-top: 1.25rem;
-  word-break: keep-all;
-}
-
-.reveal__summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  list-style: none;
-  padding: 0.4rem 0.9rem 0.4rem 0.75rem;
-  border: 1px solid var(--c-line);
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  letter-spacing: var(--ls-meta);
-  text-transform: uppercase;
-  color: var(--c-gear);
-  transition: border-color 0.2s var(--ease-out), color 0.2s var(--ease-out);
-}
-
-.reveal__summary::-webkit-details-marker {
-  display: none;
-}
-
-.reveal__summary::before {
-  content: '+';
-  font-size: 1.1em;
-  line-height: 1;
-}
-
-.reveal[open] .reveal__summary::before {
-  content: '−';
-}
-
-.reveal__summary:hover {
-  border-color: var(--c-gear);
-  color: var(--c-text);
-}
-
-.reveal__body {
-  margin-top: 1rem;
-  padding-left: 1rem;
-  border-left: 1px solid var(--c-gear);
-  /* 리드와 같은 두 단 구성 — 접었다 폈을 때 본문 폭이 달라지지 않게. */
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(28rem, 1fr));
-  gap: 0.7rem clamp(2rem, 4vw, 4rem);
-  align-items: start;
-}
-
-.reveal__body p {
-  text-wrap: balance;
-  margin: 0;
-  max-width: 42em;
-  font-size: 1rem;
-  line-height: 1.75;
-  color: var(--c-label);
-}
-
-/* 마지막 문단이 ※ 로 시작하면 주의 문구로 취급 */
-.reveal__body p:last-child:first-letter {
-  font-weight: inherit;
-}
-
-/* ==========================================================================
-   리드 문단 — 제목과 그림 사이의 도입부.
-   장면마다 앞 장면을 받아 잇는 문장으로 시작해 흐름이 끊기지 않게 한다.
-   ========================================================================== */
-
-/* 한 줄이 너무 길면 한글은 읽는 눈이 되돌아올 자리를 잃는다.  그래서 폭을
-   늘리는 대신 단을 나눈다 — 데스크톱에서는 두 단으로 화면을 꽉 채우고,
-   좁아지면 자동으로 한 단으로 접힌다 (minmax 의 auto-fit).
-   문단 자체를 그리드 아이템으로 두어 문단 중간이 단을 넘어가지 않게 했다. */
-.scene__lead {
-  word-break: keep-all;
-  display: grid;
-  /* min() 없이 minmax(30rem,…) 만 쓰면 화면이 30rem 보다 좁을 때 칸이 줄지 못해
-     본문이 화면 밖으로 나간다. 좁은 화면에서는 한 칸이 곧 화면 폭이다. */
-  grid-template-columns: repeat(auto-fit, minmax(min(30rem, 100%), 1fr));
-  gap: 0.6rem clamp(2rem, 4vw, 4rem);
-  align-items: start;
-}
-
-.scene__lead p {
-  margin: 0;
-  max-width: 40em;
-  font-size: clamp(1.0625rem, 1.22vw, 1.1875rem);
-  line-height: 1.78;
-  color: var(--c-label);
-  text-wrap: balance;
-}
-
-.scene__lead b {
-  color: var(--c-text);
-  font-weight: 700;
-  border-bottom: 1px solid var(--c-bag);
-  padding-bottom: 1px;
-}
-
-/* ==========================================================================
-   비유 대조표 (범례) — 그림을 읽는 열쇠
-   ========================================================================== */
-
-.legend {
-  flex: 2 1 28rem;
-  min-width: 0;
-  max-width: 46rem;
-  margin-top: 0;
-  word-break: keep-all;
-}
-
-.legend__body,
-.cases__body {
-  margin-top: 1rem;
-  padding-left: 1rem;
-  border-left: 1px solid var(--c-gear);
-}
-
-.legend__kicker,
-.summary__kicker {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  letter-spacing: var(--ls-meta);
-  text-transform: uppercase;
-  color: var(--c-bag);
-}
-
-.legend__title {
-  margin: 0.4rem 0 0.9rem;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--c-text);
-}
-
-.legend__table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-.legend__table th {
-  text-align: left;
-  padding: 0 0 0.45rem;
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  font-weight: 400;
-  letter-spacing: 0.08em;
-  color: var(--c-muted);
-  border-bottom: 1px solid var(--c-line);
-}
-
-.legend__table td {
-  padding: 0.4rem 0;
-  border-bottom: 1px solid var(--c-hair);
-  color: var(--c-muted);
-  vertical-align: top;
-  line-height: 1.5;
-}
-
-.legend__table td:first-child {
-  width: 46%;
-  padding-right: 1.25rem;
-}
-
-/* 오른쪽이 비유어 — 이쪽이 그림에서 보게 될 말이다. */
-.legend__table td:last-child {
-  color: var(--c-bag);
-}
-
-.legend__table tr:last-child td {
-  border-bottom: 0;
-}
-
-.legend__note {
-  margin: 0.75rem 0 0;
-  font-size: var(--fs-meta);
-  color: var(--c-muted);
-}
-
-/* ==========================================================================
-   마무리 정리
-   ========================================================================== */
-
-.summary {
-  flex: 2 1 28rem;
-  min-width: 0;
-  max-width: 44rem;
-  word-break: keep-all;
-  border-left: 1px solid var(--c-gear);
-  padding-left: clamp(1rem, 2vw, 1.75rem);
-}
-
-.summary__list {
-  margin: 0.75rem 0 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: sum;
-}
-
-.summary__list li {
-  counter-increment: sum;
-  position: relative;
-  padding-left: 2rem;
-  margin-top: 0.9rem;
-}
-
-.summary__list li::before {
-  content: counter(sum, decimal-leading-zero);
-  position: absolute;
-  left: 0;
-  top: 0.1rem;
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  color: var(--c-gear);
-}
-
-.summary__list b {
-  display: block;
-  font-size: 1rem;
-  color: var(--c-text);
-}
-
-.summary__list span {
-  text-wrap: balance;
-  display: block;
-  margin-top: 0.2rem;
-  font-size: 0.875rem;
-  line-height: 1.65;
-  color: var(--c-muted);
-}
-
-/* ==========================================================================
-   판정 사례 카드 (SCENE 04)
-   실제 엔진 출력을 그대로 싣는다. 무엇이 걸렸고 왜 그 판정인지를 한 카드에서
-   끝까지 따라갈 수 있어야 한다 — 질문 → 탐지 → 판정 → 모델이 받은 것 → 왜.
-   ========================================================================== */
-
-/* foot 의 flex 배치에 기대면 캡션 옆에서 한 칸으로 눌린다. 그래서 .scene__inner
-   그리드의 별도 행으로 두어 항상 전체 폭을 쓰게 한다. */
-.cases {
-  min-width: 0;
-  word-break: keep-all;
-}
-
-.cases__note {
-  margin: 0 0 1.1rem;
-  font-size: var(--fs-meta);
-  color: var(--c-muted);
-}
-
-.cases__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(26rem, 1fr));
-  gap: 1rem;
-}
-
-.case {
-  border: 1px solid var(--c-line);
-  border-top-width: 2px;
-  padding: 1rem 1.1rem 1.15rem;
-  background: var(--c-panel);
-}
-
-.case--allow {
-  border-top-color: var(--c-allow);
-}
-.case--mask {
-  border-top-color: var(--c-bag);
-}
-.case--block {
-  border-top-color: var(--c-block);
-}
-
-.case__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.7rem;
-}
-
-.case__verdict {
-  font-size: 0.9375rem;
-  font-weight: 700;
-}
-
-.case--allow .case__verdict {
-  color: var(--c-allow);
-}
-.case--mask .case__verdict {
-  color: var(--c-bag);
-}
-.case--block .case__verdict {
-  color: var(--c-block);
-}
-
-.case__role {
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  letter-spacing: 0.04em;
-  color: var(--c-muted);
-  white-space: nowrap;
-}
-
-/* 실제 입력한 문장 — 인용부호 대신 왼쪽 괘선으로 구분 */
-.case__prompt {
-  text-wrap: balance;
-  margin: 0 0 0.85rem;
-  padding-left: 0.75rem;
-  border-left: 2px solid var(--c-line);
-  font-size: 0.875rem;
-  line-height: 1.65;
-  color: var(--c-text);
-}
-
-.case__rows {
-  margin: 0;
-  display: grid;
-  grid-template-columns: 5.5rem 1fr;
-  gap: 0.35rem 0.75rem;
-  font-size: 0.8125rem;
-}
-
-.case__rows dt {
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  letter-spacing: 0.04em;
-  color: var(--c-muted);
-  padding-top: 0.1rem;
-}
-
-.case__rows dd {
-  margin: 0;
-  color: var(--c-label);
-  line-height: 1.6;
-}
-
-.case__hits {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.case__hits li {
-  margin-bottom: 0.25rem;
-}
-
-.case__hits b {
-  color: var(--c-text);
-  font-weight: 700;
-}
-
-/* 심각도 배지 */
-.case__hits em {
-  display: inline-block;
-  margin-left: 0.4rem;
-  padding: 0 0.35rem;
-  border: 1px solid var(--c-line);
-  font-size: 0.6875rem;
-  font-style: normal;
-  color: var(--c-muted);
-  vertical-align: 1px;
-}
-
-.case__hits span {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--c-muted);
-}
-
-/* 모델이 실제로 받은 문자열 — 마스킹이 '삭제가 아닌 변환' 임을 보여 주는 자리 */
-.case__fwd {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  line-height: 1.7;
-  color: var(--c-gear);
-  word-break: break-all;
-}
-
-.case__why {
-  text-wrap: balance;
-  margin: 0.9rem 0 0;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--c-hair);
-  font-size: 0.8125rem;
-  line-height: 1.7;
-  color: var(--c-muted);
-}
-
-/* ==========================================================================
-   실측 지연 카드 — 활주로 장면
-   --------------------------------------------------------------------------
-   숫자가 논지인 카드라 표를 먼저 크게 보여 주고, 비교와 비례는 옆단으로 뺀다.
-   근거 카드(scene__refs)와 같은 규격의 판을 써서 '측정한 것' 이라는 성격이
-   한눈에 같은 급으로 읽히게 한다.
-   ========================================================================== */
-
-.latency {
-  margin-top: clamp(1.75rem, 3vw, 2.75rem);
-  padding: clamp(1.25rem, 2.4vw, 2rem);
-  border: 1px solid var(--c-line);
-  border-left: 3px solid var(--c-bag);
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.014);
-  word-break: keep-all;
-}
-
-.latency__kicker {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  letter-spacing: var(--ls-meta);
-  text-transform: uppercase;
-  color: var(--c-bag);
-}
-
-.latency__title {
-  margin: 0.5rem 0 0;
-  font-size: 1.375rem;
-  font-weight: 700;
-  color: var(--c-text);
-}
-
-.latency__lead {
-  margin: 0.5rem 0 0;
-  max-width: 52em;
-  text-wrap: balance;
-  color: var(--c-label);
-}
-
-.latency__grid {
-  margin-top: 1.5rem;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
-  gap: 1.5rem clamp(1.5rem, 3vw, 2.75rem);
-  align-items: start;
-}
-
-.latency__table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9375rem;
-}
-
-.latency__table th,
-.latency__table td {
-  padding: 0.55rem 0.5rem;
-  text-align: left;
-  border-bottom: 1px solid var(--c-hair);
-}
-
-.latency__table th {
-  font-size: var(--fs-meta);
-  letter-spacing: var(--ls-meta);
-  text-transform: uppercase;
-  font-weight: 400;
-  color: var(--c-muted);
-}
-
-/* 숫자는 자릿수가 흔들리지 않게 고정폭 + 우측 정렬 */
-.latency__table .num,
-.latency__compare b {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.latency__table td:first-child {
-  color: var(--c-label);
-}
-
-.latency__table td.num {
-  color: var(--c-text);
-}
-
-.latency__total td {
-  border-bottom: 0;
-  border-top: 1px solid var(--c-line);
-  font-weight: 700;
-}
-
-.latency__total td.num {
-  color: var(--c-bag);
-}
-
-.latency__block h4 {
-  margin: 0 0 0.75rem;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: var(--c-text);
-}
-
-.latency__compare {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 0.9375rem;
-}
-
-.latency__compare li {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid var(--c-hair);
-  color: var(--c-label);
-}
-
-.latency__compare li:last-child {
-  border-bottom: 0;
-}
-
-.latency__compare b {
-  color: var(--c-text);
-}
-
-.latency__note {
-  margin: 0.75rem 0 0;
-  font-size: 0.9375rem;
-  line-height: 1.7;
-  text-wrap: pretty;
-  color: var(--c-muted);
-}
-
-.latency__note b {
-  color: var(--c-text);
-  font-weight: 700;
-}
-
-.latency__method {
-  margin-top: 1.25rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--c-hair);
-}
-
-/* 지면 그림자 — 물체가 바닥에 닿아 있음을 말한다. 배경보다 어두워야
-   '그늘' 로 읽히고, 너무 진하면 구멍처럼 보인다. */
-.illus .iso-shadow {
-  fill: #05060a;
-}
-
-/* ==========================================================================
-   SCENE 01 부속 · 카드뉴스 「지금 바깥에서 벌어지는 일」
-   --------------------------------------------------------------------------
-   가로로 넘기는 카드 묶음. 이동은 네이티브 스크롤 + CSS 스냅에 맡기고, JS 는
-   버튼과 현재 위치만 맞춘다 (스크롤바를 숨겨도 휠·트랙패드·키보드는 그대로).
-   카드마다 --tone 을 세우고 그림(_posters.js)의 강조색이 그 값을 따라간다.
-   ========================================================================== */
-.headlines {
-  /* SCENE 01 제목과 본문 리드 사이에 끼어 든다 — 위아래를 실선으로 끊어
-     "장면 안의 별도 묶음" 으로 읽히게 한다. */
-  margin: 1.4rem 0 0.6rem;
-  padding: 1.9rem 0 2rem;
-  border-top: 1px solid var(--c-line);
-  border-bottom: 1px solid var(--c-line);
-  min-width: 0;
-  word-break: keep-all;
-}
-
-.headlines__bar {
-  /* 머리말 없이 바로 카드로 넘어간다 — 여기 남는 것은 위치 표시와 이동 버튼뿐. */
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin: 0 0 0.9rem;
-}
-
-.headlines__ctrl {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.headlines__count {
-  font-family: var(--font-mono);
-  font-size: var(--fs-num);
-  color: var(--c-muted);
-  margin-right: 0.35rem;
-}
-
-.headlines__count b {
-  color: var(--c-text);
-}
-
-.headlines__nav {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--c-line);
-  background: var(--c-panel);
-  color: var(--c-text);
-  cursor: pointer;
-  transition: border-color 0.18s var(--ease-out), color 0.18s var(--ease-out);
-}
-
-.headlines__nav svg {
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.headlines__nav:hover:not(:disabled) {
-  border-color: var(--c-gear);
-  color: var(--c-gear);
-}
-
-.headlines__nav:disabled {
-  opacity: 0.32;
-  cursor: default;
-}
-
-/* --- 트랙 ---------------------------------------------------------------- */
-.headlines__track {
-  display: flex;
-  gap: 1rem;
-  margin: 0;
-  padding: 0 0 0.75rem;
-  list-style: none;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-}
-
-.headlines__track::-webkit-scrollbar {
-  display: none;
-}
-
-.headlines__track:focus-visible {
-  outline: 2px solid var(--c-gear);
-  outline-offset: 4px;
-}
-
-/* --- 카드 ---------------------------------------------------------------- */
-.hcard {
-  --tone: var(--c-gear);
-  flex: 0 0 clamp(19rem, 23vw, 22.5rem);
-  scroll-snap-align: start;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--c-line);
-  border-top: 2px solid var(--tone);
-  background: var(--c-panel);
-}
-
-.hcard--block {
-  --tone: var(--c-block);
-}
-.hcard--bag {
-  --tone: var(--c-bag);
-}
-.hcard--gear {
-  --tone: var(--c-gear);
-}
-
-.hcard__fig {
-  position: relative;
-  margin: 0;
-  background: var(--c-stage);
-  border-bottom: 1px solid var(--c-line);
-  overflow: hidden;
-}
-
-/* 캡처는 대부분 밝은 화면이라 다크 톤 위에서 혼자 튄다. 살짝 눌러 두고
-   마우스를 올리면 원래 밝기로 돌려 준다 — 근거는 읽히되 지면은 안 깨지게. */
-.hcard__shot {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  object-position: top center;
-  filter: saturate(0.9) brightness(0.86);
-  transition: filter 0.25s var(--ease-out);
-}
-
-.hcard:hover .hcard__shot,
-.hcard:focus-within .hcard__shot {
-  filter: none;
-}
-
-/* 캡처라는 것을 밝히는 배지 — 우리가 그린 그림이 아니라 남의 화면이다. */
-.hcard__stamp {
-  position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  padding: 0.15rem 0.4rem;
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.08em;
-  color: var(--c-text);
-  background: rgb(19 20 24 / 0.78);
-  border: 1px solid var(--c-line);
-}
-
-.hcard__body {
-  padding: 1rem 1.1rem 0.9rem;
-  flex: 1;
-}
-
-.hcard__tag {
-  display: inline-block;
-  margin-bottom: 0.7rem;
-  padding: 0.2rem 0.5rem;
-  font-size: 0.6875rem;
-  letter-spacing: var(--ls-meta);
-  color: var(--tone);
-  border: 1px solid var(--tone);
-  opacity: 0.9;
-}
-
-.hcard__big {
-  margin: 0 0 0.35rem;
-  font-size: 1.4rem;
-  font-weight: 700;
-  line-height: 1.25;
-  color: var(--tone);
-}
-
-.hcard__head {
-  margin: 0 0 0.55rem;
-  font-size: 1.0625rem;
-  line-height: 1.4;
-}
-
-.hcard__text {
-  margin: 0;
-  font-size: 0.875rem;
-  line-height: 1.72;
-  color: var(--c-muted);
-}
-
-.hcard__foot {
-  /* 출처가 길면 날짜가 잘려 나가므로 가로로 붙이지 않고 두 줄로 쌓는다. */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.2rem;
-  padding: 0.7rem 1.1rem 0.85rem;
-  border-top: 1px solid var(--c-hair);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  color: var(--c-muted);
-}
-
-.hcard__source {
-  min-width: 0;
-  color: var(--c-muted);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-}
-
-.hcard__source:hover,
-.hcard__source:focus-visible {
-  color: var(--c-gear);
-  border-bottom-color: var(--c-gear);
-}
-
-.hcard__date {
-  color: var(--c-label);
-}
-
-.headlines__closing {
-  margin: 1.6rem 0 0;
-  max-width: 74ch;
-  font-size: var(--fs-caption);
-  line-height: var(--lh-body);
-}
-
-.headlines__closing b {
-  color: var(--c-text);
-}
-
-/* --- 좁은 화면 ----------------------------------------------------------- */
-@media (max-width: 900px) {
-  .hcard {
-    flex-basis: min(84vw, 21rem);
-  }
-
-  .headlines__bar {
-    flex-wrap: wrap;
-  }
-}
-
-.p-slot {
-  fill: var(--c-away-top);
-  stroke: var(--c-away-edge);
-  stroke-width: 1;
-}
-
-.p-led {
-  fill: var(--c-away-edge);
-}
-
-/* ==========================================================================
-   캡처 팝업 (SCENE 01 카드뉴스)
-   --------------------------------------------------------------------------
-   카드 그림을 누르면 원문 화면을 크게 띄운다. 왼쪽은 캡처 + 볼 곳 표시,
-   오른쪽은 같은 설명에 형광펜만 얹은 것. <dialog> 라 ESC·초점 가두기는 공짜.
-   ========================================================================== */
-.hcard__zoom {
-  display: block;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: zoom-in;
-  position: relative;
-  color: inherit;
-}
-
-.hcard__zoom:focus-visible {
-  outline: 2px solid var(--tone);
-  outline-offset: -2px;
-}
-
-.hcard__expand {
-  position: absolute;
-  right: 0.5rem;
-  bottom: 0.5rem;
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  background: rgb(19 20 24 / 0.78);
-  border: 1px solid var(--c-line);
-  opacity: 0;
-  transition: opacity 0.2s var(--ease-out);
-}
-
-.hcard__zoom:hover .hcard__expand,
-.hcard__zoom:focus-visible .hcard__expand {
-  opacity: 1;
-}
-
-.hcard__expand svg {
-  width: 16px;
-  height: 16px;
-  fill: none;
-  stroke: var(--c-text);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-}
-
-.lightbox {
-  --tone: var(--c-gear);
-  width: min(1500px, 94vw);
-  max-width: none;
-  max-height: 92vh;
-  padding: 0;
-  border: 1px solid var(--c-line);
-  background: var(--c-panel);
-  color: var(--c-text);
-  overflow: visible;
-}
-
-.lightbox[data-tone='block'] {
-  --tone: var(--c-block);
-}
-.lightbox[data-tone='bag'] {
-  --tone: var(--c-bag);
-}
-.lightbox[data-tone='gear'] {
-  --tone: var(--c-gear);
-}
-
-.lightbox::backdrop {
-  background: rgb(9 10 13 / 0.86);
-}
-
-.lightbox__close {
-  position: absolute;
-  top: -1px;
-  right: -1px;
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--c-line);
-  background: var(--c-panel);
-  color: var(--c-text);
-  cursor: pointer;
-  z-index: 2;
-}
-
-.lightbox__close:hover {
-  color: var(--c-block);
-  border-color: var(--c-block);
-}
-
-.lightbox__close svg {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-}
-
-.lightbox__body {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(24rem, 1fr);
-  max-height: 92vh;
-}
-
-.lightbox__figure {
-  margin: 0;
-  padding: 1.25rem;
-  background: var(--c-stage);
-  border-right: 1px solid var(--c-line);
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.lightbox__frame {
-  position: relative;
-  line-height: 0;
-  border: 1px solid var(--c-line);
-  /* 표시 네모가 만드는 바깥 음영(box-shadow)이 액자를 넘어 팝업 전체를
-     덮지 않도록 여기서 자른다. 음영은 캡처 안에서만 스포트라이트로 작동한다. */
-  overflow: hidden;
-}
-
-.lightbox__img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-/* 캡처 위에 "여기" 를 짚는 네모. 좌표는 카드마다 strings 의 mark 가 갖는다. */
-.lightbox__mark {
-  position: absolute;
-  border: 2px solid var(--tone);
-  box-shadow: 0 0 0 9999px rgb(9 10 13 / 0.42);
-  pointer-events: none;
-}
-
-.lightbox__note {
-  margin: 0;
-  font-size: 0.9375rem;
-  line-height: 1.7;
-  color: var(--c-muted);
-  word-break: keep-all;
-}
-
-.lightbox__note b {
-  color: var(--tone);
-  margin-right: 0.35rem;
-}
-
-.lightbox__side {
-  padding: 1.5rem 1.6rem 1.4rem;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.55rem;
-  overflow-y: auto;
-  word-break: keep-all;
-}
-
-/* 세로 flex 안에서 분류 뱃지가 칸 너비만큼 늘어나지 않게 한다. */
-.lightbox__side .hcard__tag {
-  align-self: flex-start;
-  margin-bottom: 0.35rem;
-}
-
-.lightbox__big {
-  margin: 0;
-  font-size: 2.1rem;
-  font-weight: 700;
-  line-height: 1.22;
-  color: var(--tone);
-}
-
-.lightbox__head {
-  margin: 0;
-  font-size: 1.375rem;
-  line-height: 1.4;
-}
-
-.lightbox__text {
-  margin: 0.45rem 0 0;
-  font-size: 1.0625rem;
-  line-height: 1.92;
-  color: var(--c-muted);
-}
-
-/* 고유명사·기관명은 흰 굵은 글씨로 세운다 (형광펜과 층을 나눈다). */
-.lightbox__text b {
-  color: var(--c-text);
-  font-weight: 700;
-}
-
-/* 형광펜 — 카드 색으로 글자를 물들이고 아래를 옅게 깐다. 다크 톤에서 형광
-   배경을 통째로 칠하면 글자가 오히려 안 읽혀, 글자색을 주된 신호로 쓴다. */
-.hl {
-  background: none;
-  color: var(--tone);
-  font-weight: 700;
-  box-shadow: inset 0 -0.42em 0 color-mix(in srgb, var(--tone) 16%, transparent);
-  padding: 0 0.12em;
-}
-
-.lightbox__meta {
-  margin-top: auto;
-  padding-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  color: var(--c-muted);
-  border-top: 1px solid var(--c-hair);
-}
-
-.lightbox__source {
-  color: var(--c-muted);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-}
-
-.lightbox__source:hover,
-.lightbox__source:focus-visible {
-  color: var(--c-gear);
-  border-bottom-color: var(--c-gear);
-}
-
-.lightbox__date {
-  color: var(--c-label);
-}
-
-.lightbox__pager {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  padding-top: 0.9rem;
-}
-
-@media (max-width: 980px) {
-  .lightbox__body {
-    grid-template-columns: 1fr;
-    overflow-y: auto;
-  }
-
-  .lightbox__figure {
-    border-right: 0;
-    border-bottom: 1px solid var(--c-line);
-  }
-
-  .lightbox__side {
-    overflow: visible;
   }
 }
