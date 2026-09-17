@@ -22,6 +22,7 @@ import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
 import { HOME_FACE, AWAY_FACE } from './_places.js'
 import { sceneBasis as t } from '../content/strings.js'
+import { C } from './_palette.js'
 
 export const iso = isoSpace({ ox: 340, oy: 190, s: 1 })
 const { at, box, slab, plane, grid, cutHatch } = iso
@@ -37,7 +38,7 @@ const badge = (plan, letter, note, color) => {
   return `
       <g class="grade-badge">
         <rect x="${x - 26}" y="${y - 26}" width="52" height="52" rx="8"
-              fill="#131418" stroke="${color}" stroke-width="1.75" />
+              fill="${C.panel}" stroke="${color}" stroke-width="1.75" />
         <text x="${x}" y="${y + 10}" text-anchor="middle"
               style="font-size:28px;fill:${color}" font-weight="700">${letter}</text>
         <text x="${x}" y="${y + 46}" text-anchor="middle"
@@ -64,7 +65,7 @@ const homeSide = `
           [118, 124, 17],
         ],
         '',
-        'fill="#F0A63A" opacity="0.45"',
+        'fill="${C.bag}" opacity="0.45"',
       )}
       ${box(140, 132, 20, 14, 6, HOME_FACE)}`
 
@@ -82,7 +83,7 @@ const awaySide = `
       ${[0, 1, 2]
         .map((i) => {
           const [cx, cy] = at(588 + i * 22, -156, 50)
-          return `<circle cx="${cx}" cy="${cy}" r="3.6" fill="#F0A63A" opacity="0.75" />`
+          return `<circle cx="${cx}" cy="${cy}" r="3.6" fill="${C.bag}" opacity="0.75" />`
         })
         .join('')}`
 
@@ -115,13 +116,13 @@ const CROSS = [
 const routeBad = `
       <g class="route-bad">
         <path id="sb-bad" d="${badPath}" fill="none"
-              style="stroke:#E25749;stroke-width:2.5;stroke-dasharray:11 9" opacity="0.9" />
-        ${arrow(DST[0], DST[1], DST[0] - BAD_MID[0], DST[1] - BAD_MID[1], '#E25749')}
+              style="stroke:${C.block};stroke-width:2.5;stroke-dasharray:11 9" opacity="0.9" />
+        ${arrow(DST[0], DST[1], DST[0] - BAD_MID[0], DST[1] - BAD_MID[1], C.block)}
         <text x="${CROSS[0]}" y="${CROSS[1] - 42}" text-anchor="middle"
-              letter-spacing="1" style="font-size:18px;fill:#E25749">${t.routeBad}</text>
+              letter-spacing="1" style="font-size:18px;fill:${C.blockInk}">${t.routeBad}</text>
         <g id="sb-cross" transform="translate(${CROSS[0]} ${CROSS[1]})">
-          <circle cx="0" cy="0" r="23" fill="#131418" stroke="#E25749" stroke-width="2.25" />
-          <path d="M -9 -9 L 9 9 M 9 -9 L -9 9" stroke="#E25749"
+          <circle cx="0" cy="0" r="23" fill="${C.panel}" stroke="${C.block}" stroke-width="2.25" />
+          <path d="M -9 -9 L 9 9 M 9 -9 L -9 9" stroke="${C.block}"
                 stroke-width="3" stroke-linecap="round" />
         </g>
       </g>`
@@ -139,25 +140,25 @@ const goodPath2 = `M ${GOUT[0]} ${GOUT[1]} Q ${DST_LOW[0] - 30} ${GATE[1]} ${DST
 const routeGood = `
       <g class="route-good">
         <path id="sb-good-1" d="${goodPath1}" fill="none"
-              style="stroke:#43BC9C;stroke-width:2.5" opacity="0.9" />
+              style="stroke:${C.gear};stroke-width:2.5" opacity="0.9" />
         <path id="sb-good-2" d="${goodPath2}" fill="none"
-              style="stroke:#43BC9C;stroke-width:2.5" opacity="0.9" />
-        ${arrow(DST_LOW[0], DST_LOW[1], 26, -34, '#43BC9C')}
+              style="stroke:${C.gear};stroke-width:2.5" opacity="0.9" />
+        ${arrow(DST_LOW[0], DST_LOW[1], 26, -34, C.gear)}
         <g id="sb-gate">
           <rect x="${GATE[0] - GW / 2}" y="${GATE[1] - GH / 2}" width="${GW}" height="${GH}" rx="10"
-                fill="var(--c-gate-top)" stroke="#43BC9C" stroke-width="2" />
+                style="fill:var(--c-gate-top)" stroke="${C.gear}" stroke-width="2" />
           <text x="${GATE[0]}" y="${GATE[1] + 8}" text-anchor="middle"
-                style="font-size:21px;fill:#ECEAE3" font-weight="700">${t.gateLabel}</text>
+                style="font-size:21px;fill:${C.ink}" font-weight="700">${t.gateLabel}</text>
           ${[0, 1, 2]
             .map(
               (i) =>
                 `<circle cx="${GATE[0] - 30 + i * 30}" cy="${GATE[1] - 24}" r="3.8"
-                         fill="#43BC9C" opacity="0.85" />`,
+                         fill="${C.gear}" opacity="0.85" />`,
             )
             .join('')}
         </g>
         <text x="${GATE[0]}" y="${GATE[1] + 64}" text-anchor="middle"
-              letter-spacing="1" style="font-size:18px;fill:#43BC9C">${t.routeGood}</text>
+              letter-spacing="1" style="font-size:18px;fill:${C.gearInk}">${t.routeGood}</text>
       </g>`
 
 /* ------------------------------------------------------------------ 조립 */
@@ -169,8 +170,8 @@ export function sceneBasisSvg() {
       ${routeGood}
       ${routeBad}
 
-      ${badge([255, 90, 0], t.gradeS, t.gradeSNote, '#43BC9C')}
-      ${badge([700, -104, 0], t.gradeO, t.gradeONote, '#9C9B93')}
+      ${badge([255, 90, 0], t.gradeS, t.gradeSNote, C.gearInk)}
+      ${badge([700, -104, 0], t.gradeO, t.gradeONote, C.ink2)}
 
       ${callout({
         n: '01',

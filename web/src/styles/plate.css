@@ -1,12 +1,11 @@
 /* 도면(plate) 전용 스타일 — 아이소메트릭 SVG 안쪽.
 
-   지면이 Apple 톤(밝은 캔버스)으로 바뀌어도 도면은 제 색을 유지한다.  도면은
-   이 사이트의 '제품 사진' 이고, 밝은 타일 위에 단 하나 허용된 드롭섀도로
-   얹힌다.  여기 쓰이는 --c-text/--c-label/--c-muted/--c-line/--c-leader 는
-   tokens.css 의 `.scene__stage` 스코프가 다크 값으로 되돌린 것이다.
+   도면은 판(plate) 없이 타일 위에 그대로 놓인다.  면 색은 '물체' 라서 밝은
+   타일과 어두운 타일 양쪽에서 그대로 두고, 라벨·지시선처럼 빈 자리에 놓이는
+   것만 --c-text/--c-label/--c-muted/--c-leader 를 통해 타일 톤을 따라간다.
 
-   ※ 이 파일의 값은 main.css 에서 옮겨 온 그대로다. 손대지 말 것 —
-     3면 명도와 영역별 색상환 간격이 서로 맞물려 있다. */
+   ※ 3면 명도와 영역별 색상환 간격이 서로 맞물려 있다 — 한 값만 따로 고치지 말 것.
+     SVG 어트리뷰트로 직접 칠하는 색은 scenes/_palette.js 에 있다. */
 
 /* ==========================================================================
    일러스트 SVG 공통
@@ -76,35 +75,37 @@
 
 /* 지면 · 대지 */
 .illus .ground-top {
-  fill: #282c34;
+  fill: #e4e4e9;
 }
 .illus .ground-l {
-  fill: #22252c;
+  fill: #d4d4da;
 }
 .illus .ground-r {
-  fill: #1a1d22;
+  fill: #c0c0c7;
 }
 
-/* 컨베이어 — 바닥보다 한 단계 밝게 띄워야 흐름선으로 읽힌다 */
+/* 컨베이어 — 밝은 지면에서는 바닥보다 한 단계 '어둡게' 깔아야 흐름선으로 읽힌다.
+   (다크 톤에서 밝게 띄우던 것을 뒤집은 것이다) */
 .illus .belt-top {
-  fill: #4b5265;
+  fill: #b8bcc6;
 }
 .illus .belt-l {
-  fill: #333846;
+  fill: #a4a9b4;
 }
 .illus .belt-r {
-  fill: #272b34;
+  fill: #8e939f;
 }
 
-/* 항공기 — 어두운 지면 위 공중에 뜨므로 한 단계 더 밝게 잡는다 */
+/* 항공기 — 지면 위 공중에 뜬다. 흰 기체에 가깝게 잡되, 바닥(ground)보다
+   한 단계 밝혀 떠 있는 것으로 읽히게 한다. */
 .illus .craft-top {
-  fill: #626b7e;
+  fill: #ffffff;
 }
 .illus .craft-l {
-  fill: #4d5466;
+  fill: #ececeF;
 }
 .illus .craft-r {
-  fill: #3a4150;
+  fill: #d6d6dc;
 }
 
 /* 설비(청록) */
@@ -121,13 +122,13 @@
 
 /* 가방(호박) */
 .illus .bag-top {
-  fill: #f7bd62;
+  fill: #f2b457;
 }
 .illus .bag-l {
-  fill: #e09a33;
+  fill: #d98f1f;
 }
 .illus .bag-r {
-  fill: #b97a22;
+  fill: #b07213;
 }
 
 /* 콜아웃(지시선 + 번호 배지 + 라벨) */
@@ -137,19 +138,20 @@
   stroke-width: 1.4;
 }
 .illus .co-dot {
-  fill: var(--c-bag);
+  fill: var(--c-text);
 }
 .illus .co-badge {
-  /* 판 색으로 채워 지시선이 배지를 뚫고 지나가지 않게 한다. */
-  fill: var(--c-stage);
-  stroke: var(--c-bag);
+  /* 타일 색으로 채워 지시선이 배지를 뚫고 지나가지 않게 한다.
+     (--tile 은 main.css 가 장면 톤마다 세워 준다) */
+  fill: var(--tile);
+  stroke: var(--c-text);
   stroke-width: 1.4;
 }
 .illus .co-num {
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 700;
-  fill: var(--c-bag);
+  fill: var(--c-text);
 }
 .illus .co-title {
   font-size: 25px;
@@ -161,33 +163,38 @@
   font-size: 19px;
   fill: var(--c-label);
 }
+/* 판정을 말하는 콜아웃 제목만 뜻 색을 쓴다. 밝은 타일에서는 -ink 짝,
+   어두운 타일에서는 물체색이 읽힌다 (main.css 의 .scene--dark 가 뒤집는다). */
 .illus .co-title--block {
-  fill: var(--c-block);
+  fill: var(--c-block-ink);
 }
 .illus .co-title--allow {
-  fill: var(--c-allow);
+  fill: var(--c-allow-ink);
 }
 .illus .co-title--bag {
-  fill: var(--c-bag);
+  fill: var(--c-bag-ink);
 }
 
 /* 도면 보조선 */
+/* 도면 보조선은 지면의 헤어라인(#e0e0e0)보다 진해야 한다 — 도면은 축소 렌더라
+   1px 선이 부분 픽셀로 흐려지고, 흰 바탕에서는 그대로 사라진다.
+   --c-edge 는 타일 톤과 무관한 고정값이라 밝은·어두운 타일 양쪽에서 같이 선다. */
 .illus .hair {
   fill: none;
-  stroke: var(--c-line);
+  stroke: var(--c-edge);
   stroke-width: 1;
-  opacity: 0.7;
+  opacity: 0.9;
 }
 .illus .hatch {
-  stroke: var(--c-line);
+  stroke: var(--c-edge);
   stroke-width: 1;
-  opacity: 0.4;
+  opacity: 0.6;
 }
 .illus .border-line {
   /* 국경은 이 사이트의 주인공 중 하나다. 흐리면 '국경에 검사대가 없다' 는
      콜아웃이 가리킬 대상을 잃는다. */
   fill: none;
-  stroke: var(--c-label);
+  stroke: var(--c-text);
   stroke-width: 2;
   stroke-dasharray: 10 7;
   stroke-linecap: butt;
@@ -196,14 +203,15 @@
 .illus .route {
   fill: none;
   stroke: var(--c-bag);
-  stroke-width: 1.25;
+  stroke-width: 1.4;
   stroke-dasharray: 4 6;
-  opacity: 0.5;
+  opacity: 0.75;
 }
-/* 지면 그림자 — 물체가 바닥에 닿아 있음을 말한다. 배경보다 어두워야
-   '그늘' 로 읽히고, 너무 진하면 구멍처럼 보인다. */
+/* 지면 그림자 — 물체가 바닥에 닿아 있음을 말한다. 밝은 지면에서는 검은
+   구멍이 아니라 옅은 그늘이어야 한다. 시스템의 유일한 드롭섀도와 같은
+   역할을 도면 안에서 대신하는 자리다. */
 .illus .iso-shadow {
-  fill: #05060a;
+  fill: rgba(0, 0, 0, 0.13);
 }
 .p-slot {
   fill: var(--c-away-top);

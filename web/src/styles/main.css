@@ -249,27 +249,36 @@ html[data-motion='off'] {
     clamp(3rem, 6vh, 5rem);
   display: flex;
   justify-content: center;
-  background: var(--a-canvas);
+  --tile: var(--a-canvas);
+  background: var(--tile);
 }
 
 .scene--parchment {
-  background: var(--a-parchment);
+  --tile: var(--a-parchment);
 }
 
 .scene--dark {
-  background: var(--a-tile-1);
+  --tile: var(--a-tile-1);
   --c-text: var(--a-on-dark);
   --c-label: var(--a-muted-on-dark);
   --c-muted: var(--a-muted-on-dark);
   --c-line: rgba(255, 255, 255, 0.16);
   --c-hair: rgba(255, 255, 255, 0.09);
+  --c-leader: #9b9b9f; /* 도면 지시선 — 어두운 타일에서 #7a7a7a 는 묻힌다 */
   --c-panel: var(--a-tile-2);
   --link: var(--a-blue-on-dark);
+  /* 흰 판 위에서 쓰던 잉크 짝은 어두운 타일에서 묻힌다. 도면의 콜아웃처럼
+     타일 위에 바로 놓이는 글자는 물체색 쪽이 읽힌다.
+     (도면 안 흰 판독 화면의 글자는 SVG 안에서 잉크로 고정돼 있어 그대로다.) */
+  --c-bag-ink: var(--c-bag);
+  --c-gear-ink: var(--c-gear);
+  --c-block-ink: var(--c-block);
+  --c-allow-ink: var(--c-allow);
 }
 
 /* 스크롤 맨 아래 타일은 한 단계 더 가라앉혀 끝이라는 것을 말한다. */
 .scene--dark-deep {
-  background: var(--a-tile-3);
+  --tile: var(--a-tile-3);
 }
 
 /* 우측 번호 레일이 뜨는 폭에서는 도면 라벨이 그 아래로 들어가지 않게 비워 둔다. */
@@ -339,7 +348,23 @@ html[data-motion='off'] {
   /* 한글은 keep-all 이 없으면 어절 한가운데서 잘린다. 줄 나눔 위치는
      strings.js 의 개행(\n)으로 직접 지정한다. */
   word-break: keep-all;
-  text-wrap: balance;
+}
+
+/* 제목 한 줄 — 줄마다 아래에서 밀려 올라온다.
+   바깥 상자가 창 노릇을 하고(overflow:hidden) 안쪽 글자만 움직인다.
+   두 겹인 이유가 이것이다 — 한 겹이면 글자가 창 밖에서 그대로 보인다. */
+.scene__title-line {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  /* inline-block 은 글자의 아랫선(baseline)이 상자 바닥이라 받침이 잘린다.
+     아래위로 조금 열고 그만큼 다시 당긴다. */
+  padding: 0.06em 0 0.14em;
+  margin: -0.06em 0 -0.14em;
+}
+
+.scene__title-inner {
+  display: inline-block;
 }
 
 /* --- 리드 문단 --------------------------------------------------------- */
@@ -382,16 +407,32 @@ html[data-motion='off'] {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 0;
-  border-radius: var(--r-lg);
-  background: var(--c-stage);
-  box-shadow: var(--shadow-product);
+  /* 밝은 타일에서는 판도, 테두리도, 그림자도 없다. 도면이 곧 제품이고 타일이
+     곧 배경지다 — 물체가 바닥에 닿아 있다는 신호는 도면 안의 .iso-shadow 가 낸다. */
+  background: none;
   padding: clamp(0.75rem, 1.8vh, 1.5rem) clamp(0.75rem, 1.4vw, 1.5rem);
-  overflow: hidden;
 }
 
+/* 어두운 타일에서는 도면을 밝은 판 위에 올린다.
+   도면 자체가 밝아서, 어두운 타일에 그대로 놓으면 라벨이 어디에 얹히느냐에 따라
+   (빈 자리냐, 도면 위냐) 읽히는 색이 달라진다.  판을 깔면 판 안은 언제나 밝고
+   라벨 색이 흔들리지 않는다 — 어두운 섹션에 제품 사진 한 장을 놓는 것과 같다. */
 .scene--dark .scene__stage {
-  box-shadow: none;
+  --tile: var(--a-parchment);
+  background: var(--a-parchment);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-product);
+  padding: clamp(1.25rem, 2.6vh, 2.25rem) clamp(1.25rem, 2vw, 2rem);
+  /* 판 안은 밝은 타일과 같은 규칙으로 되돌린다. */
+  --c-text: var(--a-ink);
+  --c-label: var(--a-ink-80);
+  --c-muted: var(--a-ink-48);
+  --c-leader: var(--a-ink-48);
+  --c-line: var(--a-hairline);
+  --c-bag-ink: #8a5a06;
+  --c-gear-ink: #0d7a63;
+  --c-block-ink: #b3251a;
+  --c-allow-ink: #3f7a24;
 }
 
 /* 일러스트는 뷰박스 기준 축소 렌더라, 무대가 낮으면 도면 글씨가 그대로 작아진다.

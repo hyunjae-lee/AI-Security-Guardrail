@@ -15,6 +15,7 @@ import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
 import { globe, globeAnim } from './_places.js'
 import { sceneRunway as t } from '../content/strings.js'
+import { C } from './_palette.js'
 
 export const iso = isoSpace({ ox: 330, oy: 130, s: 1 })
 const { at, box, slab, line, plane, grid, cutHatch, curve } = iso
@@ -118,7 +119,7 @@ const [bx2, by2] = at(380, 460, 0)
 const dx = bx2 - bx1
 const dy = by2 - by1
 const veil = `
-      <polygon id="sr-veil" fill="#131418" opacity="0.55"
+      <polygon id="sr-veil" fill="${C.veil}" opacity="0.17"
                points="${bx1 - dx},${by1 - dy} ${bx2 + dx},${by2 + dy} ${bx2 + dx + 900},${by2 + dy} ${bx1 - dx + 900},${by1 - dy}" />`
 
 const border = `
@@ -158,29 +159,32 @@ const BAR_H = 34
 const SEG_OUT = 76 // 검사 구간 — 실제 비율보다 크게 그린 것
 const SEG_IN = 76
 
-const seg = (x, w, fill, label, value, side) => `
+/* 면은 물체색, 글자는 잉크 — 같은 뜻을 두 층으로 나눠 칠한다.
+   면 색을 그대로 글자에 쓰면 흰 판 위에서 대비가 무너진다. */
+const seg = (x, w, fill, ink, label, value, side) => `
       <rect x="${x}" y="${BAR_Y}" width="${w}" height="${BAR_H}" rx="3"
             fill="${fill}" opacity="0.22" stroke="${fill}" stroke-width="1.25" />
       <text x="${x + w / 2}" y="${BAR_Y + 22}" text-anchor="middle"
-            style="font-size:15px;fill:${fill}" font-weight="700">${value}</text>
+            style="font-size:15px;fill:${ink}" font-weight="700">${value}</text>
       <text x="${x + w / 2}" y="${BAR_Y - 12}" text-anchor="${side}"
             style="font-size:16px;fill:var(--c-label)">${label}</text>`
 
 const timeBar = `
       <g id="sr-timebar">
         <text x="${BAR_X}" y="${BAR_Y - 46}" letter-spacing="2"
-              style="font-size:17px;fill:var(--c-bag)" font-weight="700">${t.timeLabel}</text>
+              style="font-size:17px;fill:var(--c-bag-ink)" font-weight="700">${t.timeLabel}</text>
         <path class="hair" d="M ${BAR_X} ${BAR_Y - 34} H ${BAR_X + BAR_W}" />
-        ${seg(BAR_X, SEG_OUT, '#F0A63A', t.timeOut, t.timeOutVal, 'start')}
+        ${seg(BAR_X, SEG_OUT, C.bag, C.bagInk, t.timeOut, t.timeOutVal, 'start')}
         ${seg(
           BAR_X + SEG_OUT + 6,
           BAR_W - SEG_OUT - SEG_IN - 12,
-          '#8A8F9C',
+          C.ink3,
+          C.ink2,
           t.timeAway,
           t.timeAwayVal,
           'middle',
         )}
-        ${seg(BAR_X + BAR_W - SEG_IN, SEG_IN, '#F0A63A', t.timeIn, t.timeInVal, 'end')}
+        ${seg(BAR_X + BAR_W - SEG_IN, SEG_IN, C.bag, C.bagInk, t.timeIn, t.timeInVal, 'end')}
         <text x="${BAR_X}" y="${BAR_Y + BAR_H + 26}"
               style="font-size:17px;fill:var(--c-text)">${t.timeNote}</text>
         <text x="${BAR_X}" y="${BAR_Y + BAR_H + 48}"
@@ -208,7 +212,7 @@ export function sceneRunwaySvg() {
           [196, 214, 24],
         ],
         'route',
-        'id="sr-arc-in" style="stroke:#43BC9C" opacity="0.45"',
+        'id="sr-arc-in" style="stroke:${C.gear}" opacity="0.45"',
       )}
 
       ${outland}

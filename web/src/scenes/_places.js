@@ -13,13 +13,15 @@
  * (시맨틱 4색과 겹치지 않도록 채도를 크게 낮춘 값).
  */
 
-const LAWN = '#26362f' // 잔디 — 허용(초록)과 헷갈리지 않게 채도를 뺐다
-const LEAF = '#3b5c4d'
-const TRUNK = '#2a2b28'
-const WATER = '#1f3f49'
-const WATER_EDGE = '#2f5c68'
-const BIRD = '#cfcdc4'
-const METAL = '#4a5563'
+import { C } from './_palette.js'
+
+const LAWN = '#dde8da' // 잔디 — 허용(초록)과 헷갈리지 않게 채도를 뺐다
+const LEAF = '#b7d2c1'
+const TRUNK = '#b5b1a8'
+const WATER = '#d3e4ea'
+const WATER_EDGE = '#9fc4d0'
+const BIRD = '#8e8e93'
+const METAL = '#aeb3bb'
 
 export const HOME_FACE = {
   top: 'home-top',
@@ -50,15 +52,15 @@ export function gateGlow(iso, plan, r, { id = 'gate-glow' } = {}) {
       <g class="gate-glow">
         <defs>
           <radialGradient id="${id}-g">
-            <stop offset="0%" stop-color="#43bc9c" stop-opacity="0.28" />
-            <stop offset="60%" stop-color="#43bc9c" stop-opacity="0.1" />
-            <stop offset="100%" stop-color="#43bc9c" stop-opacity="0" />
+            <stop offset="0%" stop-color="${C.gear}" stop-opacity="0.28" />
+            <stop offset="60%" stop-color="${C.gear}" stop-opacity="0.1" />
+            <stop offset="100%" stop-color="${C.gear}" stop-opacity="0" />
           </radialGradient>
         </defs>
         <ellipse cx="${gx}" cy="${gy}" rx="${r.toFixed(1)}" ry="${(r * 0.52).toFixed(1)}"
                  fill="url(#${id}-g)" />
         <ellipse id="${id}-ring" cx="${gx}" cy="${gy}" rx="${(r * 0.76).toFixed(1)}"
-                 ry="${(r * 0.4).toFixed(1)}" fill="none" stroke="#43bc9c"
+                 ry="${(r * 0.4).toFixed(1)}" fill="none" stroke="${C.gear}"
                  stroke-width="1.25" stroke-dasharray="7 9" opacity="0.5" />
       </g>`
 }
@@ -78,7 +80,7 @@ export function gateGlow(iso, plan, r, { id = 'gate-glow' } = {}) {
      · 문 앞뒤로 이어지는 방호 난간 — 옆으로 새는 길이 없다
    ========================================================================== */
 
-const HAZARD = '#F0A63A'
+const HAZARD = C.bag
 
 /**
  * @param x,y   관문이 앉는 평면 위치 (y 는 레인을 가로지르는 방향의 시작)
@@ -351,12 +353,12 @@ export function campus(iso, X, Y, W, D, { pond = true, detail = true } = {}) {
    자전축 기울기(23.5°)는 유지하되 축이나 꼭지를 그리지는 않는다.
    ========================================================================== */
 
-const SEA_LIT = '#3a3450'
-const SEA_MID = '#2a2537'
-const SEA_DARK = '#14121c'
-const LANDMASS = '#4a4460'
-const GRID = '#8a80a0'
-const ATMO = '#8fa2d8' // 대기광 — 차가운 빛이라야 떠 있는 행성으로 읽힌다
+const SEA_LIT = '#eae7f1'
+const SEA_MID = '#d6d1e2'
+const SEA_DARK = '#bdb6ce'
+const LANDMASS = '#a79dbe'
+const GRID = '#9b91b3'
+const ATMO = '#6f86c4' // 대기광 — 밝은 지면 위에서는 테두리가 진해야 떠 보인다
 
 /** 지도 띠 한 장 — 폭 2r 이 한 바퀴다. 대륙처럼 보이도록 굴곡을 준다. */
 const mapBand = (r) => {
@@ -401,7 +403,7 @@ const servers = (r) =>
     .map(
       ([u, v]) =>
         `<circle cx="${(u * r).toFixed(1)}" cy="${(v * r).toFixed(1)}" r="${(r * 0.032).toFixed(1)}"
-                 fill="#F0A63A" opacity="0.9" />`,
+                 fill="${C.bag}" opacity="0.9" />`,
     )
     .join('')
 

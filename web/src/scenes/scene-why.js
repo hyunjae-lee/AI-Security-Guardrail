@@ -17,6 +17,7 @@ import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
 import { campus, globe, globeAnim } from './_places.js'
 import { sceneWhy as t } from '../content/strings.js'
+import { C } from './_palette.js'
 
 export const iso = isoSpace({ ox: 380, oy: 150, s: 0.92 })
 const { at, delta, box, slab, line, plane, grid, cutHatch } = iso
@@ -67,7 +68,7 @@ const noCheckpoint = (() => {
      나왔을 때 "여기 없던 게 저거였구나" 로 이어지게 했다.
      이름표는 달지 않는다 — 콜아웃 03 이 바로 이 자리를 가리킨다. */
   const GH = 74 // 포털 높이
-  const ghost = 'stroke="#E25749" stroke-width="1.8" stroke-dasharray="7 6" opacity="0.9"'
+  const ghost = 'stroke="${C.block}" stroke-width="1.8" stroke-dasharray="7 6" opacity="0.9"'
   const post = (py) =>
     line([[434, py, 0], [434, py, GH]], '', false, ghost) +
     line([[446, py, 0], [446, py, GH]], '', false, ghost)
@@ -78,7 +79,7 @@ const noCheckpoint = (() => {
         ${line(
           [[404, 164], [476, 164], [476, 236], [404, 236]],
           '', true,
-          'stroke="#E25749" stroke-dasharray="9 7" opacity="0.5"',
+          'stroke="${C.block}" stroke-dasharray="9 7" opacity="0.5"',
         )}
         <!-- 서 있지 않은 포털: 기둥 둘 + 상인방, 전부 점선 -->
         ${post(170)}
@@ -90,7 +91,7 @@ const noCheckpoint = (() => {
         <!-- 없다는 표시 -->
         <path d="M ${cx - 30} ${cy - 30} L ${cx + 30} ${cy + 30}
                  M ${cx + 30} ${cy - 30} L ${cx - 30} ${cy + 30}"
-              stroke="#E25749" stroke-width="3.4" stroke-linecap="round" />
+              stroke="${C.block}" stroke-width="3.4" stroke-linecap="round" />
       </g>`
 })()
 
@@ -111,7 +112,7 @@ const bag = (id, x, y, { z = 0, w = 24, d = 16, h = 18 } = {}) => {
           r: 'bag-r',
         })}
         <path d="M ${hx - 7} ${hy - 1} C ${hx - 7} ${hy - 11} ${hx + 7} ${hy - 11} ${hx + 7} ${hy - 1}"
-              fill="none" stroke="#b97a22" stroke-width="2" />
+              fill="none" stroke="${C.bagDeep}" stroke-width="2" />
       </g>`
 }
 
@@ -120,7 +121,7 @@ const alertRing = (id, x, y, z) => {
   const [cx, cy] = at(x, y, z)
   return `
       <g id="${id}" opacity="0.9">
-        <circle cx="${cx}" cy="${cy}" r="27" fill="none" stroke="#E25749"
+        <circle cx="${cx}" cy="${cy}" r="27" fill="none" stroke="${C.block}"
                 stroke-width="1.5" stroke-dasharray="4 5" />
       </g>`
 }
@@ -148,7 +149,7 @@ const trails = `
           ],
           'route',
           false,
-          `id="sw-trail-in-${i + 1}" style="stroke:#E25749" opacity="0.45"`,
+          `id="sw-trail-in-${i + 1}" style="stroke:${C.block}" opacity="0.45"`,
         ),
       ).join('')}`
 
@@ -163,7 +164,7 @@ const gradeChip = (plan, letter, label, color) => {
   return `
       <g class="grade-chip">
         <rect x="${x - 19}" y="${y - 19}" width="38" height="38" rx="6"
-              fill="#131418" stroke="${color}" stroke-width="1.25" />
+              fill="${C.panel}" stroke="${color}" stroke-width="1.25" />
         <text x="${x}" y="${y + 8}" text-anchor="middle"
               font-weight="700" style="fill:${color};font-size:21px">${letter}</text>
         <text x="${x}" y="${y + 42}" text-anchor="middle" class="co-sub"
@@ -193,14 +194,14 @@ export function sceneWhySvg() {
       ${bag('sw-in-2', 392, IN_Y[1], { z: FLY_Z })}
       ${alertRing('sw-alert-3', 392, IN_Y[1], FLY_Z + 9)}
 
-      ${gradeChip([30, 320, 0], t.gradeIn, t.gradeInLabel, '#43BC9C')}
-      ${gradeChip([806, 216, 0], t.gradeOut, t.gradeOutLabel, '#9C9B93')}
+      ${gradeChip([30, 320, 0], t.gradeIn, t.gradeInLabel, C.gearInk)}
+      ${gradeChip([806, 216, 0], t.gradeOut, t.gradeOutLabel, C.ink2)}
 
       <!-- 방향 표시 -->
       <text class="co-sub" x="${at(300, 30, FLY_Z)[0]}" y="${at(300, 30, FLY_Z)[1] - 26}"
             text-anchor="middle" letter-spacing="2">${t.outbound} →</text>
       <text class="co-sub" x="${at(470, 356, FLY_Z)[0]}" y="${at(470, 356, FLY_Z)[1] + 34}"
-            text-anchor="middle" letter-spacing="2" style="fill:#E25749">← ${t.inbound}</text>
+            text-anchor="middle" letter-spacing="2" style="fill:${C.blockInk}">← ${t.inbound}</text>
 
       ${callout({
         n: '01',

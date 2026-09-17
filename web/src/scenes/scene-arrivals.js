@@ -20,6 +20,7 @@ import { callout, mark, runW, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
 import { checkpointGate } from './_places.js'
 import { sceneArrivals as t } from '../content/strings.js'
+import { C } from './_palette.js'
 
 export const iso = isoSpace({ ox: 330, oy: 96, s: 1.12 })
 const { at, delta, box, slab, line, plane, grid, cutHatch } = iso
@@ -65,7 +66,7 @@ const conveyor = `
           [160, 144, BELT_Z + 0.4],
         ],
         '',
-        'fill="#43BC9C" opacity="0.4"',
+        'fill="${C.gear}" opacity="0.4"',
       )}
       ${beltTeeth()}`
 
@@ -117,9 +118,9 @@ const glyph = {
    → 카나리아(폐기). 카나리아는 시스템 프롬프트가 통째로 새어 나온 신호라
    치환으로 지울 수 있는 종류가 아니다 — 그래서 뒤 둘은 폐기로 간다. */
 const FINDS = [
-  { id: 'sa-find-1', x: 372, color: '#F0A63A', kind: 'id' },
-  { id: 'sa-find-2', x: 404, color: '#E25749', kind: 'link' },
-  { id: 'sa-find-3', x: 436, color: '#E25749', kind: 'tag' },
+  { id: 'sa-find-1', x: 372, color: C.bag, kind: 'id' },
+  { id: 'sa-find-2', x: 404, color: C.block, kind: 'link' },
+  { id: 'sa-find-3', x: 436, color: C.block, kind: 'tag' },
 ]
 
 const tray = `
@@ -147,8 +148,8 @@ const tray = `
 /* --------------------------------------------------------- 2갈래 출구 */
 
 const LANES = [
-  { key: 'deliver', y: 60, color: '#7FBF57', label: t.deliver },
-  { key: 'drop', y: 196, color: '#E25749', label: t.drop },
+  { key: 'deliver', y: 60, color: C.allow, label: t.deliver },
+  { key: 'drop', y: 196, color: C.block, label: t.drop },
 ]
 
 const gates = `
@@ -196,9 +197,9 @@ const DEFAULT_SAMPLE = 'deliver'
 
 /* 조각 색.  hot/warm 은 '걸린 것', fix 는 '가드레일이 바꿔 놓은 자리',
    stop 은 '전달되지 않았다'. 강조 이유가 서로 다르므로 색도 갈라 둔다. */
-const SEG = { hot: '#E25749', warm: '#F0A63A', fix: '#43BC9C', stop: '#E25749' }
-const SEV = { 정보: '#7FBF57', 보통: '#9C9B93', 높음: '#F0A63A', 치명: '#E25749' }
-const CHIP = { warm: '#F0A63A', hot: '#E25749' }
+const SEG = { hot: C.blockInk, warm: C.bagInk, fix: C.gearInk, stop: C.blockInk }
+const SEV = { 정보: C.allowInk, 보통: C.ink2, 높음: C.bagInk, 치명: C.blockInk }
+const CHIP = { warm: C.bagInk, hot: C.blockInk }
 
 /** 조각 단위로 이어 그리는 한 줄 — 강조 조각은 배경을 깔고 색을 준다.
     'stop'(차단 안내문)만 예외로 색만 준다. 그건 걸린 조각이 아니라 대신 나가는
@@ -210,7 +211,7 @@ const textLine = (x, y, segs) => {
       const color = SEG[kind]
       const out = `${color && kind !== 'stop' ? mark(cx, y, text, color, FS) : ''}
           <text x="${cx.toFixed(1)}" y="${y}" style="font-size:${FS}px;fill:${
-            color || '#ECEAE3'
+            color || C.ink
           }">${text}</text>`
       // SVG 는 조각 앞의 공백을 지워 버리므로 간격은 좌표로 준다.
       cx += runW(text, FS) + 5
@@ -225,14 +226,14 @@ const sampleView = (key, s) => {
 
   const detected = s.detected
     .map(([what, sev, note], i) => {
-      const color = SEV[sev] || '#9C9B93'
+      const color = SEV[sev] || C.ink2
       const y = detTop + i * 22
       const sw = runW(sev, 12) + 16
       return `
-          <text x="${PX + 16}" y="${y}" style="font-size:14px;fill:#ECEAE3">${what}</text>${
+          <text x="${PX + 16}" y="${y}" style="font-size:14px;fill:${C.ink}">${what}</text>${
             note
               ? `
-          <text x="${PX + 176}" y="${y}" style="font-size:12px;fill:#8A8F9C">${note}</text>`
+          <text x="${PX + 176}" y="${y}" style="font-size:12px;fill:${C.ink3}">${note}</text>`
               : ''
           }
           <rect x="${PX + 396 - sw}" y="${y - 12}" width="${sw.toFixed(1)}" height="17" rx="3"
@@ -247,11 +248,11 @@ const sampleView = (key, s) => {
         <g id="sa-sample-${key}"${key === DEFAULT_SAMPLE ? '' : ' opacity="0"'}>
           ${s.answer.map((segs, i) => textLine(PX + 16, top + i * LINE_H, segs)).join('')}
           ${s.delivered.map((segs, i) => textLine(COL2, top + i * LINE_H, segs)).join('')}
-          <text x="${COL2}" y="${RULE_Y - 14}" style="font-size:12px;fill:#8A8F9C">${
+          <text x="${COL2}" y="${RULE_Y - 14}" style="font-size:12px;fill:${C.ink3}">${
             s.deliveredNote
           }</text>
           ${detected}
-          <text x="${COL2}" y="${PY + 236}" style="font-size:13px;fill:#9C9B93">${s.score}</text>
+          <text x="${COL2}" y="${PY + 236}" style="font-size:13px;fill:${C.ink2}">${s.score}</text>
           <rect x="${COL2}" y="${PY + 250}" width="${(runW(s.verdict, 13) + 30).toFixed(1)}"
                 height="26" rx="13" fill="none" stroke="${chip}" stroke-width="1.4" />
           <text x="${COL2 + 15}" y="${PY + 268}" style="font-size:13px;fill:${chip}"
@@ -262,19 +263,19 @@ const sampleView = (key, s) => {
 const screen = `
       <g id="sa-screen">
         <rect x="${PX}" y="${PY}" width="${PW}" height="${PH}" rx="4"
-              fill="#0E0F13" stroke="#43BC9C" stroke-width="1.4" opacity="0.97" />
+              fill="${C.panel}" stroke="${C.gear}" stroke-width="1.4" opacity="0.97" />
         <path class="hair" d="M ${PX} ${PY + 40} H ${PX + PW}" />
         <path class="hair" d="M ${PX} ${RULE_Y} H ${PX + PW}" />
         <path class="hair" d="M ${DIV_X} ${PY + 48} V ${RULE_Y - 10}" />
         <text x="${PX + 16}" y="${PY + 26}" class="co-sub" letter-spacing="2">${t.screen}</text>
         <circle cx="${PX + PW - 18}" cy="${PY + 20}" r="4" class="gear-fill" />
         <rect id="sa-screen-sweep" x="${PX}" y="${PY + 40}" width="${PW}" height="2"
-              fill="#43BC9C" opacity="0.25" />
-        <text x="${PX + 16}" y="${PY + 66}" style="font-size:12px;fill:#8A8F9C"
+              fill="${C.gear}" opacity="0.25" />
+        <text x="${PX + 16}" y="${PY + 66}" style="font-size:12px;fill:${C.ink3}"
               letter-spacing="1">${t.screenAnswerLabel}</text>
-        <text x="${COL2}" y="${PY + 66}" style="font-size:12px;fill:#8A8F9C"
+        <text x="${COL2}" y="${PY + 66}" style="font-size:12px;fill:${C.ink3}"
               letter-spacing="1">${t.screenDeliverLabel}</text>
-        <text x="${PX + 16}" y="${PY + 212}" style="font-size:12px;fill:#8A8F9C"
+        <text x="${PX + 16}" y="${PY + 212}" style="font-size:12px;fill:${C.ink3}"
               letter-spacing="1">${t.screenDetectedLabel}</text>
         ${Object.entries(t.screenSamples)
           .map(([key, s]) => sampleView(key, s))
@@ -295,7 +296,7 @@ const bag = (id, x, y, { z = 0, w = 22, d = 15, h = 17 } = {}) => {
           r: 'bag-r',
         })}
         <path d="M ${hx - 7} ${hy - 1} C ${hx - 7} ${hy - 11} ${hx + 7} ${hy - 11} ${hx + 7} ${hy - 1}"
-              fill="none" stroke="#b97a22" stroke-width="2" />
+              fill="none" stroke="${C.bagDeep}" stroke-width="2" />
       </g>`
 }
 
@@ -312,7 +313,7 @@ const figure = (plan) => {
   return `
       <g class="figure">
         <polygon points="${x - 13},${y} ${x},${y - 7} ${x + 13},${y} ${x},${y + 7}"
-                 fill="#0f1116" opacity="0.5" />
+                 fill="${C.shadow}" opacity="0.13" />
         <circle class="gear-fill" cx="${x}" cy="${y - 70}" r="9.5" opacity="0.8" />
         <rect class="gear-fill" x="${x - 11}" y="${y - 52}" width="22" height="52"
               rx="10" opacity="0.8" />
@@ -457,7 +458,7 @@ export function sceneArrivalsAnim(root, gsap, ScrollTrigger) {
       // 검역 표시등이 판정 색으로 바뀐다.
       .to(
         root.querySelectorAll('[id^="sa-gate-lamp-"]'),
-        { fill: verdict === 'drop' ? '#E25749' : '#F0A63A', duration: 0.2 },
+        { fill: verdict === 'drop' ? C.block : C.bag, duration: 0.2 },
         t0 + 0.55,
       )
     if (findSel) {
@@ -474,7 +475,7 @@ export function sceneArrivalsAnim(root, gsap, ScrollTrigger) {
   const divert = (id, origin, verdict, t0) => {
     const el = q(`#${id}`)
     if (!el) return
-    tl.to(root.querySelectorAll('[id^="sa-gate-lamp-"]'), { fill: '#43BC9C', duration: 0.25 }, t0)
+    tl.to(root.querySelectorAll('[id^="sa-gate-lamp-"]'), { fill: C.gear, duration: 0.25 }, t0)
       .to(el, { ...delta(origin, JUNCTION), duration: 0.7 }, t0)
       .to(el, { ...delta(origin, EXIT[verdict]), duration: 0.5 }, t0 + 0.7)
       .to(el, { opacity: 0, duration: 0.25 }, t0 + 1.15)

@@ -17,6 +17,7 @@
 import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
 import { sceneRecords as t } from '../content/strings.js'
+import { C } from './_palette.js'
 
 export const iso = isoSpace({ ox: 300, oy: 150, s: 0.8 })
 const { at, box, slab, line, plane, grid, cutHatch, shadow } = iso
@@ -86,12 +87,12 @@ const LY = 118 // 표 상단
 const ROW_H = 68
 const COLS = [0, 136, 342, 494] // 시각 / 유형 / 판정 / 내용(빈칸)
 
-const VERDICT_COLOR = { 통과: '#7FBF57', 치환: '#F0A63A', 거부: '#E25749' }
+const VERDICT_COLOR = { 통과: C.allowInk, 치환: C.bagInk, 거부: C.blockInk }
 
 const ledger = `
       <g id="sk-ledger">
         <rect x="${LX}" y="${LY}" width="${LW}" height="${ROW_H * (t.rows.length + 1) + 16}"
-              rx="4" fill="#1C1E24" stroke="#3C3E46" stroke-width="1.25" />
+              rx="4" fill="${C.panelSoft}" stroke="${C.panelLine}" stroke-width="1.25" />
         <text x="${LX + 22}" y="${LY - 16}" class="co-sub" letter-spacing="3">${t.ledger}</text>
 
         <!-- 머리글 -->
@@ -103,7 +104,7 @@ const ledger = `
           )
           .join('')}
         <text x="${LX + 22 + COLS[3]}" y="${LY + 40}" class="co-sub"
-              letter-spacing="2" style="font-size:17px;fill:#E25749">${t.colBlank}</text>
+              letter-spacing="2" style="font-size:17px;fill:${C.blockInk}">${t.colBlank}</text>
         <path class="hair" d="M ${LX + 16} ${LY + 56} H ${LX + LW - 16}" />
 
         <!-- 내용 칸 전체를 사선으로 지운다 -->
@@ -111,7 +112,7 @@ const ledger = `
           ${Array.from({ length: 14 }, (_, i) => {
             const x0 = LX + 12 + COLS[3] + i * 14
             return `<path d="M ${x0} ${LY + 62} L ${x0 - 22} ${LY + ROW_H * (t.rows.length + 1) + 10}"
-                          stroke="#E25749" stroke-width="1" opacity="0.35" />`
+                          stroke="${C.block}" stroke-width="1" opacity="0.35" />`
           }).join('')}
         </g>
 
@@ -121,10 +122,10 @@ const ledger = `
             return `
         <g id="sk-row-${i + 1}">
           <text x="${LX + 22 + COLS[0]}" y="${y}" class="co-sub" style="font-size:19px">${time}</text>
-          <text x="${LX + 22 + COLS[1]}" y="${y}" class="co-sub" style="font-size:19px;fill:#ECEAE3">${kind}</text>
-          <text x="${LX + 22 + COLS[2]}" y="${y}" class="co-title" style="font-size:19px;fill:${VERDICT_COLOR[verdict] || '#9C9B93'}">${verdict}</text>
+          <text x="${LX + 22 + COLS[1]}" y="${y}" class="co-sub" style="font-size:19px;fill:${C.ink}">${kind}</text>
+          <text x="${LX + 22 + COLS[2]}" y="${y}" class="co-title" style="font-size:19px;fill:${VERDICT_COLOR[verdict] || C.ink2}">${verdict}</text>
           <text id="sk-blank-${i + 1}" x="${LX + 22 + COLS[3]}" y="${y}" class="co-sub"
-                opacity="0.75" style="font-size:16px;fill:#E25749">${t.blankMark}</text>
+                opacity="0.75" style="font-size:16px;fill:${C.blockInk}">${t.blankMark}</text>
         </g>
         ${i < t.rows.length - 1 ? `<path class="hair" d="M ${LX + 16} ${y + 18} H ${LX + LW - 16}" opacity="0.35" />` : ''}`
           })

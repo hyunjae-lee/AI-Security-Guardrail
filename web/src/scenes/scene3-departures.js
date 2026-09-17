@@ -23,15 +23,16 @@ import { callout, mark, runW, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
 import { checkpointGate, GATE_FACE } from './_places.js'
 import { scene3 as t } from '../content/strings.js'
+import { C } from './_palette.js'
 
 export const iso = isoSpace({ ox: 350, oy: 76, s: 1.12 })
 const { at, pt, delta, box, slab, line, plane, grid, cutHatch, curve } = iso
 
 const BELT_Z = 32 // 벨트 상면 높이
 const LANES = [
-  { key: 'allow', y: 60, color: '#7FBF57' },
-  { key: 'mask', y: 128, color: '#F0A63A' },
-  { key: 'block', y: 196, color: '#E25749' },
+  { key: 'allow', y: 60, color: C.allow },
+  { key: 'mask', y: 128, color: C.bag },
+  { key: 'block', y: 196, color: C.block },
 ]
 
 /* --------------------------------------------------------- 바닥 · 남은 벽 */
@@ -74,7 +75,7 @@ const conveyor = `
           [24, 144, BELT_Z + 0.4],
         ],
         '',
-        'fill="#F0A63A" opacity="0.5"',
+        'fill="${C.bag}" opacity="0.5"',
       )}
       ${beltTeeth()}`
 
@@ -110,7 +111,7 @@ const hazardBand = (x0, y0, w, d) =>
           [x0 + w, y0, z0 + 8],
         ],
         '',
-        'fill="#F0A63A" opacity="0.85"',
+        'fill="${C.bag}" opacity="0.85"',
       )
     })
     .join('')
@@ -211,13 +212,13 @@ const override = `
             [812, 276, 22],
           ],
           'route',
-          'id="s3-path-override" style="stroke:#E25749;stroke-dasharray:9 7" opacity="0.95"',
+          'id="s3-path-override" style="stroke:${C.block};stroke-dasharray:9 7" opacity="0.95"',
         )}
         <g id="s3-override-outlet" transform="translate(${outX} ${outY})">
           <rect x="-34" y="-26" width="68" height="52" rx="3"
-                fill="none" stroke="#E25749" stroke-width="2" />
+                fill="none" stroke="${C.block}" stroke-width="2" />
           <path d="M -13 -10 L 13 12 M 13 -10 L -13 12"
-                stroke="#E25749" stroke-width="2.5" stroke-linecap="round" />
+                stroke="${C.block}" stroke-width="2.5" stroke-linecap="round" />
         </g>
       </g>`
 
@@ -235,7 +236,7 @@ const bag = (id, x, y, { z = 0, w = 22, d = 15, h = 17 } = {}) => {
           r: 'bag-r',
         })}
         <path d="M ${hx - 7} ${hy - 1} C ${hx - 7} ${hy - 11} ${hx + 7} ${hy - 11} ${hx + 7} ${hy - 1}"
-              fill="none" stroke="#b97a22" stroke-width="2" />
+              fill="none" stroke="${C.bagDeep}" stroke-width="2" />
       </g>`
 }
 
@@ -245,7 +246,7 @@ const figure = (plan) => {
   return `
       <g class="figure">
         <polygon points="${x - 13},${y} ${x},${y - 7} ${x + 13},${y} ${x},${y + 7}"
-                 fill="#0f1116" opacity="0.5" />
+                 fill="${C.shadow}" opacity="0.13" />
         <circle class="gear-fill" cx="${x}" cy="${y - 70}" r="9.5" opacity="0.8" />
         <rect class="gear-fill" x="${x - 11}" y="${y - 52}" width="22" height="52"
               rx="10" opacity="0.8" />
@@ -278,8 +279,8 @@ export const MAX_DETECTED = 3
 
 const SFS = 15
 
-const TONE3 = { hot: '#E25749', warm: '#F0A63A' }
-const CHIP = { ok: '#7FBF57', warm: '#F0A63A', hot: '#E25749' }
+const TONE3 = { hot: C.blockInk, warm: C.bagInk }
+const CHIP = { ok: C.allowInk, warm: C.bagInk, hot: C.blockInk }
 
 /** 기본으로 켜 두는 판정 — 애니메이션이 없을 때(정지·reduced-motion) 보이는 화면. */
 const DEFAULT_KEY = 'allow' // 대기열 첫 가방의 판정과 같아야 정지 화면이 맞는다
@@ -298,7 +299,7 @@ const COL_VALUE = DIV + COL_VALUE_OFF
 
 /* 심각도 색 — 초록(정보)에서 빨강(치명)으로.  '탐지됨' 과 '위험함' 은 다르다는
    것이 이 화면의 요점이라, 탐지되었어도 정보 등급이면 초록으로 둔다. */
-const SEV = { 정보: '#7FBF57', 보통: '#9C9B93', 높음: '#F0A63A', 치명: '#E25749' }
+const SEV = { 정보: C.allowInk, 보통: C.ink2, 높음: C.bagInk, 치명: C.blockInk }
 
 /* 판독 결과 칸의 세로 배치.  아래쪽 셋(구분선·점수·판정칩)은 자리를 고정해
    가방이 바뀌어도 눈이 같은 곳에서 결론을 읽게 하고, 탐지 목록만 위에서
@@ -317,17 +318,17 @@ const readout = (s) => {
   let y = PY + RD_TOP
   const rows = s.detected
     .map(([what, sev, note]) => {
-      const color = SEV[sev] || '#9C9B93'
+      const color = SEV[sev] || C.ink2
       const sw = runW(sev, 12) + 16
       const row = `
           <rect x="${right - sw}" y="${y - 12}" width="${sw.toFixed(1)}" height="17" rx="3"
                 fill="${color}" opacity="0.18" />
           <text x="${right - sw / 2}" y="${y}" text-anchor="middle"
                 style="font-size:12px;fill:${color}" font-weight="700">${sev}</text>
-          <text x="${x}" y="${y}" style="font-size:14px;fill:#ECEAE3">${what}</text>${
+          <text x="${x}" y="${y}" style="font-size:14px;fill:${C.ink}">${what}</text>${
             note
               ? `
-          <text x="${x}" y="${y + 15}" style="font-size:12px;fill:#8A8F9C">${note}</text>`
+          <text x="${x}" y="${y + 15}" style="font-size:12px;fill:${C.ink3}">${note}</text>`
               : ''
           }`
       y += rowH(note)
@@ -337,12 +338,12 @@ const readout = (s) => {
 
   const tone = CHIP[s.tone]
   return `
-          <text x="${x}" y="${PY + 60}" style="font-size:12px;fill:#8A8F9C"
+          <text x="${x}" y="${PY + 60}" style="font-size:12px;fill:${C.ink3}"
                 letter-spacing="1">${t.screenDetectedLabel}</text>
           ${rows}
-          <path d="M ${x} ${PY + RD_RULE} H ${right}" stroke="#43BC9C"
+          <path d="M ${x} ${PY + RD_RULE} H ${right}" stroke="${C.gear}"
                 stroke-width="1" opacity="0.25" />
-          <text x="${x}" y="${PY + RD_SCORE}" style="font-size:13px;fill:#9C9B93">${s.score}</text>
+          <text x="${x}" y="${PY + RD_SCORE}" style="font-size:13px;fill:${C.ink2}">${s.score}</text>
           <rect x="${x}" y="${PY + RD_CHIP}" width="${(runW(s.verdict, 13) + 30).toFixed(1)}"
                 height="26" rx="13" fill="none" stroke="${tone}" stroke-width="1.25" opacity="0.8" />
           <text x="${x + 15}" y="${PY + RD_CHIP + 18}"
@@ -356,16 +357,16 @@ const sampleBlock = (key, s) => {
       const color = TONE3[ln.kind]
       if (ln.label !== undefined) {
         return `
-          <text x="${COL_LABEL}" y="${y}" style="font-size:${SFS}px;fill:#9C9B93">${ln.label}</text>
+          <text x="${COL_LABEL}" y="${y}" style="font-size:${SFS}px;fill:${C.ink2}">${ln.label}</text>
           ${color ? mark(COL_VALUE, y, ln.value, color) : ''}
           <text x="${COL_VALUE}" y="${y}" style="font-size:${SFS}px;fill:${
-            color || '#ECEAE3'
+            color || C.ink
           }" font-weight="700">${ln.value}</text>`
       }
       return `
           ${color ? mark(COL_LABEL, y, ln.text, color) : ''}
           <text x="${COL_LABEL}" y="${y}" style="font-size:${SFS}px;fill:${
-            color || '#ECEAE3'
+            color || C.ink
           }"${ln.kind ? ' font-weight="700"' : ''}>${ln.text}</text>`
     })
     .join('')
@@ -377,12 +378,12 @@ const sampleBlock = (key, s) => {
     ? ''
     : `
           <text x="${PX + 112}" y="${PY + 126}" text-anchor="middle"
-                style="font-size:14px;fill:#7FBF57">${t.screenNothing}</text>`
+                style="font-size:14px;fill:${C.allowInk}">${t.screenNothing}</text>`
 
   return `
         <g id="s3-sample-${key}"${key === DEFAULT_KEY ? '' : ' opacity="0"'}>
           <text x="${DIV2 - 20}" y="${PY + 60}" text-anchor="end"
-                style="font-size:12px;fill:#8A8F9C" letter-spacing="1">${
+                style="font-size:12px;fill:${C.ink3}" letter-spacing="1">${
                   t.screenRoleLabel
                 } · ${s.role}</text>
           ${empty}
@@ -399,41 +400,41 @@ const screen = `
       <g id="s3-screen">
         <path class="co-leader" d="M ${PX + 180} ${PY + PH} L 581 238" />
         <rect x="${PX}" y="${PY}" width="${PW}" height="${PH}" rx="4"
-              fill="#0f1116" stroke="#43BC9C" stroke-width="1.75" />
-        <path d="M ${PX} ${PY + 34} H ${PX + PW}" stroke="#43BC9C" stroke-width="1" opacity="0.6" />
+              fill="${C.panel}" stroke="${C.gear}" stroke-width="1.75" />
+        <path d="M ${PX} ${PY + 34} H ${PX + PW}" stroke="${C.gear}" stroke-width="1" opacity="0.6" />
         <text x="${PX + 16}" y="${PY + 24}" class="co-sub" letter-spacing="2">${t.screen}</text>
-        <circle cx="${PX + PW - 22}" cy="${PY + 17}" r="4" fill="#43BC9C" opacity="0.9" />
+        <circle cx="${PX + PW - 22}" cy="${PY + 17}" r="4" fill="${C.gear}" opacity="0.9" />
         <rect id="s3-screen-sweep" x="${PX}" y="${PY + 40}" width="${PW}" height="2"
-              fill="#43BC9C" opacity="0.45" />
+              fill="${C.gear}" opacity="0.45" />
         <path d="M ${DIV} ${PY + 42} V ${PY + PH - 12} M ${DIV2} ${PY + 42} V ${PY + PH - 12}"
-              stroke="#43BC9C" stroke-width="1" opacity="0.3" />
+              stroke="${C.gear}" stroke-width="1" opacity="0.3" />
 
         <!-- 왼쪽: 가방 투시 -->
-        <text x="${PX + 16}" y="${PY + 60}" style="font-size:12px;fill:#8A8F9C"
+        <text x="${PX + 16}" y="${PY + 60}" style="font-size:12px;fill:${C.ink3}"
               letter-spacing="1">${t.screenXrayLabel}</text>
         <rect x="${PX + 22}" y="${PY + 72}" width="180" height="94" rx="10"
-              fill="none" stroke="#43BC9C" stroke-width="1.5" opacity="0.5" />
+              fill="none" stroke="${C.gear}" stroke-width="1.5" opacity="0.5" />
         <path d="M ${PX + 90} ${PY + 72} C ${PX + 90} ${PY + 60} ${PX + 134} ${PY + 60} ${PX + 134} ${PY + 72}"
-              fill="none" stroke="#43BC9C" stroke-width="1.5" opacity="0.5" />
+              fill="none" stroke="${C.gear}" stroke-width="1.5" opacity="0.5" />
         <g id="s3-xray-idcard"${xrayOff('idcard')}>
           <rect x="${PX + 38}" y="${PY + 92}" width="52" height="34" rx="2"
-                fill="none" stroke="#F0A63A" stroke-width="1.75" />
-          <circle cx="${PX + 53}" cy="${PY + 106}" r="6.5" fill="none" stroke="#F0A63A" stroke-width="1.5" />
+                fill="none" stroke="${C.bag}" stroke-width="1.75" />
+          <circle cx="${PX + 53}" cy="${PY + 106}" r="6.5" fill="none" stroke="${C.bag}" stroke-width="1.5" />
           <path d="M ${PX + 66} ${PY + 101} H ${PX + 84} M ${PX + 66} ${PY + 112} H ${PX + 80}"
-                stroke="#F0A63A" stroke-width="1.5" />
+                stroke="${C.bag}" stroke-width="1.5" />
           <text x="${PX + 64}" y="${PY + 152}" text-anchor="middle"
-                style="font-size:13px;fill:#F0A63A">${t.screenIdCard}</text>
+                style="font-size:13px;fill:${C.bagInk}">${t.screenIdCard}</text>
         </g>
         <g id="s3-xray-note"${xrayOff('note')}>
           <path d="M ${PX + 112} ${PY + 90} L ${PX + 150} ${PY + 84} L ${PX + 157} ${PY + 126} L ${PX + 119} ${PY + 132} Z"
-                fill="none" stroke="#E25749" stroke-width="1.75" />
+                fill="none" stroke="${C.block}" stroke-width="1.75" />
           <path d="M ${PX + 121} ${PY + 101} H ${PX + 146} M ${PX + 121} ${PY + 112} H ${PX + 142}"
-                stroke="#E25749" stroke-width="1.5" />
+                stroke="${C.block}" stroke-width="1.5" />
           <text x="${PX + 142}" y="${PY + 152}" text-anchor="middle"
-                style="font-size:13px;fill:#E25749">${t.screenNote}</text>
+                style="font-size:13px;fill:${C.blockInk}">${t.screenNote}</text>
         </g>
         <!-- 가운데: 실제로 들어온 입력 / 오른쪽: 판독 결과 (둘 다 가방마다 다르다) -->
-        <text x="${DIV + 18}" y="${PY + 60}" style="font-size:12px;fill:#8A8F9C"
+        <text x="${DIV + 18}" y="${PY + 60}" style="font-size:12px;fill:${C.ink3}"
               letter-spacing="1">${t.screenTextLabel}</text>
         ${samples}
       </g>`

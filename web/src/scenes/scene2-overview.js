@@ -25,6 +25,7 @@ import {
   HOME_FACE,
 } from './_places.js'
 import { scene2 as t } from '../content/strings.js'
+import { C } from './_palette.js'
 
 export const iso = isoSpace({ ox: 406, oy: 130, s: 1 })
 const { at, pt, box, slab, line, plane, grid, cutHatch, curve } = iso
@@ -49,7 +50,7 @@ const device = (id, plan, shape) => {
   return `
       <g id="s2-device-${id}">
         <polygon points="${x - 15},${y} ${x},${y - 8} ${x + 15},${y} ${x},${y + 8}"
-                 fill="#0f1116" opacity="0.55" />
+                 fill="${C.shadow}" opacity="0.14" />
         <g transform="translate(${x} ${y})">
 ${shape}
         </g>
@@ -61,26 +62,26 @@ const DEVICES = [
     'phone',
     [14, 96],
     `          <rect class="f-top solid" x="-11" y="-40" width="22" height="38" rx="3" />
-          <rect fill="#F0A63A" x="-8" y="-36" width="16" height="27" rx="1" />`,
+          <rect fill="${C.bag}" x="-8" y="-36" width="16" height="27" rx="1" />`,
   ),
   device(
     'tablet',
     [12, 220],
     `          <rect class="f-top solid" x="-17" y="-46" width="34" height="44" rx="3" />
-          <rect fill="#F0A63A" x="-13" y="-42" width="26" height="33" rx="1" />`,
+          <rect fill="${C.bag}" x="-13" y="-42" width="26" height="33" rx="1" />`,
   ),
   device(
     'laptop',
     [88, 366],
     `          <path class="f-l solid" d="M -27 0 L 27 0 L 22 -7 L -22 -7 Z" />
           <rect class="f-top solid" x="-22" y="-38" width="44" height="31" rx="2" />
-          <rect fill="#F0A63A" x="-18" y="-34" width="36" height="23" />`,
+          <rect fill="${C.bag}" x="-18" y="-34" width="36" height="23" />`,
   ),
   device(
     'pc',
     [250, 360],
     `          <rect class="f-top solid" x="-26" y="-44" width="52" height="35" rx="2" />
-          <rect fill="#F0A63A" x="-22" y="-40" width="44" height="27" />
+          <rect fill="${C.bag}" x="-22" y="-40" width="44" height="27" />
           <path class="f-l solid" d="M -7 -9 L 7 -9 L 10 0 L -10 0 Z" />
           <rect class="f-r solid" x="30" y="-36" width="15" height="36" rx="2" />`,
   ),
@@ -164,7 +165,7 @@ const portal = (() => {
             [jx, 194, z0 + 6],
           ],
           '',
-          'fill="#F0A63A" opacity="0.9"',
+          'fill="${C.bag}" opacity="0.9"',
         )
       })
       .join('')
@@ -172,7 +173,7 @@ const portal = (() => {
   return `
         <g id="s2-portal">
           <path class="gate-deep" d="${outline}" />
-          <path d="${outline}" fill="none" stroke="var(--c-gate-edge)"
+          <path d="${outline}" fill="none" style="stroke:var(--c-gate-edge)"
                 stroke-width="2.2" stroke-linejoin="round" />
           ${jamb(X0 - 9)}
           ${jamb(X1 + 2)}
@@ -250,7 +251,7 @@ const terminal = `
             const [sxp, syp] = at(540, y + 3, 30)
             return `${box(516, y, 24, 6, 5, { z: 25, ...GATE_FACE })}
         <circle cx="${sxp}" cy="${syp}" r="4.2" fill="none"
-                stroke="var(--c-gate-edge)" stroke-width="1.4" opacity="0.8" />`
+                style="stroke:var(--c-gate-edge)" stroke-width="1.4" opacity="0.8" />`
           })
           .join('')}
       </g>`
@@ -304,7 +305,7 @@ const bag = (id, x, y, { z = 0, w = 22, d = 15, h = 17 } = {}) => {
           r: 'bag-r',
         })}
         <path d="M ${hx - 7} ${hy - 1} C ${hx - 7} ${hy - 11} ${hx + 7} ${hy - 11} ${hx + 7} ${hy - 1}"
-              fill="none" stroke="#b97a22" stroke-width="2" />
+              fill="none" stroke="${C.bagDeep}" stroke-width="2" />
       </g>`
 }
 
@@ -354,13 +355,13 @@ const EQ_MID = EQ_TOP + 34
 const equation = `
       <g id="s2-equation">
         <rect x="60" y="${EQ_TOP}" width="1320" height="${EQ_H}" rx="4"
-              fill="var(--c-stage)" stroke="#43BC9C" stroke-width="1.25" opacity="0.97" />
+              fill="${C.panel}" stroke="${C.gear}" stroke-width="1.25" opacity="0.97" />
         <text x="694" y="${EQ_MID}" text-anchor="end"
-              style="font-size:31px;fill:#F0A63A" font-weight="900">${t.equationLeft}</text>
+              style="font-size:31px;fill:${C.bagInk}" font-weight="900">${t.equationLeft}</text>
         <text x="720" y="${EQ_MID}" text-anchor="middle"
               style="font-size:29px;fill:var(--c-muted)">=</text>
         <text x="746" y="${EQ_MID}" text-anchor="start"
-              style="font-size:31px;fill:#43BC9C" font-weight="900">${t.equationRight}</text>
+              style="font-size:31px;fill:${C.gearInk}" font-weight="900">${t.equationRight}</text>
         <text x="720" y="${EQ_MID + 28}" text-anchor="middle"
               style="font-size:17px;fill:var(--c-label)">${t.equationNote}</text>
       </g>`

@@ -20,6 +20,7 @@
 
 import { callout, svgWrap } from './_svg.js'
 import { sceneIntro as t } from '../content/strings.js'
+import { C } from './_palette.js'
 
 /* 이 창만 밝은 색이다.  ChatGPT·Claude 의 기본이 라이트 모드라 그쪽이 실제
    화면에 가깝고, 어두운 페이지 위에 놓이면 "이용자가 들여다보는 화면" 이라는
@@ -36,7 +37,7 @@ const UI = {
   active: '#ececE8',
   field: '#ffffff',
   send: '#1f2023',
-  // 밝은 바탕에서 대비를 확보한 시맨틱 변형 (지면용 #E25749/#F0A63A 의 라이트판)
+  // 이 창 안에서만 쓰는 시맨틱 변형 — 흰 바탕에서 대비를 확보한 값
   hot: '#c4392b',
   warm: '#9a6a0d',
 }
@@ -196,22 +197,22 @@ const leaks = t.leaks
     const w = runWidth(label, 15) + 32
     return `
       <path id="si-trail-${i + 1}" d="M ${LX0} ${y} H ${LX0 + 286}"
-            stroke="#E25749" stroke-width="1.25" stroke-dasharray="6 7"
+            stroke="${C.block}" stroke-width="1.25" stroke-dasharray="6 7"
             opacity="0.4" fill="none" />
       <g id="si-leak-${i + 1}">
         <rect x="${LX0 + 30}" y="${y - 16}" width="${w.toFixed(1)}" height="32" rx="16"
-              fill="#131418" stroke="#E25749" stroke-width="1.25" />
-        <text x="${(LX0 + 30 + w / 2).toFixed(1)}" y="${y + 5}" text-anchor="middle" style="font-size:15px;fill:#E25749">${label}</text>
+              fill="${C.panel}" stroke="${C.block}" stroke-width="1.25" />
+        <text x="${(LX0 + 30 + w / 2).toFixed(1)}" y="${y + 5}" text-anchor="middle" style="font-size:15px;fill:${C.blockInk}">${label}</text>
       </g>`
   })
   .join('')
 
 const OUT_X = LX0 + 168
 const outside = `
-      <path d="M ${OUT_X} 96 V 620" stroke="#9C9B93" stroke-width="1.25"
+      <path d="M ${OUT_X} 96 V 620" stroke="${C.ink2}" stroke-width="1.25"
             stroke-dasharray="9 7" opacity="0.5" fill="none" />
       <text x="${OUT_X + 12}" y="646"
-            letter-spacing="2" style="font-size:15px;fill:#9C9B93">${t.outside}</text>`
+            letter-spacing="2" style="font-size:15px;fill:${C.ink2}">${t.outside}</text>`
 
 /* ------------------------------------------------------------------ 조립 */
 

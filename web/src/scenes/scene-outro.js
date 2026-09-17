@@ -26,6 +26,7 @@ import { callout, svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
 import { campus, checkpointGate, globe, globeAnim, HOME_FACE } from './_places.js'
 import { sceneOutro as t } from '../content/strings.js'
+import { C } from './_palette.js'
 
 export const iso = isoSpace({ ox: 400, oy: 168, s: 1 })
 const { at, pt, box, slab, line, plane, grid, cutHatch, curve, shadow } = iso
@@ -80,7 +81,7 @@ const underworld = `
             [306, 234, BELT + 0.4],
           ],
           '',
-          'id="so-belt" fill="#F0A63A" opacity="0.5"',
+          'id="so-belt" fill="${C.bag}" opacity="0.5"',
         )}
         <!-- 검사대 — 위층 터미널과 같은 부품이다.  안 보이는 자리에 있을 뿐
              같은 관문이라는 것이 형태로 읽혀야 한다 -->
@@ -99,7 +100,7 @@ const underworld = `
         })}
         <text x="${at(406, 300, FLOOR + 4)[0]}" y="${at(406, 300, FLOOR + 4)[1] + 30}"
               text-anchor="middle" letter-spacing="3"
-              style="font-size:16px;fill:#43BC9C" font-weight="700">${t.running}</text>
+              style="font-size:16px;fill:${C.gearInk}" font-weight="700">${t.running}</text>
         <!-- 통과 시간 — '느려지지 않는다' 를 말이 아니라 숫자로 둔다. 가동 표시
              바로 아래에 붙여 검사대의 상태값으로 읽히게 하고, 가방 경로와 겹치지
              않는 빈자리에 놓는다. 색은 경로와 같은 호박색 — 지나가는 시간이다. -->
@@ -108,9 +109,9 @@ const underworld = `
           const ty = gy + 66
           return `<g id="so-timing">
           <rect x="${gx - 54}" y="${ty - 21}" width="108" height="30" rx="15"
-                fill="#131418" stroke="#F0A63A" stroke-width="1.4" />
+                fill="${C.panel}" stroke="${C.bag}" stroke-width="1.4" />
           <text x="${gx}" y="${ty}" text-anchor="middle" font-weight="700"
-                style="font-size:17px;fill:#F0A63A">${t.timing}</text>
+                style="font-size:17px;fill:${C.bagInk}">${t.timing}</text>
           <text x="${gx}" y="${ty + 25}" text-anchor="middle"
                 style="font-size:14px;fill:var(--c-muted)">${t.timingSub}</text>
         </g>`
@@ -149,10 +150,10 @@ const groundLine = `
         ],
         '',
         false,
-        'stroke="#F0A63A" stroke-width="2" opacity="0.85"',
+        'stroke="${C.bag}" stroke-width="2" opacity="0.85"',
       )}
       <text x="${at(540, CUT_Y, 0)[0] + 16}" y="${at(540, CUT_Y, 0)[1] + 6}"
-            letter-spacing="4" style="font-size:16px;fill:#F0A63A" font-weight="700">${
+            letter-spacing="4" style="font-size:16px;fill:${C.bagInk}" font-weight="700">${
               t.groundLine
             }</text>`
 
@@ -212,9 +213,9 @@ const arrowAt = (plan, dir) => {
   const s = dir === 'down' ? 1 : -1
   return `
       <g opacity="0.95">
-        <path d="M ${x} ${y - 22 * s} V ${y + 10 * s}" stroke="#F0A63A" stroke-width="2.4" />
+        <path d="M ${x} ${y - 22 * s} V ${y + 10 * s}" stroke="${C.bag}" stroke-width="2.4" />
         <path d="M ${x - 7} ${y + 2 * s} L ${x} ${y + 12 * s} L ${x + 7} ${y + 2 * s} Z"
-              fill="#F0A63A" />
+              fill="${C.bag}" />
       </g>`
 }
 
@@ -234,7 +235,7 @@ const bag = (id, x, y, { z = 0, w = 22, d = 15, h = 17 } = {}) => {
           r: 'bag-r',
         })}
         <path d="M ${hx - 7} ${hy - 1} C ${hx - 7} ${hy - 11} ${hx + 7} ${hy - 11} ${hx + 7} ${hy - 1}"
-              fill="none" stroke="#b97a22" stroke-width="2" />
+              fill="none" stroke="${C.bagDeep}" stroke-width="2" />
       </g>`
 }
 
@@ -252,7 +253,7 @@ export function sceneOutroSvg() {
           curve(
             pts,
             'route',
-            `id="so-route-${i + 1}" style="stroke:#F0A63A;stroke-width:2.2;stroke-dasharray:9 6" opacity="0.9"`,
+            `id="so-route-${i + 1}" style="stroke:${C.bag};stroke-width:2.2;stroke-dasharray:9 6" opacity="0.9"`,
           ),
       ).join('')}
       ${diveMarks}
@@ -266,7 +267,7 @@ export function sceneOutroSvg() {
       <text x="104" y="296" letter-spacing="3"
             style="font-size:18px;fill:var(--c-label)" font-weight="700">${t.surfaceLabel}</text>
       <text x="150" y="646" letter-spacing="3"
-            style="font-size:18px;fill:#43BC9C" font-weight="700">${t.undergroundLabel}</text>
+            style="font-size:18px;fill:${C.gearInk}" font-weight="700">${t.undergroundLabel}</text>
       <text x="150" y="670"
             style="font-size:15px;fill:var(--c-muted)">${t.cutNote}</text>
 

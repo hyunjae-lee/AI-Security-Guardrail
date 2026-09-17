@@ -24,9 +24,10 @@ import { svgWrap } from './_svg.js'
 import { isoSpace } from './_iso.js'
 import { checkpointGate, HOME_FACE } from './_places.js'
 import { sceneShared as t } from '../content/strings.js'
+import { C } from './_palette.js'
 
-const AMBER = '#F0A63A'
-const TEAL = '#43BC9C'
+const AMBER = C.bagInk
+const TEAL = C.gearInk
 
 /* ------------------------------------------------------------ 왼쪽 · 장비 */
 
@@ -105,7 +106,7 @@ const cell = (text, ci, ri, { blank = false } = {}) => {
 
 const table = `
       <rect x="${TX}" y="${HEAD_Y}" width="${TW}" height="${46 + ROW_H * t.rows.length}"
-            rx="4" fill="none" stroke="var(--c-line)" stroke-width="1.25" />
+            rx="4" fill="none" style="stroke:var(--c-line)" stroke-width="1.25" />
       <rect x="${TX}" y="${HEAD_Y}" width="${TW}" height="46"
             fill="${AMBER}" opacity="0.09" />
       ${t.cols
@@ -150,7 +151,7 @@ const rightPanel = `
       <path class="co-leader" d="M ${TX + TW} ${BODY_Y + ROW_H * 3.9}
             L ${TX + TW + 22} ${TB + 74} H ${TX + TW - 4}" />
       <text x="${TX + TW - 12}" y="${TB + 74}" text-anchor="end"
-            style="font-size:20px;fill:#E25749" font-weight="700">${t.blankLabel}</text>
+            style="font-size:20px;fill:${C.blockInk}" font-weight="700">${t.blankLabel}</text>
       <text x="${TX + TW - 12}" y="${TB + 98}" text-anchor="end"
             style="font-size:17px;fill:var(--c-label)">${t.blankSub}</text>`
 
@@ -177,7 +178,7 @@ export function sceneSharedSvg() {
       <!-- 결론 한 줄 — 장비 쪽에 붙여야 '장비가 무력해진다' 로 읽힌다. -->
       <path class="hair" d="M 42 630 H 400" />
       <text x="42" y="658"
-            style="font-size:19px;fill:#E25749" font-weight="700">${t.emptyWarn}</text>`
+            style="font-size:19px;fill:${C.blockInk}" font-weight="700">${t.emptyWarn}</text>`
 
   return svgWrap({
     id: 'sh',

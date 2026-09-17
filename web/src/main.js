@@ -349,6 +349,17 @@ const TILE = {
   outro: 'scene--dark scene--dark-deep',
 }
 
+/* 제목은 줄마다 따로 떠오른다 — 애플이 헤드라인을 다루는 방식이다.
+   줄 나눔 위치는 strings.js 의 개행(\n)이 정하고, 여기서는 그 단위로만 감싼다. */
+const titleLines = (title) =>
+  glue(title)
+    .split('\n')
+    .map(
+      (line) =>
+        `<span class="scene__title-line"><span class="scene__title-inner">${line}</span></span>`,
+    )
+    .join('<br>')
+
 const sceneMarkup = (scene) => `
   <section class="scene${TILE[scene.id] ? ` ${TILE[scene.id]}` : ''}" id="${scene.id}" aria-labelledby="${scene.id}-title">
     <div class="scene__inner">
@@ -358,7 +369,7 @@ const sceneMarkup = (scene) => `
           <span class="scene__eyebrow-rule"></span>
           <span>${scene.label}</span>
         </p>
-        <h2 class="scene__title" id="${scene.id}-title">${glue(scene.title).replace(/\n/g, '<br>')}</h2>${
+        <h2 class="scene__title" id="${scene.id}-title">${titleLines(scene.title)}</h2>${
           scene.id === 'intro' ? headlinesMarkup() : ''
         }${
           scene.lead
@@ -537,26 +548,103 @@ function setupProgress() {
   })
 }
 
+/* ---------------------------------------------------------------- 모션
+
+   애플의 스크롤 연출은 세 가지뿐이다.  더 넣지 말 것 — 지면이 물러나야
+   도면이 말한다.
+
+   1. 올라오며 나타나기  : 28px 아래에서 부드럽게 올라오고, 형제끼리 조금씩 늦는다.
+   2. 제목은 줄 단위     : 헤드라인이 한 줄씩 차례로 선다.
+   3. 도면은 천천히 흐른다: 타일보다 느리게 움직여 '뒤에 놓인 것' 으로 읽힌다.
+
+   이징은 전부 power3.out — 애플의 cubic-bezier(.28,.11,.32,1) 에 가장 가깝고
+   GSAP 무료 범위 안에 있다. */
+
+const EASE = 'power3.out'
+
 /** 장면 진입 시 제목·캡션이 떠오르는 기본 트랜지션. */
 function setupReveals() {
   scenes.forEach((scene) => {
     const section = document.querySelector(`#${scene.id}`)
-    const targets = section.querySelectorAll(
-      '.scene__eyebrow, .scene__title, .scene__lead, .scene__stage, .scene__caption, .reveal, .scene__refs, .legend, .cases, .headlines, .summary, .scene__cta',
-    )
 
-    gsap.from(targets, {
-      y: 24,
-      opacity: 0,
-      duration: 0.7,
-      ease: 'power2.out',
-      stagger: 0.1,
-      scrollTrigger: {
-        trigger: section,
-        start: 'top 72%',
-        once: true,
+    // 1) 제목은 줄마다 차례로 선다.
+    const lines = section.querySelectorAll('.scene__title-inner')
+    if (lines.length) {
+      gsap.from(lines, {
+        yPercent: 100,
+        opacity: 0,
+        duration: 1,
+        ease: EASE,
+        stagger: 0.09,
+        scrollTrigger: { trigger: section, start: 'top 78%', once: true },
+      })
+    }
+
+    // 2) 나머지 덩어리는 아래에서 올라온다.
+    const targets = section.querySelectorAll(
+      '.scene__eyebrow, .scene__lead, .scene__caption, .reveal, .scene__refs, .legend, .cases, .headlines, .summary, .scene__cta',
+    )
+    if (targets.length) {
+      gsap.from(targets, {
+        y: 28,
+        opacity: 0,
+        duration: 0.9,
+        ease: EASE,
+        stagger: 0.08,
+        scrollTrigger: { trigger: section, start: 'top 72%', once: true },
+      })
+    }
+
+    // 3) 도면은 제품이다 — 살짝 작게 시작해 제자리로 앉는다.
+    const stage = section.querySelector('.scene__stage svg')
+    if (stage) {
+      gsap.from(stage, {
+        y: 36,
+        scale: 0.972,
+        opacity: 0,
+        transformOrigin: '50% 60%',
+        duration: 1.1,
+        ease: EASE,
+        scrollTrigger: { trigger: section, start: 'top 70%', once: true },
+      })
+    }
+  })
+}
+
+/** 도면이 타일보다 느리게 흐른다 — 얕은 시차. 과하면 도면 글씨가 흔들려 읽힌다. */
+function setupParallax() {
+  if (window.matchMedia('(max-width: 834px)').matches) return
+  scenes.forEach((scene) => {
+    const stage = document.querySelector(`#${scene.id} .scene__stage`)
+    if (!stage) return
+    gsap.fromTo(
+      stage,
+      { y: 22 },
+      {
+        y: -22,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: `#${scene.id}`,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 0.6,
+        },
       },
-    })
+    )
+  })
+}
+
+/** 카드뉴스 — 가로로 스크롤해 들어오는 카드가 차례로 선다. */
+function setupCardReveal() {
+  const cards = document.querySelectorAll('[data-hl-card]')
+  if (!cards.length) return
+  gsap.from(cards, {
+    y: 34,
+    opacity: 0,
+    duration: 0.85,
+    ease: EASE,
+    stagger: 0.07,
+    scrollTrigger: { trigger: '[data-hl-track]', start: 'top 85%', once: true },
   })
 }
 
@@ -706,5 +794,7 @@ setupMotionToggle()
    그대로가 곧 정지 상태다. */
 if (motionOn) {
   setupReveals()
+  setupCardReveal()
+  setupParallax()
   setupSceneAnims()
 }
