@@ -135,7 +135,9 @@ npm run dev            # http://localhost:5173
 - **표면**: 흰 캔버스 `#ffffff` · 파치먼트 `#f5f5f7` · 어두운 타일 `#272729`/`#252527`.
   장면은 가장자리까지 꽉 찬 **타일**이고 밝은 타일과 어두운 타일이 번갈아 온다.
   **색이 바뀌는 것 자체가 구분선이다** — 장면 사이에 선을 긋지 않는다.
-  톤 배정은 `main.js`의 `TILE` 상수. 어두운 타일은 두 장뿐이고 둘 다 내용이 요구한다:
+  톤 배정은 `scenes/_tone.js`의 `TILE` 하나뿐이다 — `main.js`(마크업)와
+  `tools/render-scenes.mjs`(미리보기)가 같이 읽으므로 한쪽만 고치면 어긋난다.
+  어두운 타일은 두 장뿐이고 둘 다 내용이 요구한다:
   06 활주로(국경 밖), 10 아웃트로(지표 아래).
 - **글자**: 잉크 `#1d1d1f`, 보조 `#333333`/`#7a7a7a`. 본문은 **17px**(16px 아님) / 굵기 400.
   굵기 사다리는 **300 / 400 / 600 / 700 — 500은 쓰지 않는다**. 제목은 600.
@@ -183,6 +185,13 @@ npm run dev            # http://localhost:5173
 잉크는 흰 바탕에서 4.5:1 을 넘긴다. 면 색을 그대로 글자에 쓰면 흰 판 위에서 대비가
 무너진다 — `node web/tools/check-contrast.mjs` 가 이것을 잡는다.
 
+**도면 색을 고쳤으면 반드시 눈으로 볼 것.** 좌표 검사도 대비 검사도 "바탕과 같아져
+사라진 것" 을 다 잡지는 못한다. 이 호스트에는 브라우저가 없으므로
+`node web/tools/render-scenes.mjs` 로 PNG 를 구워 확인한다 (장면 id 를 주면 그것만:
+`node web/tools/render-scenes.mjs runway outro`). 이 도구는 tokens.css 의 변수를 미리
+치환하고 `_tone.js` 의 바탕색을 깔아 화면과 같은 그림을 만든다.
+애니메이션은 나오지 않는다 — '동작 줄이기' 로 보는 정지 화면과 같다.
+
 - 도면 안의 판(판독 화면·배지·기록 카드)은 타일 색과 무관하게 언제나 밝다 —
   종이 한 장이 놓인 것으로 읽혀야 한다. 반드시 테두리(`C.panelLine` 또는 시맨틱 색)를 줄 것.
 - **도면 글자는 `--font-plate`(Noto Sans KR)로 고정**하고 자간을 `normal`로 되돌린다.
@@ -208,7 +217,11 @@ npm run dev            # http://localhost:5173
 
 ## 기술 스택·제약
 - Vite 7 + vanilla JS + 인라인 SVG. 프레임워크 없음.
-- 애니메이션: GSAP + ScrollTrigger + MotionPathPlugin (무료 공개 기능만). 의존성은 GSAP 하나뿐 — 추가 시 사유 먼저 제시.
+- 애니메이션: GSAP + ScrollTrigger + MotionPathPlugin (무료 공개 기능만). **번들에 들어가는 의존성은 GSAP 하나뿐** — 추가 시 사유 먼저 제시.
+- devDependency 는 둘: `vite`(빌드), `@resvg/resvg-js`(도면 미리보기).
+  후자는 이 호스트에 브라우저가 없어 도면을 눈으로 확인할 방법이 없기 때문에 들였다.
+  `tools/render-scenes.mjs` 만 쓰고 사이트 번들에는 들어가지 않는다.
+  프리빌트 바이너리라 `node:22-alpine`(musl)에서도 `npm ci` 로 그대로 깔린다 — 확인함.
 - three.js 등 3D 금지 — 2.5D 아이소메트릭 SVG.
 - 사이트에서 API 호출 없음(정적 번들). 실동작은 같은 호스트의 `/` 데모가 담당.
 - 성능: 60fps 목표. 무거운 필터/블러 남용 금지.
@@ -220,6 +233,7 @@ npm run dev            # http://localhost:5173
 ```bash
 node web/tools/check-physics.mjs      # 아이소메트릭 도면 물리 오류 검사 — 10장면 전부 ✓ 여야 함
 node web/tools/check-contrast.mjs     # 도면 색 대비 — 바탕과 같아져 사라진 것이 없는지
+node web/tools/render-scenes.mjs      # 도면을 PNG 로 구워 눈으로 확인 (web/tools/.out/)
 cd web && npm run build               # 빌드 통과 확인
 python web/tools/bench-latency.py     # 지연 실측 (표에 쓰는 숫자를 여기서 얻는다)
 node web/tools/capture-sources.mjs    # 카드뉴스 근거 화면 다시 찍기 (출처가 바뀌었을 때만)
@@ -268,6 +282,7 @@ AI-Security-Guardrail/
     vite.config.js            ← base = process.env.VITE_BASE || '/'
     tools/check-physics.mjs   ← 도면 물리 검사
     tools/check-contrast.mjs  ← 도면 색 대비 검사
+    tools/render-scenes.mjs   ← 도면을 PNG 로 구움 (브라우저 없는 호스트의 눈)
     tools/bench-latency.py    ← 지연 실측
     src/
       main.js                 ← 10개 장면 등록 + ScrollTrigger 초기화 + 내비·진행바
@@ -278,6 +293,7 @@ AI-Security-Guardrail/
       styles/plate.css        ← 도면 SVG 안쪽 (값 변경 금지)
       scenes/_svg.js          ← svgWrap() 등 공용 헬퍼 (SVG는 반드시 여기 경유)
       scenes/_palette.js      ← SVG 어트리뷰트로 칠하는 색 (var() 를 못 쓰는 자리)
+      scenes/_tone.js         ← 장면별 타일 톤 (main.js·render-scenes 가 같이 읽음)
       scenes/_iso.js          ← 아이소메트릭 투영 유틸
       scenes/_places.js       ← 반복 사물(가방·사람·설비) 빌더
       scenes/scene-*.js       ← 장면별 SVG 빌더 + 애니메이션

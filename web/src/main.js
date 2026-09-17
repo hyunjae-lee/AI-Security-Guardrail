@@ -38,6 +38,7 @@ import { sceneArrivalsAnim, sceneArrivalsSvg } from './scenes/scene-arrivals.js'
 import { sceneRecordsAnim, sceneRecordsSvg } from './scenes/scene-records.js'
 import { sceneSharedAnim, sceneSharedSvg } from './scenes/scene-shared.js'
 import { sceneOutroAnim, sceneOutroSvg } from './scenes/scene-outro.js'
+import { TILE } from './scenes/_tone.js'
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin)
 
@@ -330,35 +331,6 @@ const headlinesMarkup = () => `
         </ol>
         <p class="headlines__closing">${glue(headlines.closing)}</p>
       </aside>`
-
-/* 타일 톤 — 밝은 타일과 어두운 타일이 번갈아 오고, 색이 바뀌는 것 자체가
-   장면 사이의 구분선이 된다 (테두리를 긋지 않는 이유).
-   어두운 타일은 두 장뿐이고 둘 다 내용이 그것을 요구한다:
-   활주로(06)는 국경 밖이라 우리 관제가 닿지 않고, 아웃트로(10)는 터미널이
-   지표 아래로 내려가며 끝난다. */
-const TILE = {
-  intro: '',
-  why: 'scene--parchment',
-  basis: '',
-  overview: 'scene--parchment',
-  departures: '',
-  runway: 'scene--dark',
-  arrivals: 'scene--parchment',
-  records: '',
-  shared: 'scene--parchment',
-  outro: 'scene--dark scene--dark-deep',
-}
-
-/* 제목은 줄마다 따로 떠오른다 — 애플이 헤드라인을 다루는 방식이다.
-   줄 나눔 위치는 strings.js 의 개행(\n)이 정하고, 여기서는 그 단위로만 감싼다. */
-const titleLines = (title) =>
-  glue(title)
-    .split('\n')
-    .map(
-      (line) =>
-        `<span class="scene__title-line"><span class="scene__title-inner">${line}</span></span>`,
-    )
-    .join('<br>')
 
 const sceneMarkup = (scene) => `
   <section class="scene${TILE[scene.id] ? ` ${TILE[scene.id]}` : ''}" id="${scene.id}" aria-labelledby="${scene.id}-title">

@@ -13,6 +13,7 @@
     "gsap": "^3.13.0"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "vite": "^7.1.7"
   }
 }
