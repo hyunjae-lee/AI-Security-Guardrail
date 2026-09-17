@@ -332,6 +332,18 @@ const headlinesMarkup = () => `
         <p class="headlines__closing">${glue(headlines.closing)}</p>
       </aside>`
 
+/* 제목은 줄마다 따로 떠오른다 — 애플이 헤드라인을 다루는 방식이다.
+   줄 나눔 위치는 strings.js 의 개행(\n)이 정하고, 여기서는 그 단위로만 감싼다.
+   바깥 span 이 창(overflow:hidden), 안쪽 span 이 움직이는 글자다. */
+const titleLines = (title) =>
+  glue(title)
+    .split('\n')
+    .map(
+      (line) =>
+        `<span class="scene__title-line"><span class="scene__title-inner">${line}</span></span>`,
+    )
+    .join('<br>')
+
 /* 장면 화면 — 발표용이라 화면에 남기는 것은 셋뿐이다.
    제목 · 한 줄 · 그림.  나머지 설명(리드 문단, 「실제로는」 패널, 근거 카드,
    지연 표, 판정 사례, 대조표, 정리)은 전부 「자세히」 팝업으로 들어간다.
