@@ -1882,6 +1882,13 @@ details[open] > .reveal__summary::after {
   background: var(--a-canvas);
   color: var(--a-ink);
   overflow: hidden;
+}
+
+/* display 는 반드시 [open] 안에 둔다.
+   <dialog> 가 닫혀 있을 때의 `display:none` 은 브라우저 기본 스타일이라,
+   여기서 그냥 `display:flex` 를 쓰면 저자 스타일이 그것을 이겨 **닫아도 계속
+   보인다**.  닫기 버튼이 안 먹는 것처럼 보이던 원인이 이것이었다. */
+.deck[open] {
   display: flex;
   flex-direction: column;
 }
