@@ -39,6 +39,9 @@ class Settings:
     # Optional third-party guardrail engines (see app/guardrail/adapters).
     use_presidio: bool = _env_bool("GUARDRAIL_USE_PRESIDIO", False)
     use_nemo: bool = _env_bool("GUARDRAIL_USE_NEMO", False)
+    # ONNX 프롬프트 인젝션 분류기. 공개 모델이 대부분 영어 기준이라
+    # 한국어 성능을 scripts/eval.py 로 재고 판단한 뒤에만 켠다.
+    use_pi_model: bool = _env_bool("GUARDRAIL_USE_PI_MODEL", False)
     static_dir: Path = BASE_DIR / "static"
     # Built Vite bundle for the "디지털 국경" explainer, served under /explain.
     explain_dir: Path = PROJECT_ROOT / "web" / "dist"

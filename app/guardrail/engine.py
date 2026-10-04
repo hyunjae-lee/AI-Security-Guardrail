@@ -258,7 +258,7 @@ class PipelineResult:
 
 
 def build_input_detectors(
-    *, use_presidio: bool = False, use_nemo: bool = False
+    *, use_presidio: bool = False, use_nemo: bool = False, use_pi_model: bool = False
 ) -> list[BaseDetector]:
     # Normalizer runs first so every later detector sees the decoded form.
     detectors: list[BaseDetector] = [
@@ -276,6 +276,14 @@ def build_input_detectors(
             detectors.append(PresidioPIIDetector())
 
     detectors.append(InjectionDetector())
+
+    # 규칙 탐지기 바로 뒤에 ML 분류기를 둔다 — 대체가 아니라 보강이다.
+    # 켜기 전에 반드시 scripts/eval.py 로 켠/끈 값을 비교할 것.
+    if use_pi_model:
+        from .adapters import TransformerInjectionDetector, pi_model_available
+
+        if pi_model_available():
+            detectors.append(TransformerInjectionDetector())
 
     # Optional NeMo Guardrails input rails.
     if use_nemo:
@@ -312,13 +320,16 @@ class GuardrailEngine:
         *,
         use_presidio: bool = False,
         use_nemo: bool = False,
+        use_pi_model: bool = False,
         scoring: str = "worst_decay",
         clearance: str = "student",
     ) -> None:
         self.profile = profile if isinstance(profile, PolicyProfile) else PROFILES[profile]
         self.scoring = scoring if scoring in {"worst_decay", "sum"} else "worst_decay"
         self.clearance = clearance
-        self._input = build_input_detectors(use_presidio=use_presidio, use_nemo=use_nemo)
+        self._input = build_input_detectors(
+            use_presidio=use_presidio, use_nemo=use_nemo, use_pi_model=use_pi_model
+        )
         self._output = build_output_detectors()
 
     # -- introspection used by the UI to draw the pipeline before running it --
