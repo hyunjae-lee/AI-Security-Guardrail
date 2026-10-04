@@ -17,7 +17,9 @@ const C = {
   line: '#3d4250', plate: '#1c1f27', ground2: '#14161c',
 };
 
-const VB = [0, 30, 1480, 600];
+// 그림의 실제 가장자리에 맞춘 틀.  넉넉하게 잡으면 그만큼 그림이 작아진다 —
+// preserveAspectRatio 가 빈 여백까지 포함해 축소하기 때문이다.
+const VB = [10, 44, 1462, 564];
 
 /** 제품명·판본을 함께 적는 상자. 가장 아래 줄이 「무슨 기술인가」다. */
 function box(x, y, w, h, title, sub, tech, accent, filled = false) {

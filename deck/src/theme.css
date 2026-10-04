@@ -354,7 +354,27 @@
 .tbl--cmp .big { color: var(--red); }
 
 /* ── 구조 흐름도 ─────────────────────────────────────────── */
+
+/* 도면 슬라이드는 **그림이 주인공**이다.
+ *
+ * 기본 .wrap 의 위아래 여백(4.2rem + 3.2rem)과 1.5rem 간격을 그대로 두면
+ * 그림이 쓸 수 있는 높이가 310px 밖에 안 된다.  SVG 는 가로:세로 2.5:1 이라
+ * **높이에 걸려** 가로 폭을 절반밖에 못 쓴다 — 강당에서 글자가 안 읽힌다.
+ * 글 여백을 줄여 그림에 넘기고, 설명 줄은 화면 바닥 가까이로 내린다.
+ */
+.wrap--stage {
+  padding: 2.4rem 3.4rem 1.2rem;
+  gap: 0.8rem;
+}
+/* 섹션은 기본값이 내용 높이다 — 그래서 설명 줄 아래가 비어 보였다.
+   도면 슬라이드만 화면 높이를 꽉 채워, 설명이 바닥에 붙게 한다. */
+.reveal .slides > section:has(> .wrap--stage) { height: 100%; }
+/* 그림은 글보다 넓게 — 제목·설명의 왼쪽 선은 다른 슬라이드와 맞춰 두고,
+   도면만 여백 밖으로 내보낸다. 이 그림은 폭에 걸려 있어서 폭이 곧 크기다. */
+.wrap--stage .arch-stage { margin-inline: -1.5rem; }
+
 .arch-title { font-size: 1.5em; }
+.wrap--stage .arch-title { margin: 0; line-height: 1.12; }
 .arch-stage {
   flex: 1;
   min-height: 0;
@@ -367,7 +387,7 @@
 .arch-stage svg { width: 100%; height: 100%; max-height: 100%; }
 .arch-caption {
   flex: 0 0 auto;
-  min-height: 3.1em;
+  min-height: 2.9em;
   font-size: 0.85em;
   line-height: 1.5;
   color: var(--ink2);
@@ -376,7 +396,14 @@
   font-weight: 300;
 }
 .arch-caption b { color: var(--ink); font-weight: 700; }
-/* 확대 단계를 넘기는 fragment 는 보이지 않는다 — 방향키 횟수만 센다 */
+/* 확대 단계를 넘기는 fragment 는 보이지 않는다 — 방향키 횟수만 센다.
+ *
+ * **반드시 display:none 이어야 한다.** reveal 기본값은 opacity:0 + visibility:hidden
+ * 이라 자리를 그대로 차지한다.  stack 슬라이드가 이 목록에서 빠져 있었고, 빈 칸
+ * 일곱 개가 flex gap 과 함께 **182px** 를 먹어 그림이 그만큼 작았다.
+ * 그래서 이름을 하나씩 적는 대신 **도면 슬라이드 전체**를 걸어 둔다 —
+ * 단계를 가진 슬라이드를 새로 만들어도 같은 일이 반복되지 않는다. */
+.wrap--stage .fragment,
 .fragment[data-arch],
 .fragment[data-user],
 .fragment[data-paths] { display: none; }
