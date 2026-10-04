@@ -51,8 +51,13 @@ LOW 여러 개가 CRITICAL 하나를 넘지 못합니다.
 `docker-compose.full.yml`** 로 빌드하면 두 엔진이 실제로 탑재·실행됩니다 (기본 이미지는 CI
 속도를 위해 미포함, 라이브러리 부재 시 내장 탐지기로 자동 폴백).
 
-- **Microsoft Presidio** (`GUARDRAIL_USE_PRESIDIO=1`): spaCy NER 기반으로 영문 이름·주소·기관 등
-  정규식이 못 잡는 PII를 추가 탐지. full 이미지에서 **오프라인으로 완전 동작** (상태: 활성).
+- **Microsoft Presidio** (`GUARDRAIL_USE_PRESIDIO=1`): 정규식이 못 잡는 **이름·주소**를 NER로 추가 탐지.
+  **한국어는 KoELECTRA NER를 Presidio 인식기로 등록해 `mecab` 없이 동작**합니다
+  (spaCy 한국어 파이프라인이 mecab-ko 시스템 패키지를 요구하는 문제를 우회).
+  글자 체계를 보고 en/ko를 **갈라 보냅니다** — 영어 NER에 한국어를 넣으면 아무 데서나
+  PERSON을 뱉기 때문입니다. 배포는 ONNX(56MB, torch 불필요):
+  `python3 scripts/export_ko_ner_onnx.py` → `GUARDRAIL_KO_NER_ONNX_DIR`.
+  실측 효과는 아래 「탐지 성능」 참고.
 - **NVIDIA NeMo Guardrails** (`GUARDRAIL_USE_NEMO=1`): 입력 레일(주제 제어·탈옥 자가검사).
   self-check 레일이 LLM을 호출하므로 `ANTHROPIC_API_KEY` 설정 시 완전 활성화 (미설정 시
   "탑재됨(LLM 키 필요)" 상태로 안전하게 비동작).
@@ -107,8 +112,28 @@ docker run --rm -v "$PWD":/w -w /w python:3.12-slim \
   bash -c "pip install -q -r requirements-dev.txt && pytest -q"
 ```
 
-69개 테스트(탐지기 단위 + 엔진 정책 + API + 라벨링된 공격 코퍼스 평가)를 포함합니다.
-공격 샘플은 `attacks/samples.json`에 있으며 데모 프리셋과 평가 테스트에 함께 쓰입니다.
+88개 테스트(탐지기 단위 + 엔진 정책 + API + 샘플 회귀)를 포함합니다.
+`attacks/samples.json`(22건)은 **데모 프리셋이자 회귀 테스트**입니다 — 룰을 그 샘플을
+보며 썼으므로 거기서 나온 숫자는 성능이 아닙니다.
+
+## 탐지 성능 (실측)
+
+성능은 **별도 라벨 코퍼스** `attacks/corpus/`(205건: 정상 128 / 공격 77)로 잽니다.
+재현: `python3 scripts/eval.py` (의존성 없음).
+
+| 지표 | 규칙만 | + 한국어 NER |
+|---|---|---|
+| 공격 미탐 | 7/77 (9.1%) | **0/77 (0%)** |
+| 하드 오탐 (정상인데 차단) | **0/128** | **0/128** |
+| 소프트 오탐 (정상인데 치환) | 1/128 (0.8%) | 5/128 (3.9%) |
+| 질의 검사 지연 (중앙값) | 0.20 ms | 4.09 ms |
+
+공격 탐지율만 보지 않고 **멀쩡한 질의를 막지 않는가**를 같은 비중으로 잽니다.
+코퍼스의 `benign.trigger` 35건은 「무시」·「시스템 프롬프트」·「DAN」 같은 트리거어가
+정상 문맥에 든 것들로, 오탐 측정을 위해 일부러 넣었습니다.
+
+측정으로 드러나 고친 것과 **재 보고 넣지 않기로 한 것**(ML 인젝션 분류기)은
+`attacks/corpus/results/`와 `docs/standards-mapping.md`에 기록돼 있습니다.
 
 ## CI/CD
 
