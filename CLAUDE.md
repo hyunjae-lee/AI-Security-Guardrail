@@ -302,7 +302,7 @@ cd web/src/assets/captures && for f in *.png; do
 | 실행 | `cd deck && npm install && npm run dev` → http://127.0.0.1:5174 |
 | 빌드 | `npm run build` (하위 경로 배포 시 `VITE_BASE=/deck/ npm run build`) |
 | 의존성 | `reveal.js`(72.4k★ MIT) + `gsap`(이미 web/ 에서 쓰는 것) 둘뿐 |
-| 구성 | 19장 · `index.html`(카피 원본) · `src/theme.css` · `src/main.js`(도식+연출) |
+| 구성 | 24장 · `index.html`(카피 원본) · `src/theme.css` · `src/main.js`(도식+연출) |
 | 조작 | 방향키 이동 · `S` 발표자 노트 · `?print-pdf` 로 PDF 내보내기 · `O` 개요 |
 | 검사 | `node deck/tools/check-contrast.mjs` — 글자 대비 **7:1** (강당 기준) |
 

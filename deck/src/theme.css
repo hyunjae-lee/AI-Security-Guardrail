@@ -353,7 +353,8 @@
 .arch-caption b { color: var(--ink); font-weight: 700; }
 /* 확대 단계를 넘기는 fragment 는 보이지 않는다 — 방향키 횟수만 센다 */
 .fragment[data-arch],
-.fragment[data-user] { display: none; }
+.fragment[data-user],
+.fragment[data-paths] { display: none; }
 
 /* ── 전체 애니메이션 ─────────────────────────────────────── */
 /* 카드·표 행이 차례로 올라오게 한다. 투명도 하한은 지킨다 — 트윈이 멈춰도

@@ -11,6 +11,7 @@ import './theme.css';
 import { gsap } from 'gsap';
 import { ARCH_STEPS, buildArchitecture, makeArchController } from './arch.js';
 import { USER_STEPS, buildUserScenario, makeUserController } from './scenario-user.js';
+import { PATH_CAPTIONS, PATH_STEPS, buildPaths, makePathController } from './paths.js';
 
 const C = {
   amber: '#f5b355',
@@ -711,6 +712,22 @@ const USER_CAPTIONS = [
   '<b>사용자가 의식한 것은 주소가 바뀐 것 하나뿐입니다.</b> 좋은 검사대는 줄을 세우지 않습니다.',
 ];
 
+/* ── 세 갈래 — 같은 방식으로 방향키가 줄을 하나씩 밝힌다 ── */
+const pathHost = document.getElementById('paths-stage');
+let pathGoto = null;
+if (pathHost) {
+  pathGoto = makePathController(buildPaths(pathHost), reduced);
+}
+
+function pathStep(slide) {
+  if (!pathGoto || !slide || slide.id !== 'slide-paths') return;
+  const shown = slide.querySelectorAll('.fragment[data-paths].visible').length;
+  const i = Math.min(shown, PATH_STEPS - 1);
+  pathGoto(i);
+  const cap = document.getElementById('paths-caption');
+  if (cap) cap.innerHTML = PATH_CAPTIONS[i];
+}
+
 function userStep(slide) {
   if (!userGoto || !slide || slide.id !== 'slide-user') return;
   const shown = slide.querySelectorAll('.fragment[data-user].visible').length;
@@ -724,19 +741,23 @@ deck.on('fragmentshown', (e) => {
   const sec = e.fragment.closest('section');
   archStep(sec);
   userStep(sec);
+  pathStep(sec);
 });
 deck.on('fragmenthidden', (e) => {
   const sec = e.fragment.closest('section');
   archStep(sec);
   userStep(sec);
+  pathStep(sec);
 });
 deck.on('slidechanged', (e) => {
   archStep(e.currentSlide);
   userStep(e.currentSlide);
+  pathStep(e.currentSlide);
 });
 deck.on('ready', (e) => {
   archStep(e.currentSlide);
   userStep(e.currentSlide);
+  pathStep(e.currentSlide);
   spinGlobes();
 });
 
