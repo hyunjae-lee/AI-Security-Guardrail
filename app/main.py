@@ -33,15 +33,22 @@ from .guardrail.rag import CLEARANCE_LABELS, KNOWLEDGE_BASE
 from .guardrail.rag import retrieve as rag_retrieve
 from .llm import available_backends, get_backend
 from .models import AnalyzeRequest, InspectRequest
+from .quota import QuotaKeeper
 
 logger = logging.getLogger("guardrail")
 
 audit = AuditLog(settings.db_path, enabled=settings.audit_enabled)
+quota = QuotaKeeper()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info("guardrail starting on %s:%s", settings.host, settings.port)
+    # 보존 기간이 지난 감사 행을 기동할 때 한 번 치운다.  가지고 있지 않은 것은
+    # 유출될 수 없다 — 보관 기간은 짧을수록 좋다.
+    purged = audit.purge_expired()
+    if purged:
+        logger.info("감사 로그 %d행을 보존 기간 경과로 삭제했습니다", purged)
     yield
     audit.close()
 
@@ -488,6 +495,23 @@ async def inspect(req: InspectRequest) -> dict[str, Any]:
 @app.get("/api/audit")
 async def get_audit(limit: int = 50) -> dict[str, Any]:
     return {"entries": audit.recent(min(max(limit, 1), 200))}
+
+
+@app.get("/api/ops")
+async def get_ops() -> dict[str, Any]:
+    """운영 지표 — 모니터링이 붙는 자리.
+
+    판정 분포가 급변하면 룰이 망가졌다는 신호다. 예를 들어 차단율이 평소의
+    몇 배로 뛰면 오탐이 터진 것이고, 그때는 업무가 멈춘다.
+    """
+    return {
+        "audit": audit.stats_for_ops(),
+        "quota": {
+            "rate_per_min": quota.rate_per_min,
+            "daily_limit": quota.daily_limit,
+            "active_users_today": len(quota.snapshot()),
+        },
+    }
 
 
 @app.get("/api/stats")

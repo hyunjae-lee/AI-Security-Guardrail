@@ -1,0 +1,67 @@
+# 전교 운영 구성 — 2노드 + 로드밸런서.
+#
+# docker-compose.full.yml 이 단일 컨테이너(데모·파일럿)라면 이쪽은 운영이다.
+# 2노드로 가는 이유는 성능이 아니라 **가용성**이다. docs/deployment-sizing.md 의
+# 산정대로 적극 시나리오(14,000명 × 40질의/일)에서도 프로세스 하나로 처리되지만,
+# 한 대가 죽었을 때 질의가 검사 없이 나가면 안 된다.
+#
+#   docker compose -f docker-compose.ha.yml up -d --build
+
+x-guardrail: &guardrail
+  build:
+    context: .
+    dockerfile: Dockerfile.full
+  image: ai-security-guardrail:full
+  restart: unless-stopped
+  environment:
+    GUARDRAIL_PROFILE: ${GUARDRAIL_PROFILE:-balanced}
+    GUARDRAIL_BACKEND: ${GUARDRAIL_BACKEND:-claude}
+    # 운영에서는 연출 지연을 끈다. 데모에서 판정 과정을 보여 주려던 인위적 대기다.
+    GUARDRAIL_STAGE_DELAY: "0"
+    GUARDRAIL_USE_PRESIDIO: "1"
+    GUARDRAIL_PRESIDIO_LANGS: "en,ko"
+    GUARDRAIL_KO_NER_ONNX_DIR: /app/models/ko-ner-onnx
+    # 원문 미저장이 기본값이다. 운영에서 절대 켜지 않는다.
+    GUARDRAIL_AUDIT_PREVIEW: "0"
+    # 재시작을 넘겨 같은 질의를 상관 분석하려면 소금을 고정한다.
+    GUARDRAIL_AUDIT_SALT: ${GUARDRAIL_AUDIT_SALT:?운영에서는 반드시 지정한다}
+    GUARDRAIL_AUDIT_RETENTION_DAYS: ${GUARDRAIL_AUDIT_RETENTION_DAYS:-365}
+    GUARDRAIL_RATE_PER_MIN: ${GUARDRAIL_RATE_PER_MIN:-20}
+    GUARDRAIL_DAILY_LIMIT: ${GUARDRAIL_DAILY_LIMIT:-500}
+    ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  # 산정 근거: 워커당 약 1 GB(실측), 워커 4 + 여유.
+  deploy:
+    resources:
+      limits: { cpus: "4", memory: 8G }
+  healthcheck:
+    test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8088/healthz').status==200 else 1)"]
+    interval: 15s
+    timeout: 3s
+    retries: 3
+    start_period: 40s
+
+services:
+  guardrail-a:
+    <<: *guardrail
+    container_name: guardrail-a
+    volumes: [guardrail-data-a:/app/data]
+
+  guardrail-b:
+    <<: *guardrail
+    container_name: guardrail-b
+    volumes: [guardrail-data-b:/app/data]
+
+  lb:
+    image: caddy:2-alpine
+    container_name: guardrail-lb
+    restart: unless-stopped
+    ports: ["8088:8088"]
+    volumes:
+      - ./deploy/Caddyfile.ha:/etc/caddy/Caddyfile:ro
+    depends_on:
+      guardrail-a: { condition: service_healthy }
+      guardrail-b: { condition: service_healthy }
+
+volumes:
+  guardrail-data-a:
+  guardrail-data-b:

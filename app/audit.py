@@ -32,7 +32,7 @@ import os
 import secrets as _secrets
 import sqlite3
 import threading
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -47,6 +47,12 @@ STORE_PREVIEW = os.environ.get("GUARDRAIL_AUDIT_PREVIEW", "").strip().lower() in
 _SALT = os.environ.get("GUARDRAIL_AUDIT_SALT") or _secrets.token_hex(16)
 
 _REDACTED = "[원문 미저장]"
+
+#: 감사 로그 보존 일수. 0 이면 지우지 않는다.
+#: 적극 시나리오에서 하루 207 MB 가 쌓이므로(docs/deployment-sizing.md), 보존 정책이
+#: 없으면 3년에 226 GB 가 된다.  N2SF 도 정보흐름 로그를 "일정 기간" 보관하라고
+#: 할 뿐 영구 보관을 요구하지 않는다.
+RETENTION_DAYS = int(os.environ.get("GUARDRAIL_AUDIT_RETENTION_DAYS", "365"))
 
 
 def digest(prompt: str) -> str:
@@ -121,6 +127,48 @@ class AuditLog:
                 "ALTER TABLE requests ADD COLUMN prompt_digest TEXT NOT NULL DEFAULT ''"
             )
         self._conn.commit()
+
+    def purge_expired(self, now: datetime | None = None) -> int:
+        """보존 기간이 지난 행을 지운다. 지운 건수를 돌려준다.
+
+        쌓이는 것을 막는 것이 목적이지만, 더 중요한 것은 **가지고 있지 않은 것은
+        유출될 수 없다**는 점이다. 보관 기간은 짧을수록 좋다.
+        """
+        if not self.enabled or self._conn is None or RETENTION_DAYS <= 0:
+            return 0
+        now = now or datetime.now(UTC)
+        cutoff = (now - timedelta(days=RETENTION_DAYS)).isoformat(timespec="seconds")
+        with self._lock:
+            cur = self._conn.execute(
+                "DELETE FROM requests WHERE created_at < ?", (cutoff,)
+            )
+            self._conn.commit()
+            return cur.rowcount or 0
+
+    def stats_for_ops(self) -> dict[str, Any]:
+        """운영 지표 — 판정 분포가 급변하면 룰이 망가진 것이다."""
+        if not self.enabled or self._conn is None:
+            return {"enabled": False}
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT final_action, COUNT(*) FROM requests "
+                "WHERE created_at >= ? GROUP BY final_action",
+                ((datetime.now(UTC) - timedelta(days=1)).isoformat(timespec="seconds"),),
+            ).fetchall()
+            total = self._conn.execute("SELECT COUNT(*) FROM requests").fetchone()[0]
+        by_action = {r[0]: r[1] for r in rows}
+        day_total = sum(by_action.values())
+        return {
+            "enabled": True,
+            "rows_total": total,
+            "last_24h": by_action,
+            "last_24h_total": day_total,
+            "block_rate_24h": round(by_action.get("block", 0) / day_total, 4)
+            if day_total
+            else 0.0,
+            "retention_days": RETENTION_DAYS,
+            "stores_raw_prompt": STORE_PREVIEW,
+        }
 
     def record(self, entry: dict[str, Any]) -> None:
         if not self.enabled or self._conn is None:
