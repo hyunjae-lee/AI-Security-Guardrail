@@ -13,14 +13,14 @@ import { ARCH_STEPS, buildArchitecture, makeArchController } from './arch.js';
 import { USER_STEPS, buildUserScenario, makeUserController } from './scenario-user.js';
 
 const C = {
-  amber: '#f0a63a',
-  teal: '#43bc9c',
-  red: '#e25749',
-  green: '#7fbf57',
+  amber: '#f5b355',
+  teal: '#5fcfb0',
+  red: '#f27a6d',
+  green: '#95cf70',
   ink: '#f4f3ef',
-  ink2: '#a8a9b0',
-  ink3: '#70737d',
-  line: '#2e323d',
+  ink2: '#c7c8ce',
+  ink3: '#9b9da6',
+  line: '#3d4250',
   plate: '#1c1f27',
   ground2: '#14161c',
 };
@@ -325,6 +325,46 @@ function animate(slide) {
       { x: 0, duration: 0.5, delay: 0.3, ease: 'power3.out', clearProps: 'transform' },
     );
   }
+
+  // 아이브로우는 왼쪽에서 밀려 들어온다 — 장면이 바뀌었다는 신호를 가장 먼저 준다.
+  const kicker = slide.querySelector('.kicker');
+  if (kicker) {
+    gsap.fromTo(
+      kicker,
+      { x: -16, letterSpacing: '0.34em' },
+      { x: 0, letterSpacing: '0.17em', duration: 0.6, ease: 'power3.out',
+        clearProps: 'transform,letterSpacing' },
+    );
+  }
+
+  // 제목은 가려진 창에서 쓸어 올리듯 나타난다 (web/ 의 '제목은 줄 단위' 와 같은 취지).
+  const head = slide.querySelector('h1, h2');
+  if (head) {
+    gsap.fromTo(
+      head,
+      { clipPath: 'inset(0 0 100% 0)', y: 16 },
+      { clipPath: 'inset(0 0 -10% 0)', y: 0, duration: 0.72,
+        ease: 'power3.out', clearProps: 'clipPath,transform' },
+    );
+  }
+
+  // 도면 안의 선은 그려지듯 들어온다. 길이를 몰라도 되도록 getTotalLength 로 잰다.
+  slide.querySelectorAll('.stage svg path[marker-end], .arch-stage svg path[marker-end]')
+    .forEach((path, i) => {
+      let len = 0;
+      try {
+        len = path.getTotalLength();
+      } catch {
+        return;
+      }
+      if (!len) return;
+      gsap.fromTo(
+        path,
+        { strokeDasharray: len, strokeDashoffset: len },
+        { strokeDashoffset: 0, duration: 0.7, delay: 0.35 + i * 0.09,
+          ease: 'power2.out', clearProps: 'strokeDasharray,strokeDashoffset' },
+      );
+    });
 
   // Beyond 칸은 해당하는 둘만 켜진다.
   const hits = slide.querySelectorAll('.b-item--hit');
@@ -697,7 +737,26 @@ deck.on('slidechanged', (e) => {
 deck.on('ready', (e) => {
   archStep(e.currentSlide);
   userStep(e.currentSlide);
+  spinGlobes();
 });
+
+/** 지구본의 세로 타원만 천천히 돌려 자전처럼 보이게 한다.
+ *  전체를 돌리면 가로선까지 기울어져 어지럽다. */
+function spinGlobes() {
+  if (reduced) return;
+  document.querySelectorAll('svg ellipse[rx][ry]').forEach((el) => {
+    const rx = parseFloat(el.getAttribute('rx'));
+    const ry = parseFloat(el.getAttribute('ry'));
+    if (!(rx < ry)) return; // 세로로 긴 타원만
+    gsap.to(el, {
+      attr: { rx: rx * 0.12 },
+      duration: 3.6,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+    });
+  });
+}
 
 // initialize() 는 **모든 on() 등록이 끝난 뒤**에 불러야 한다.
 // 먼저 부르면 'ready' 가 등록 전에 지나가 버려서, 그 슬라이드로 바로 들어왔을 때

@@ -14,9 +14,9 @@
 import { gsap } from 'gsap';
 
 const C = {
-  amber: '#f0a63a', teal: '#43bc9c', red: '#e25749', green: '#7fbf57',
-  ink: '#f4f3ef', ink2: '#a8a9b0', ink3: '#70737d',
-  line: '#2e323d', plate: '#1c1f27', ground2: '#14161c',
+  amber: '#f5b355', teal: '#5fcfb0', red: '#f27a6d', green: '#95cf70',
+  ink: '#f4f3ef', ink2: '#c7c8ce', ink3: '#9b9da6',
+  line: '#3d4250', plate: '#1c1f27', ground2: '#14161c',
 };
 
 /** 입력 파이프라인 — 왼쪽에서 오른쪽으로 순서대로 거친다. */
@@ -51,11 +51,11 @@ function stageBox(x, y, w, h, [title, sub, kind], idx) {
             fill="${isML ? 'rgba(240,166,58,.10)' : C.plate}"
             stroke="${accent}" stroke-width="${isML ? 2 : 1.3}"/>
       <text x="${x + w / 2}" y="${y + 26}" text-anchor="middle"
-            font-size="15" font-weight="700" fill="${accent}">${title}</text>
+            font-size="16.5" font-weight="700" fill="${accent}">${title}</text>
       ${lines.map((l, i) => `<text x="${x + w / 2}" y="${y + 50 + i * 17}" text-anchor="middle"
-            font-size="12" fill="${C.ink2}">${l}</text>`).join('')}
+            font-size="13.5" fill="${C.ink2}">${l}</text>`).join('')}
       ${isML ? `<text x="${x + w / 2}" y="${y + h - 10}" text-anchor="middle"
-            font-size="10" font-weight="700" fill="${C.amber}">ONNX 56MB · 3ms</text>` : ''}
+            font-size="11.5" font-weight="700" fill="${C.amber}">ONNX 56MB · 3ms</text>` : ''}
     </g>`;
 }
 
@@ -66,9 +66,9 @@ function outBox(x, y, w, h, [title, sub], idx) {
       <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10"
             fill="${C.plate}" stroke="${C.green}" stroke-width="1.3"/>
       <text x="${x + w / 2}" y="${y + 24}" text-anchor="middle"
-            font-size="14" font-weight="700" fill="${C.green}">${title}</text>
+            font-size="15.5" font-weight="700" fill="${C.green}">${title}</text>
       ${lines.map((l, i) => `<text x="${x + w / 2}" y="${y + 46 + i * 16}" text-anchor="middle"
-            font-size="11.5" fill="${C.ink2}">${l}</text>`).join('')}
+            font-size="13" fill="${C.ink2}">${l}</text>`).join('')}
     </g>`;
 }
 
@@ -87,40 +87,40 @@ export function buildArchitecture(host) {
     <g id="z-campus">
       <rect x="40" y="96" width="196" height="178" rx="14"
             fill="${C.ground2}" stroke="${C.line}" stroke-width="1.4"/>
-      <text x="138" y="124" text-anchor="middle" font-size="14" font-weight="700" fill="${C.ink2}">캠퍼스</text>
+      <text x="138" y="124" text-anchor="middle" font-size="15.5" font-weight="700" fill="${C.ink2}">캠퍼스</text>
       ${person(90, 180, 1.5, C.amber)}${person(138, 180, 1.5, C.amber)}${person(186, 180, 1.5, C.amber)}
-      <text x="138" y="232" text-anchor="middle" font-size="11.5" fill="${C.ink3}">구성원 14,000명</text>
-      <text x="138" y="250" text-anchor="middle" font-size="11.5" fill="${C.ink3}">학생 · 교직원 · 연구원</text>
+      <text x="138" y="232" text-anchor="middle" font-size="13" fill="${C.ink3}">구성원 14,000명</text>
+      <text x="138" y="250" text-anchor="middle" font-size="13" fill="${C.ink3}">학생 · 교직원 · 연구원</text>
     </g>
 
     <!-- 포털 / 프록시 -->
     <g id="z-portal">
       <rect x="264" y="96" width="160" height="178" rx="14"
             fill="${C.plate}" stroke="${C.teal}" stroke-width="1.6"/>
-      <text x="344" y="124" text-anchor="middle" font-size="14" font-weight="700" fill="${C.teal}">교내 AI 포털</text>
+      <text x="344" y="124" text-anchor="middle" font-size="15.5" font-weight="700" fill="${C.teal}">교내 AI 포털</text>
       <line x1="284" y1="138" x2="404" y2="138" stroke="${C.line}"/>
-      <text x="344" y="160" text-anchor="middle" font-size="11.5" fill="${C.ink2}">사람 → 웹 채팅</text>
-      <text x="344" y="182" text-anchor="middle" font-size="11.5" fill="${C.ink2}">앱 → OpenAI 호환 API</text>
+      <text x="344" y="160" text-anchor="middle" font-size="13" fill="${C.ink2}">사람 → 웹 채팅</text>
+      <text x="344" y="182" text-anchor="middle" font-size="13" fill="${C.ink2}">앱 → OpenAI 호환 API</text>
       <rect x="284" y="198" width="120" height="30" rx="7"
             fill="rgba(67,188,156,.12)" stroke="${C.teal}" stroke-width="1"/>
-      <text x="344" y="218" text-anchor="middle" font-size="11.5" font-weight="600" fill="${C.teal}">LiteLLM 프록시</text>
-      <text x="344" y="250" text-anchor="middle" font-size="11" fill="${C.ink3}">SSO 로 CLR 등급 확인</text>
+      <text x="344" y="218" text-anchor="middle" font-size="13" font-weight="600" fill="${C.teal}">LiteLLM 프록시</text>
+      <text x="344" y="250" text-anchor="middle" font-size="12.5" fill="${C.ink3}">SSO 로 CLR 등급 확인</text>
     </g>
 
     <!-- 입력 검사 -->
     <g id="z-in">
       <rect x="440" y="84" width="${IX - 440 + IN_STAGES.length * (IW + IG)}" height="${IH + 76}" rx="14"
             fill="none" stroke="${C.teal}" stroke-width="1.2" stroke-dasharray="6 5" stroke-opacity="0.55"/>
-      <text x="452" y="106" font-size="13" font-weight="700" fill="${C.teal}">출국 검사 — 질의 파이프라인</text>
+      <text x="452" y="106" font-size="14.5" font-weight="700" fill="${C.teal}">출국 검사 — 질의 파이프라인</text>
       ${IN_STAGES.map((s, i) => stageBox(IX + i * (IW + IG), IY, IW, IH, s, i)).join('')}
-      <text x="${IX}" y="${IY + IH + 30}" font-size="11.5" fill="${C.ink3}">
+      <text x="${IX}" y="${IY + IH + 30}" font-size="13" fill="${C.ink3}">
         앞 단계가 디코딩한 결과를 다음 단계가 본다 — 인코딩으로 우회할 수 없다
       </text>
     </g>
 
     <!-- 판정 -->
     <g id="z-verdict">
-      <text x="452" y="330" font-size="13" font-weight="700" fill="${C.ink2}">판정 — 막는 것이 아니라 등급에 따라 다르게 보낸다</text>
+      <text x="452" y="330" font-size="14.5" font-weight="700" fill="${C.ink2}">판정 — 막는 것이 아니라 등급에 따라 다르게 보낸다</text>
       ${[
         ['ALLOW', '그대로 통과', C.green],
         ['SANITIZE', '금지 물건만 빼고', C.teal],
@@ -130,35 +130,35 @@ export function buildArchitecture(host) {
         <g id="vd-${i}">
           <rect x="${452 + i * 196}" y="346" width="180" height="62" rx="10"
                 fill="${col}" fill-opacity="0.12" stroke="${col}" stroke-width="1.5"/>
-          <text x="${542 + i * 196}" y="370" text-anchor="middle" font-size="14" font-weight="700" fill="${col}">${t}</text>
-          <text x="${542 + i * 196}" y="392" text-anchor="middle" font-size="11.5" fill="${C.ink2}">${d}</text>
+          <text x="${542 + i * 196}" y="370" text-anchor="middle" font-size="15.5" font-weight="700" fill="${col}">${t}</text>
+          <text x="${542 + i * 196}" y="392" text-anchor="middle" font-size="13" fill="${C.ink2}">${d}</text>
         </g>`).join('')}
     </g>
 
     <!-- 국경 + 외부 AI -->
     <g id="z-border">
       <line x1="1250" y1="60" x2="1250" y2="470" stroke="${C.red}" stroke-width="2.4" stroke-dasharray="9 7"/>
-      <text x="1250" y="50" text-anchor="middle" font-size="12.5" font-weight="700" fill="${C.red}">국경</text>
+      <text x="1250" y="50" text-anchor="middle" font-size="14" font-weight="700" fill="${C.red}">국경</text>
       <g transform="translate(1390,180)">
         <circle r="54" fill="none" stroke="${C.ink3}" stroke-width="1.6"/>
         <ellipse rx="54" ry="20" fill="none" stroke="${C.ink3}" stroke-width="1.1"/>
         <ellipse rx="21" ry="54" fill="none" stroke="${C.ink3}" stroke-width="1.1"/>
         <line x1="-54" y1="0" x2="54" y2="0" stroke="${C.ink3}" stroke-width="1.1"/>
       </g>
-      <text x="1390" y="262" text-anchor="middle" font-size="13" font-weight="700" fill="${C.ink2}">외부 생성형 AI</text>
-      <text x="1390" y="282" text-anchor="middle" font-size="11.5" fill="${C.ink3}">ChatGPT · Claude · Gemini</text>
-      <text x="1390" y="302" text-anchor="middle" font-size="11" fill="${C.red}">여기서부터 우리 관제 밖</text>
-      <text x="1140" y="430" text-anchor="middle" font-size="11.5" fill="${C.red}">직접 접속은 차단</text>
-      <text x="1140" y="448" text-anchor="middle" font-size="11.5" fill="${C.red}">(SNI · DNS 정책)</text>
+      <text x="1390" y="262" text-anchor="middle" font-size="14.5" font-weight="700" fill="${C.ink2}">외부 생성형 AI</text>
+      <text x="1390" y="282" text-anchor="middle" font-size="13" fill="${C.ink3}">ChatGPT · Claude · Gemini</text>
+      <text x="1390" y="302" text-anchor="middle" font-size="12.5" fill="${C.red}">여기서부터 우리 관제 밖</text>
+      <text x="1140" y="430" text-anchor="middle" font-size="13" fill="${C.red}">직접 접속은 차단</text>
+      <text x="1140" y="448" text-anchor="middle" font-size="13" fill="${C.red}">(SNI · DNS 정책)</text>
     </g>
 
     <!-- 출력 검사 -->
     <g id="z-out">
       <rect x="440" y="524" width="${OX - 440 + OUT_STAGES.length * (OW + OG)}" height="${OH + 72}" rx="14"
             fill="none" stroke="${C.green}" stroke-width="1.2" stroke-dasharray="6 5" stroke-opacity="0.55"/>
-      <text x="452" y="546" font-size="13" font-weight="700" fill="${C.green}">입국 검사 — 답변 파이프라인</text>
+      <text x="452" y="546" font-size="14.5" font-weight="700" fill="${C.green}">입국 검사 — 답변 파이프라인</text>
       ${OUT_STAGES.map((s, i) => outBox(OX + i * (OW + OG), OY, OW, OH, s, i)).join('')}
-      <text x="${OX}" y="${OY + OH + 28}" font-size="11.5" fill="${C.ink3}">
+      <text x="${OX}" y="${OY + OH + 28}" font-size="13" fill="${C.ink3}">
         나갈 때 깨끗했어도 돌아올 때 깨끗하다는 보장은 없다
       </text>
     </g>
@@ -167,10 +167,10 @@ export function buildArchitecture(host) {
     <g id="z-audit">
       <rect x="40" y="560" width="372" height="96" rx="12"
             fill="${C.plate}" stroke="${C.line}" stroke-width="1.4"/>
-      <text x="226" y="586" text-anchor="middle" font-size="13.5" font-weight="700" fill="${C.ink2}">감사 기록</text>
-      <text x="226" y="610" text-anchor="middle" font-size="11.5" fill="${C.ink2}">시각 · 탐지 유형 · 판정 · 길이</text>
-      <text x="226" y="630" text-anchor="middle" font-size="12" font-weight="700" fill="${C.red}">원문은 저장하지 않는다</text>
-      <text x="226" y="648" text-anchor="middle" font-size="10.5" fill="${C.ink3}">소금 친 해시만 — 같은 질의인지는 알고, 내용은 못 되살린다</text>
+      <text x="226" y="586" text-anchor="middle" font-size="15" font-weight="700" fill="${C.ink2}">감사 기록</text>
+      <text x="226" y="610" text-anchor="middle" font-size="13" fill="${C.ink2}">시각 · 탐지 유형 · 판정 · 길이</text>
+      <text x="226" y="630" text-anchor="middle" font-size="13.5" font-weight="700" fill="${C.red}">원문은 저장하지 않는다</text>
+      <text x="226" y="648" text-anchor="middle" font-size="12" fill="${C.ink3}">소금 친 해시만 — 같은 질의인지는 알고, 내용은 못 되살린다</text>
     </g>
 
     <!-- 흐름선 -->
