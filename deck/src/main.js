@@ -10,6 +10,7 @@ import 'reveal.js/dist/reveal.css';
 import './theme.css';
 import { gsap } from 'gsap';
 import { ARCH_STEPS, buildArchitecture, makeArchController } from './arch.js';
+import { USER_STEPS, buildUserScenario, makeUserController } from './scenario-user.js';
 
 const C = {
   amber: '#f0a63a',
@@ -654,10 +655,49 @@ function archStep(slide) {
   archGoto(Math.min(shown, ARCH_STEPS.length - 1));
 }
 
-deck.on('fragmentshown', (e) => archStep(e.fragment.closest('section')));
-deck.on('fragmenthidden', (e) => archStep(e.fragment.closest('section')));
-deck.on('slidechanged', (e) => archStep(e.currentSlide));
-deck.on('ready', (e) => archStep(e.currentSlide));
+/* ── 사용자 시점 시나리오 — 같은 방식으로 방향키가 장면을 넘긴다 ── */
+const userHost = document.getElementById('user-stage');
+let userGoto = null;
+if (userHost) {
+  const svg = buildUserScenario(userHost);
+  userGoto = makeUserController(svg, reduced);
+}
+const USER_CAPTIONS = [
+  '평소처럼 주소를 칩니다. <b>연결이 끊깁니다</b> — 복호화하는 것이 아니라 끊는 것입니다.',
+  '대신 <b>안내가 뜹니다.</b> 막기만 하고 대안을 주지 않으면 사람들은 주머니에서 폰을 꺼냅니다.',
+  '포털에는 <b>이미 로그인돼 있습니다.</b> 교내 SSO 가 권한 등급까지 함께 정합니다.',
+  '평소와 <b>똑같이</b> 묻고 똑같이 첨부합니다. 그 사이 첨부파일에서 주민등록번호 1,204건이 걸립니다.',
+  '답이 옵니다. 돌아온 답변도 다시 검사하지만 <b>기다린 느낌은 없습니다</b> — 합쳐서 5.3 ms 입니다.',
+  '<b>사용자가 의식한 것은 주소가 바뀐 것 하나뿐입니다.</b> 좋은 검사대는 줄을 세우지 않습니다.',
+];
+
+function userStep(slide) {
+  if (!userGoto || !slide || slide.id !== 'slide-user') return;
+  const shown = slide.querySelectorAll('.fragment[data-user].visible').length;
+  const i = Math.min(shown, USER_STEPS - 1);
+  userGoto(i);
+  const cap = document.getElementById('user-caption');
+  if (cap) cap.innerHTML = USER_CAPTIONS[i];
+}
+
+deck.on('fragmentshown', (e) => {
+  const sec = e.fragment.closest('section');
+  archStep(sec);
+  userStep(sec);
+});
+deck.on('fragmenthidden', (e) => {
+  const sec = e.fragment.closest('section');
+  archStep(sec);
+  userStep(sec);
+});
+deck.on('slidechanged', (e) => {
+  archStep(e.currentSlide);
+  userStep(e.currentSlide);
+});
+deck.on('ready', (e) => {
+  archStep(e.currentSlide);
+  userStep(e.currentSlide);
+});
 
 // initialize() 는 **모든 on() 등록이 끝난 뒤**에 불러야 한다.
 // 먼저 부르면 'ready' 가 등록 전에 지나가 버려서, 그 슬라이드로 바로 들어왔을 때
