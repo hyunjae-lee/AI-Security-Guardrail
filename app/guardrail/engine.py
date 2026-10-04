@@ -461,6 +461,67 @@ class GuardrailEngine:
     async def inspect_output(self, text: str, **kwargs: Any) -> PipelineResult:
         return await self.run_pipeline(text, Stage.OUTPUT, **kwargs)
 
+    async def inspect_output_stream(
+        self,
+        chunks: Any,
+        context: dict[str, Any] | None = None,
+        *,
+        hold: int = 240,
+    ) -> Any:
+        """스트리밍 응답을 흘려보내면서 검사한다.
+
+        왜 필요한가
+        ----------
+        토큰을 받는 족족 사용자에게 보내면, 카나리아 토큰이 **화면에 뜬 뒤에**
+        탐지하게 된다.  시스템 프롬프트 유출은 한 조각만 새도 유출이라 그때는
+        이미 늦었다.  그렇다고 응답 전체를 받고 검사하면 스트리밍의 이유
+        (체감 속도)가 사라진다.
+
+        그래서 **꼬리를 붙잡는다.**  버퍼 끝에서 `hold` 글자는 내보내지 않고,
+        그보다 앞선 부분만 흘려보낸다.  탐지 패턴이 조각 경계에 걸쳐 있어도
+        아직 붙잡고 있는 구간 안에서 완성되므로 놓치지 않는다.
+
+        매번 **버퍼 전체를 다시 검사**한다.  앞서 내보낸 구간까지 포함해 다시
+        보는 이유는, 새로 온 글자가 이미 보낸 글자와 합쳐져 패턴을 완성할 수
+        있기 때문이다.  답변 길이에서 O(n²) 이지만 2,000자 기준 수십 ms 라
+        정확성을 택했다.
+
+        차단이 나면 `None` 을 내보내고 끝낸다 — 호출부는 그 신호를 받아
+        이미 보낸 내용을 지우고 차단 안내로 바꾼다.
+
+        사용:
+            async for piece in engine.inspect_output_stream(token_stream()):
+                if piece is None:
+                    ...  # 차단
+                    break
+                send_to_browser(piece)
+        """
+        buf = ""
+        released = 0
+        last: PipelineResult | None = None
+
+        async for chunk in chunks:
+            if not chunk:
+                continue
+            buf += chunk
+            last = await self.inspect_output(buf, context=context, step_delay=0)
+            if last.blocked:
+                yield None
+                return
+            safe = max(released, len(last.final_text) - hold)
+            if safe > released:
+                yield last.final_text[released:safe]
+                released = safe
+
+        # 마지막 조각까지 검사한 뒤 남은 꼬리를 내보낸다.
+        if last is None:
+            return
+        if last.blocked:
+            yield None
+            return
+        if released < len(last.final_text):
+            yield last.final_text[released:]
+
 
 def new_trace_id() -> str:
     return uuid.uuid4().hex[:16]

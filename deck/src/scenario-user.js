@@ -85,19 +85,20 @@ function userMsg(y, text, w = 430) {
     <text x="${x + 18}" y="${y + 28}" font-size="14" fill="${C.ink}">${text}</text>`;
 }
 
-function aiMsg(y, lines, accent) {
+function aiMsg(y, lines, accent, idBase = '') {
   return `
     <rect x="${MX + 24}" y="${y}" width="26" height="26" rx="7"
           fill="${accent}" fill-opacity="0.18" stroke="${accent}" stroke-width="1.1"/>
     <circle cx="${MX + 37}" cy="${y + 13}" r="4.5" fill="${accent}"/>
-    ${lines.map((l, i) => `<text x="${MX + 62}" y="${y + 19 + i * 24}" font-size="14"
+    ${lines.map((l, i) => `<text ${idBase ? `id="${idBase}${i}"` : ''}
+          x="${MX + 62}" y="${y + 19 + i * 24}" font-size="14"
           fill="${C.ink2}">${l}</text>`).join('')}`;
 }
 
 /** 입력줄 — 첨부 클립과 보내기 단추까지 그린다.
  *  첨부가 있으면 실제 챗 UI 처럼 **입력 칸 위에 한 줄을 더** 만든다.
  *  같은 줄에 두면 클립 아이콘과 칩이 겹친다. */
-function inputBar(placeholder, accent, chip = '') {
+function inputBar(placeholder, accent, chip = '', type = null) {
   const h = chip ? 116 : 72;
   const y = TOP + BODY - 24 - h;
   const row = chip ? y + 76 : y + 36;   // 글자·단추가 놓이는 줄
@@ -107,7 +108,11 @@ function inputBar(placeholder, accent, chip = '') {
     ${chip ? chip(MX + 44, y + 12) : ''}
     <path d="M${MX + 48} ${row - 4} v-6 a7 7 0 0 1 14 0 v14 a11 11 0 0 1 -22 0 v-12"
           fill="none" stroke="${C.ink3}" stroke-width="1.5" stroke-linecap="round"/>
-    <text x="${MX + 76}" y="${row}" font-size="13.5" fill="${C.ink3}">${placeholder}</text>
+    ${type
+      ? `<text id="${type.typeId}" x="${MX + 76}" y="${row}" font-size="13.5" fill="${C.ink}"></text>
+         <rect id="${type.cursorId}" x="${MX + 76}" y="${row - 14}" width="2.5" height="18"
+               fill="${accent}" opacity="0"/>`
+      : `<text x="${MX + 76}" y="${row}" font-size="13.5" fill="${C.ink3}">${placeholder}</text>`}
     <circle cx="${MX + MW - 52}" cy="${row - 4}" r="16" fill="${accent}"/>
     <path d="M${MX + MW - 60} ${row - 4} h14 M${MX + MW - 52} ${row - 11} l7 7 l-7 7"
           stroke="${C.ground}" stroke-width="2.4" fill="none"
@@ -214,9 +219,9 @@ const SCENES = [
       main: `
         ${modelPill('Claude Sonnet 5', C.teal)}
         ${aiMsg(TOP + 118, ['안녕하세요 김○○ 님. 무엇을 도와드릴까요?'], C.teal)}
-        ${userMsg(TOP + 176, '이번 학기 장학금 지급 대상자 명단 정리해 줘', 440)}
-        ${inputBar('무엇이든 물어보세요', C.teal,
-            (x, y) => fileChip(x, y, '장학생_명단_2026.xlsx'))}`,
+        ${inputBar('', C.teal, (x, y) => fileChip(x, y, '장학생_명단_2026.xlsx'), {
+          typeId: 'type-q', cursorId: 'cur-q',
+        })}`,
     }),
     behind('출국 검사 — 사용자는 못 봅니다', C.amber, [
       ['첨부파일을 훑습니다', '주민등록번호 1,204건 발견'],
@@ -231,14 +236,14 @@ const SCENES = [
       main: `
         ${modelPill('Claude Sonnet 5', C.teal)}
         ${userMsg(TOP + 110, '이번 학기 장학금 지급 대상자 명단 정리해 줘', 440)}
-        ${aiMsg(TOP + 174, ['요청하신 명단을 기준별로 정리했습니다.',
-                            '성적 우수 32명 · 가계 곤란 18명 · 특기자 7명.',
-                            '지급액 합계는 1억 8,400만 원입니다.'], C.teal)}
+        ${aiMsg(TOP + 174, ['', '', ''], C.teal, 'type-a')}
+        <rect id="cur-a" x="${MX + 62}" y="${TOP + 177}" width="2.5" height="19"
+              fill="${C.teal}" opacity="0"/>
         ${inputBar('메시지를 입력하세요…', C.teal)}`,
     }),
-    behind('입국 검사 + 기록', C.green, [
-      ['돌아온 답변을 다시 검사', '카나리아 · 개인정보 재노출 · 반출 링크'],
-      ['검사에 걸린 시간', '나갈 때 5.0 ms · 돌아올 때 0.3 ms'],
+    behind('입국 검사 — 흐르는 중에', C.green, [
+      ['꼬리를 붙잡고 흘려보냅니다', '끝에서 240자는 내보내지 않습니다'],
+      ['왜 붙잡나', '그냥 흘리면 카나리아가 화면에 뜬 뒤에 걸립니다'],
       ['감사 기록', '시각·유형·판정만. 원문은 저장하지 않습니다'],
     ]),
   ],
@@ -283,8 +288,91 @@ export function buildUserScenario(host) {
   return host.querySelector('svg');
 }
 
+export const Q_TEXT = '이번 학기 장학금 지급 대상자 명단 정리해 줘';
+export const A_LINES = [
+  '요청하신 명단을 기준별로 정리했습니다.',
+  '성적 우수 32명 · 가계 곤란 18명 · 특기자 7명.',
+  '지급액 합계는 1억 8,400만 원입니다.',
+];
+
+/** 글자를 한 자씩 찍고 커서를 끝에 붙여 간다. */
+function typeInto(el, cursor, text, duration, delay = 0) {
+  const o = { n: 0 };
+  el.textContent = '';
+  if (cursor) gsap.set(cursor, { opacity: 1, x: 0 });
+  return gsap.to(o, {
+    n: text.length,
+    duration,
+    delay,
+    ease: 'none',
+    onUpdate() {
+      el.textContent = text.slice(0, Math.round(o.n));
+      if (!cursor) return;
+      let w = 0;
+      try {
+        w = el.getComputedTextLength();
+      } catch {
+        w = 0;
+      }
+      gsap.set(cursor, { x: w });
+    },
+  });
+}
+
+/** 커서 깜빡임 — 멈춰 있을 때만 깜빡인다. */
+function blink(cursor) {
+  return gsap.to(cursor, {
+    opacity: 0, duration: 0.5, repeat: -1, yoyo: true, ease: 'steps(1)',
+  });
+}
+
 export function makeUserController(svg, reduced) {
   const groups = SCENES.map((_, i) => svg.querySelector(`#us-${i}`));
+  const $ = (id) => svg.querySelector('#' + id);
+  let running = null;
+
+  /** 타이핑·스트리밍이 있는 장면은 들어올 때마다 다시 재생한다. */
+  function play(i) {
+    if (running) running.kill();
+    running = null;
+    const qEl = $('type-q'), qCur = $('cur-q');
+    const aEls = [0, 1, 2].map((k) => $('type-a' + k));
+    const aCur = $('cur-a');
+
+    if (reduced) {
+      // 모션을 끄면 완성된 화면이 남는다 — 커서는 지운다.
+      if (qEl) qEl.textContent = Q_TEXT;
+      aEls.forEach((el, k) => el && (el.textContent = A_LINES[k]));
+      [qCur, aCur].forEach((c) => c && gsap.set(c, { opacity: 0 }));
+      return;
+    }
+
+    if (i === 3 && qEl) {
+      // 사용자가 입력창에 묻는 중
+      const tl = gsap.timeline();
+      tl.add(typeInto(qEl, qCur, Q_TEXT, 1.6, 0.3));
+      tl.add(blink(qCur));
+      running = tl;
+    } else if (i === 4 && aEls[0]) {
+      // 답변이 흘러나온다 — 줄이 끝나면 커서가 다음 줄로 내려간다
+      const tl = gsap.timeline();
+      aEls.forEach((el, k) => {
+        if (!el) return;
+        tl.call(() => {
+          if (aCur) gsap.set(aCur, { y: k * 24, opacity: 1 });
+        });
+        tl.add(typeInto(el, aCur, A_LINES[k], 0.75 + k * 0.1, k === 0 ? 0.35 : 0.1));
+      });
+      tl.to(aCur, { opacity: 0, duration: 0.3 });
+      running = tl;
+    } else {
+      // 다른 장면으로 가면 흔적을 지운다
+      if (qEl) qEl.textContent = '';
+      aEls.forEach((el) => el && (el.textContent = ''));
+      [qCur, aCur].forEach((c) => c && gsap.set(c, { opacity: 0 }));
+    }
+  }
+
   return function goto(index) {
     const n = Math.max(0, Math.min(index, groups.length - 1));
     groups.forEach((g, i) => {
@@ -295,9 +383,9 @@ export function makeUserController(svg, reduced) {
       }
       gsap.to(g, { opacity: on ? 1 : 0, duration: 0.34, overwrite: true });
       if (on) {
-        // 새 장면은 살짝 아래에서 올라온다 — 넘어간 것이 눈에 보이게.
         gsap.fromTo(g, { y: 10 }, { y: 0, duration: 0.4, ease: 'power3.out', clearProps: 'transform' });
       }
     });
+    play(n);
   };
 }

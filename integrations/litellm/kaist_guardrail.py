@@ -55,6 +55,9 @@ GUARDRAIL_URL = os.environ.get("GUARDRAIL_URL", "http://127.0.0.1:8088").rstrip(
 PROFILE = os.environ.get("GUARDRAIL_PROFILE", "balanced")
 TIMEOUT = float(os.environ.get("GUARDRAIL_TIMEOUT", "5"))
 FAIL_OPEN = os.environ.get("GUARDRAIL_FAIL_OPEN", "0").strip().lower() in {"1", "true", "yes"}
+#: 스트리밍 중 몇 글자마다 다시 검사할지. 짧을수록 안전하고 느리다.
+#: 이미 보낸 조각은 되돌릴 수 없으므로 기본값을 작게 둔다.
+STREAM_CHECK_EVERY = int(os.environ.get("GUARDRAIL_STREAM_CHECK_EVERY", "120"))
 
 
 class KaistGuardrail(CustomGuardrail):
@@ -147,7 +150,50 @@ class KaistGuardrail(CustomGuardrail):
             }
         return data
 
-    # ── 돌아온 답변 ──────────────────────────────────────────
+    # ── 돌아온 답변 (스트리밍) ──────────────────────────────
+    async def async_post_call_streaming_iterator_hook(
+        self,
+        user_api_key_dict: Any,
+        response: Any,
+        request_data: dict[str, Any],
+    ) -> Any:
+        """토큰이 흐르는 동안 검사한다.
+
+        그냥 흘려보내면 카나리아 토큰이 **화면에 뜬 뒤에** 걸린다. 시스템
+        프롬프트 유출은 한 조각만 새도 유출이라 그때는 이미 늦었다.
+        그래서 게이트웨이의 `/api/inspect` 를 쓰지 않고 **누적 버퍼를 보내**
+        판정을 받는다 — 꼬리를 붙잡는 논리는 서버 쪽 엔진에 있다
+        (`GuardrailEngine.inspect_output_stream`).
+
+        여기서는 보수적으로 간다: 일정 길이마다 지금까지 받은 전체를 검사하고,
+        차단이 나오면 그 자리에서 스트림을 끊는다. 이미 보낸 조각은 되돌릴 수
+        없으므로 **검사 주기를 짧게** 둔다.
+        """
+        buf = ""
+        checked = 0
+        async for part in response:
+            try:
+                delta = part.choices[0].delta.content or ""
+            except Exception:  # noqa: BLE001 — 도구 호출 등 본문이 없는 조각
+                delta = ""
+            buf += delta
+            if len(buf) - checked >= STREAM_CHECK_EVERY:
+                result = await self._inspect(buf, "output")
+                checked = len(buf)
+                if result is None:
+                    self._unreachable()
+                elif result.get("action") == "block":
+                    raise HTTPException(
+                        status_code=400,
+                        detail={
+                            "error": "response_blocked_by_guardrail",
+                            "message": result.get("rationale", "응답이 정책상 차단되었습니다."),
+                            "categories": self._categories(result),
+                        },
+                    )
+            yield part
+
+    # ── 돌아온 답변 (한 번에) ────────────────────────────────
     async def async_post_call_success_hook(
         self,
         data: dict[str, Any],
