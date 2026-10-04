@@ -2,18 +2,76 @@
 
 A guardrail that blocks silently is unoperable — the security team needs to see
 what was blocked, why, and whether the block was right.  Every request writes
-one row with the full finding set, so the dashboard can answer "what did we stop
-this week" without re-running anything.
+one row with the finding set, so the dashboard can answer "what did we stop this
+week" without re-running anything.
+
+**원문은 저장하지 않는다.**
+이 프로젝트는 세 군데에서 그렇게 약속한다 — CLAUDE.md 의 비유 매핑표,
+설명 사이트 SCENE 08(기록실), 발표 덱의 판정 슬라이드.
+그런데 구현은 `entry["prompt"][:280]` 으로 **앞 280자를 그대로 저장하고 있었다.**
+짧은 질의는 통째로 들어간다 — 「제 주민번호는 900101-1234568 …」이 그대로 남는다.
+
+그래서 기본값을 "저장하지 않음" 으로 바꾸고, 대신 두 가지를 남긴다.
+  · `prompt_length` — 얼마나 긴 것이 나갔는지
+  · `prompt_digest` — 소금 친 해시.  **같은 질의가 반복됐는지**는 알 수 있고
+    내용은 복원할 수 없다.  사고 조사에서 「같은 프롬프트가 40번 나갔다」를
+    말할 수 있어야 하기 때문이다.
+
+finding 의 `evidence` 도 원문 조각이라 같이 가린다 (예: harmful 은 매치된
+구절을 그대로 담는다).  카테고리·심각도·판정 근거 문구는 템플릿이라 그대로 둔다.
+
+`GUARDRAIL_AUDIT_PREVIEW=1` 로 켤 수 있지만 **운영에서는 켜지 않는다.**
+로컬에서 탐지기를 디버깅할 때만 쓴다.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
+import os
+import secrets as _secrets
 import sqlite3
 import threading
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+#: 원문 미리보기를 저장할지. 기본은 **저장하지 않음**.
+STORE_PREVIEW = os.environ.get("GUARDRAIL_AUDIT_PREVIEW", "").strip().lower() in {
+    "1", "true", "yes", "on",
+}
+
+#: 해시에 섞는 소금. 주지 않으면 기동할 때마다 새로 만든다 —
+#: 그러면 재시작 전후의 해시가 달라지는 대신, 사전 대입으로 원문을 되찾을 수 없다.
+#: 재시작을 넘겨 상관 분석을 하려면 운영에서 고정값을 준다.
+_SALT = os.environ.get("GUARDRAIL_AUDIT_SALT") or _secrets.token_hex(16)
+
+_REDACTED = "[원문 미저장]"
+
+
+def digest(prompt: str) -> str:
+    """원문을 복원할 수 없는 식별자. 같은 질의인지만 알 수 있다."""
+    return hashlib.sha256((_SALT + prompt).encode("utf-8")).hexdigest()[:16]
+
+
+def _redact_findings(findings: list[Any]) -> list[Any]:
+    """finding 에서 원문 조각(evidence)만 길이로 바꾼다.
+
+    카테고리·심각도·메시지는 템플릿이라 남겨도 원문이 새지 않는다.
+    evidence 는 탐지기마다 다른데(마스킹된 것도, 그대로인 것도 있다)
+    **한 곳에서 일괄로** 가린다 — 탐지기를 새로 쓸 때 빠뜨리지 않기 위해서다.
+    """
+    out = []
+    for f in findings:
+        if not isinstance(f, dict):
+            out.append(f)
+            continue
+        g = dict(f)
+        ev = g.get("evidence")
+        if isinstance(ev, str) and ev:
+            g["evidence"] = f"({len(ev)}자 가림)"
+        out.append(g)
+    return out
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS requests (
@@ -24,6 +82,7 @@ CREATE TABLE IF NOT EXISTS requests (
     backend         TEXT    NOT NULL,
     prompt_preview  TEXT    NOT NULL,
     prompt_length   INTEGER NOT NULL,
+    prompt_digest   TEXT    NOT NULL DEFAULT '',
     input_action    TEXT    NOT NULL,
     input_score     REAL    NOT NULL,
     output_action   TEXT,
@@ -55,6 +114,12 @@ class AuditLog:
         self._conn = sqlite3.connect(self.path, check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
         self._conn.executescript(_SCHEMA)
+        # 이미 만들어진 DB 에는 prompt_digest 가 없다. 있으면 넘어간다.
+        cols = {r[1] for r in self._conn.execute("PRAGMA table_info(requests)")}
+        if "prompt_digest" not in cols:
+            self._conn.execute(
+                "ALTER TABLE requests ADD COLUMN prompt_digest TEXT NOT NULL DEFAULT ''"
+            )
         self._conn.commit()
 
     def record(self, entry: dict[str, Any]) -> None:
@@ -65,8 +130,9 @@ class AuditLog:
             "created_at": datetime.now(UTC).isoformat(timespec="seconds"),
             "profile": entry["profile"],
             "backend": entry["backend"],
-            "prompt_preview": entry["prompt"][:280],
+            "prompt_preview": entry["prompt"][:280] if STORE_PREVIEW else _REDACTED,
             "prompt_length": len(entry["prompt"]),
+            "prompt_digest": digest(entry["prompt"]),
             "input_action": entry["input_action"],
             "input_score": entry["input_score"],
             "output_action": entry.get("output_action"),
@@ -74,7 +140,12 @@ class AuditLog:
             "final_action": entry["final_action"],
             "unguarded_leak": int(bool(entry.get("unguarded_leak"))),
             "categories": json.dumps(entry.get("categories", []), ensure_ascii=False),
-            "findings": json.dumps(entry.get("findings", []), ensure_ascii=False),
+            "findings": json.dumps(
+                entry.get("findings", [])
+                if STORE_PREVIEW
+                else _redact_findings(entry.get("findings", [])),
+                ensure_ascii=False,
+            ),
             "total_ms": entry.get("total_ms", 0.0),
         }
         with self._lock:
@@ -82,12 +153,12 @@ class AuditLog:
                 """
                 INSERT OR REPLACE INTO requests
                 (trace_id, created_at, profile, backend, prompt_preview, prompt_length,
-                 input_action, input_score, output_action, output_score, final_action,
-                 unguarded_leak, categories, findings, total_ms)
+                 prompt_digest, input_action, input_score, output_action, output_score,
+                 final_action, unguarded_leak, categories, findings, total_ms)
                 VALUES
                 (:trace_id, :created_at, :profile, :backend, :prompt_preview, :prompt_length,
-                 :input_action, :input_score, :output_action, :output_score, :final_action,
-                 :unguarded_leak, :categories, :findings, :total_ms)
+                 :prompt_digest, :input_action, :input_score, :output_action, :output_score,
+                 :final_action, :unguarded_leak, :categories, :findings, :total_ms)
                 """,
                 row,
             )
