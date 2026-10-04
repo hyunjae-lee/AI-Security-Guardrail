@@ -71,7 +71,10 @@ async def main(args):
 
     for s in samples:
         clr = s.get("clearance", "student")
-        eng = engines.setdefault(clr, GuardrailEngine(args.profile, clearance=clr))
+        eng = engines.setdefault(
+            clr,
+            GuardrailEngine(args.profile, clearance=clr, use_presidio=args.presidio),
+        )
         ti = await timed(eng.inspect_input, s["prompt"], ictx, args.repeat)
         to = await timed(eng.inspect_output, reply, octx, args.repeat)
         rows.append((statistics.median(ti), p95(ti), statistics.median(to), p95(to)))
@@ -87,7 +90,7 @@ async def main(args):
     print(f"합계(한 번 오갈 때) 중앙 {med_in + med_out:.2f} ms · 최대 {max_in + max_out:.2f} ms")
 
     print("\n# 길이 비례 — 검사는 훑는 방식이라 글자 수에 선형이다")
-    eng = GuardrailEngine(args.profile, clearance="staff")
+    eng = GuardrailEngine(args.profile, clearance="staff", use_presidio=args.presidio)
     print(f"{'자수':>7}{'질의 검사':>11}{'답변 검사':>11}{'합계':>9}  본문")
     for label, unit in (("일반", UNIT_CLEAN), ("PII 밀집", UNIT_PII)):
         for n in (100, 2000, 10000):
@@ -104,6 +107,12 @@ async def main(args):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
+    ap.add_argument(
+
+        "--presidio", action="store_true",
+
+        help="Presidio 한국어 NER 을 켜고 잰다 (GUARDRAIL_KO_NER_ONNX_DIR 필요)")
+
     ap.add_argument("--profile", default="balanced")
     ap.add_argument("--repeat", type=int, default=40)
     a = ap.parse_args()

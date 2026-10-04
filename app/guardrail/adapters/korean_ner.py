@@ -155,8 +155,40 @@ def _entities_onnx(text: str) -> list[dict[str, Any]]:
     return out
 
 
-def _entities(text: str) -> list[dict[str, Any]]:
+# 한 번에 넣는 글자 수와 겹침.  모델 입력이 512 토큰으로 잘리므로, 긴 문서를
+# 그대로 넣으면 **뒷부분이 검사되지 않는다.**  붙여넣기 유출(삼성 사례)이 바로
+# 긴 문서라, 앞부분만 보는 것은 이 시스템의 목적을 배신한다.
+_CHUNK_CHARS = 700
+_CHUNK_OVERLAP = 80
+
+
+def _entities_once(text: str) -> list[dict[str, Any]]:
     return _entities_onnx(text) if _onnx_ready() else _ner_pipeline()(text)
+
+
+def _entities(text: str) -> list[dict[str, Any]]:
+    """긴 글은 겹치는 창으로 나눠 전부 훑는다.
+
+    겹침을 두는 이유는 창 경계에서 이름이 잘리는 것을 막기 위해서다.
+    경계에 걸친 개체가 두 번 잡히므로 (start, end) 로 중복을 제거한다.
+    """
+    if len(text) <= _CHUNK_CHARS:
+        return _entities_once(text)
+
+    seen: dict[tuple[int, int], dict[str, Any]] = {}
+    step = _CHUNK_CHARS - _CHUNK_OVERLAP
+    for base in range(0, len(text), step):
+        window = text[base : base + _CHUNK_CHARS]
+        if not window.strip():
+            continue
+        for ent in _entities_once(window):
+            start, end = base + int(ent["start"]), base + int(ent["end"])
+            key = (start, end)
+            prev = seen.get(key)
+            # 같은 자리를 두 번 봤으면 더 확신하는 쪽을 남긴다.
+            if prev is None or float(ent["score"]) > float(prev["score"]):
+                seen[key] = {**ent, "start": start, "end": end}
+    return sorted(seen.values(), key=lambda e: e["start"])
 
 
 def _build_recognizer() -> Any:
