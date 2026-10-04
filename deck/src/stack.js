@@ -66,7 +66,11 @@ export function buildStack(host) {
               markerWidth="5" markerHeight="5" orient="auto">
         <path d="M0,0 L10,5 L0,10 z" fill="${C.green}"/>
       </marker>
+      <!-- 틀 밖을 가리는 창.  makeStackController 가 틀과 함께 움직인다. -->
+      <clipPath id="stk-frame"><rect id="stk-frame-r"
+        x="${VB[0]}" y="${VB[1]}" width="${VB[2]}" height="${VB[3]}"/></clipPath>
     </defs>
+    <g clip-path="url(#stk-frame)">
 
     <!-- 교내 경계선 -->
     <g id="z-campus-zone">
@@ -123,6 +127,7 @@ export function buildStack(host) {
       <text x="${X + 552}" y="240" font-size="12.5" fill="${C.ink3}">검사 의뢰 · HTTP</text>
       <text x="${X + 556}" y="396" text-anchor="end" font-size="12.5" fill="${C.green}">판정만</text>
     </g>
+    </g>
   </svg>`;
   return host.querySelector('#stack-svg');
 }
@@ -152,8 +157,16 @@ export function makeStackController(svg, captionEl, reduced) {
   const state = { x: VB[0], y: VB[1], w: VB[2], h: VB[3] };
   const groups = [...svg.querySelectorAll('g[id^="z-"]')];
 
+  const win = svg.querySelector('#stk-frame-r');
   function apply() {
     svg.setAttribute('viewBox', `${state.x} ${state.y} ${state.w} ${state.h}`);
+    // 창도 같이 움직인다 — 안 그러면 확대했을 때 틀 밖이 비친다.
+    if (win) {
+      win.setAttribute('x', state.x);
+      win.setAttribute('y', state.y);
+      win.setAttribute('width', state.w);
+      win.setAttribute('height', state.h);
+    }
   }
 
   return function goto(index) {

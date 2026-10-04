@@ -197,6 +197,9 @@ export function buildArchitecture(host) {
         <path d="M0 0 L10 5 L0 10 z" fill="${C.amber}"/></marker>
       <marker id="a-gr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
         <path d="M0 0 L10 5 L0 10 z" fill="${C.green}"/></marker>
+      <!-- 틀 밖을 가리는 창.  makeArchController 가 틀과 함께 움직인다. -->
+      <clipPath id="arch-frame"><rect id="arch-frame-r"
+        x="0" y="20" width="1600" height="680"/></clipPath>
     </defs>`;
 
   const uid = 'arch-svg';
@@ -209,7 +212,7 @@ export function buildArchitecture(host) {
         여덟 단계의 출국 검사를 통과하고, 네 갈래 판정에 따라 국경 밖 외부 생성형 AI 로
         나간다. 돌아온 답변은 여섯 단계의 입국 검사를 거쳐 전달되며, 감사 기록에는
         판정만 남고 원문은 저장되지 않는다.</desc>
-      ${body}
+      <g clip-path="url(#arch-frame)">${body}</g>
     </svg>`;
   return host.querySelector('svg');
 }
@@ -239,8 +242,16 @@ export function makeArchController(svg, captionEl, reduced) {
   const state = { x: 0, y: 20, w: 1600, h: 680 };
   const groups = [...svg.querySelectorAll('g[id^="z-"]')];
 
+  const win = svg.querySelector('#arch-frame-r');
   function apply() {
     svg.setAttribute('viewBox', `${state.x} ${state.y} ${state.w} ${state.h}`);
+    // 창도 같이 움직인다 — 안 그러면 확대했을 때 틀 밖이 비친다.
+    if (win) {
+      win.setAttribute('x', state.x);
+      win.setAttribute('y', state.y);
+      win.setAttribute('width', state.w);
+      win.setAttribute('height', state.h);
+    }
   }
 
   return function goto(index) {
