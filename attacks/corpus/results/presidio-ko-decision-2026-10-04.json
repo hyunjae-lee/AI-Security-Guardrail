@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-04",
+  "question": "Presidio 한국어 NER 을 켜면 이득이 있는가",
+  "corpus": "attacks/corpus 205건 (정상 128 / 공격 77)",
+  "setup": "Presidio + KoELECTRA-small NER(ONNX 56MB), 글자 체계로 en/ko 라우팅",
+  "before": {
+    "miss": "7/77 (9.1%)",
+    "hard_fp": "0/128 (0%)",
+    "soft_fp": "1/128 (0.8%)",
+    "latency_ms": 0.2
+  },
+  "after": {
+    "miss": "0/77 (0%)",
+    "hard_fp": "0/128 (0%)",
+    "soft_fp": "5/128 (3.9%)",
+    "latency_ms": 4.09
+  },
+  "verdict": "켠다. 정규식이 못 잡던 인명·주소 공격 7건을 전부 잡고 하드 오탐은 0% 를 유지한다.",
+  "cost": "소프트 오탐 4건 증가(세종대왕·이순신·대전시 유성구·DAN) — 전부 올바른 NER 탐지가 과하게 적용된 것이고 판정은 SANITIZE 라 질의는 나간다.",
+  "latency_note": "0.20ms → 4.09ms. 50배지만 절대값은 네트워크 왕복(최근접 8.1ms, Anthropic 36.4ms) 아래다. 사이트의 실측 지연 표를 갱신해야 한다.",
+  "bug_found": "영어 Presidio 를 한국어 문장에 돌리면 아무 데서나 PERSON 을 뱉는다(정상 22건 오염). 글자 체계로 갈라 보내는 라우팅을 넣어 해결했다.",
+  "contrast": "같은 방법으로 ML 인젝션 분류기는 '아니오'(한계 기여 0, 비용 5건), 한국어 NER 은 '예'(미탐 7→0, 하드 오탐 0 유지)가 나왔다."
+}
