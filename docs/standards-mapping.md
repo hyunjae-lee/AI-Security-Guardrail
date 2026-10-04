@@ -9,7 +9,7 @@
 - **MITRE ATLAS** — AI 시스템 공격 전술·기법 체계
 - **N2SF** 「국가 망 보안체계 보안 가이드라인 1.0」(국가정보원) — 국내 제도 근거
 
-숫자는 `scripts/eval.py` 실측(코퍼스 186건, balanced 프로파일) 기준이다.
+숫자는 `scripts/eval.py` 실측(코퍼스 **205건**, balanced 프로파일, 한국어 NER 포함) 기준이다.
 
 ## 입력 파이프라인
 
@@ -17,11 +17,12 @@
 |---|---|---|---|---|---|
 | `normalizer` | `obfuscation.*` | LLM01 Prompt Injection | Defense Evasion | 프롬프트 필터링 | 8/8 |
 | `anomaly` | `anomaly.*` | LLM01 / LLM10 | Reconnaissance | — | — |
-| `secrets` | `secret.*` | LLM02 Sensitive Information Disclosure | Exfiltration | 업무정보 유출 방지 | 5/6 |
+| `secrets` | `secret.*` | LLM02 Sensitive Information Disclosure | Exfiltration | 업무정보 유출 방지 | 6/6 |
 | `pii` | `pii.*` | LLM02 | Exfiltration | 보안등급 식별 · 민감(S) | 9/9 |
-| `injection` | `injection.*` | **LLM01 Prompt Injection** | ML Attack Staging | 프롬프트 필터링 | 11/12 |
+| `presidio_pii` (한국어 NER) | `pii.presidio.*` | LLM02 | Exfiltration | 이름·지명 — 규칙이 못 잡는 자리 | 7/7 |
+| `injection` | `injection.*` | **LLM01 Prompt Injection** | ML Attack Staging | 프롬프트 필터링 | 12/12 |
 | `harmful` | `harmful.*` | LLM09 Misinformation / 정책 위반 | — | — | 9/9 |
-| `rag_access` | `rag.access_violation` | **LLM08 Vector & Embedding Weaknesses** | Discovery · Collection | 승인된 공개(O) 등급 외 차단 | 9/10 |
+| `rag_access` | `rag.access_violation` | **LLM08 Vector & Embedding Weaknesses** | Discovery · Collection | 승인된 공개(O) 등급 외 차단 | 10/10 |
 | `data_classifier` | 등급 라벨 L0~L4 | LLM02 | — | **C/S/O 보안등급 식별** | — |
 
 ## 출력 파이프라인
@@ -65,3 +66,25 @@
   코퍼스가 바뀌면 다시 재서 갱신한다.
 - OWASP·ATLAS 분류 번호는 개정된다. 인용할 때 **판본과 확인 날짜**를 함께 적을 것.
   (이 표는 2026-10-04 기준)
+
+## 재 보고 넣지 않은 것 — ML 인젝션 분류기
+
+같은 코퍼스(205건)로 공개 분류기 둘을 재고 **넣지 않기로 했다.**
+
+| 분류기 | 인젝션 계열 29건 적중 | 정상 128건 오탐 | 규칙 위에 얹었을 때 |
+|---|---|---|---|
+| protectai deberta-v3 (영어 전용) | 100% | **39.8%** | 새로 잡음 0건 / 새로 막음 51건 |
+| proventra mDeBERTa (다국어) | 72.4% | 3.9% | 새로 잡음 0건 / 새로 막음 5건 |
+| **규칙 (현행)** | **100%** | **0%** | — |
+
+적중률이 문제가 아니었다 — 영어 전용 모델은 인젝션 29건을 하나도 놓치지 않았다.
+**오탐이 문제다.** 정상 한국어 질의 128건 중 51건을 인젝션이라고 한다.
+규칙이 이미 29건을 다 잡고 있으므로 분류기의 한계 기여는 **0건**이고, 남는 것은
+새로 막히는 정상 질의뿐이다.  어댑터는
+`app/guardrail/adapters/transformer_injection.py` 에 남겨 두고 기본값을 끔으로 두었다.
+
+원 수치: `attacks/corpus/results/classifier-comparison-205-2026-10-04.json`,
+`classifier-fair-injection-205-2026-10-04.json`.
+
+> `/tmp/mdeberta-pi` 로 받아 둔 「파인튜닝」 가중치는 proventra 모델과 md5 가 같다 —
+> 같은 모델이다. 세 종류를 비교한 것이 아니라 **둘**이다.

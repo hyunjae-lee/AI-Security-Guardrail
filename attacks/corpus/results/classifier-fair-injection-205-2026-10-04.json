@@ -1,0 +1,21 @@
+{
+  "injection_like": 29,
+  "groups": [
+    "attack.injection",
+    "attack.leak",
+    "attack.obfuscation"
+  ],
+  "rules_hit_injection": 100.0,
+  "models": [
+    {
+      "label": "protectai (영어 전용)",
+      "hit_injection": 100.0,
+      "fp_benign": 39.8
+    },
+    {
+      "label": "proventra (다국어)",
+      "hit_injection": 72.4,
+      "fp_benign": 3.9
+    }
+  ]
+}

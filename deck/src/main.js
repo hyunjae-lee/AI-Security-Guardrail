@@ -6,12 +6,15 @@
  * 보고 알아야 하는 그림이라 단면·층을 보여 줄 시간이 없다.
  */
 import Reveal from 'reveal.js';
+// 발표자 노트(S 키) — 스크립트를 종이로 들고 올라가지 않기 위해 슬라이드에 심는다.
+import RevealNotes from 'reveal.js/plugin/notes/notes.esm.js';
 import 'reveal.js/dist/reveal.css';
 import './theme.css';
 import { gsap } from 'gsap';
 import { ARCH_STEPS, buildArchitecture, makeArchController } from './arch.js';
 import { USER_STEPS, buildUserScenario, makeUserController } from './scenario-user.js';
 import { PATH_CAPTIONS, PATH_STEPS, buildPaths, makePathController } from './paths.js';
+import { STACK_STEPS, buildStack, makeStackController } from './stack.js';
 
 const C = {
   amber: '#f5b355',
@@ -214,6 +217,59 @@ if (gradesHost) diagramGrades(gradesHost);
 const gateHost = document.getElementById('stage-gate');
 if (gateHost) diagramGate(gateHost);
 
+/* ══ 문장 단위 줄바꿈 ═══════════════════════════════════════
+ *
+ * `word-break: keep-all` 은 **어절**이 쪼개지는 것만 막는다.  그래서
+ * 「… 막는 것이 없습니다. 누가 무엇을」 처럼 다음 문장의 앞 두 어절이
+ * 앞 줄 꼬리에 매달린다.  읽는 사람은 줄 끝에서 한 번 더 멈춘다.
+ *
+ * 투사 화면에서는 **문장이 줄의 단위**여야 한다.  그래서 문장마다 블록을
+ * 하나씩 만들어 준다 — 문장이 길어 한 줄에 못 들어가면 그 안에서 접히고,
+ * 문장 경계에서는 반드시 줄이 바뀐다.
+ *
+ * 문구를 손으로 고치지 않고 런타임에서 감싸는 이유: 슬라이드를 새로
+ * 넣을 때마다 같은 실수를 반복하지 않기 위해서다.  `<br>` 로 박아 두면
+ * 화면 폭이 달라지는 순간 다시 어긋난다.
+ */
+const PROSE = [
+  '.lead', '.punch', '.quote__text', '.card__body', '.card__cite',
+  '.cite', '.stat__label', '.tl-note', '.b-item__sub', '.arch-caption',
+];
+
+/** 태그 **바깥**의 문장 경계에서만 자른다.
+ *  `(?![^<]*>)` 가 "여는 꺾쇠 안에 있지 않다"를 뜻한다. 숫자(5.33)는
+ *  마침표 뒤가 공백이 아니므로 애초에 걸리지 않는다.
+ *
+ *  닫는 태그는 건너뛴다 — `됩니다.</em> 가장` 처럼 강조가 문장 끝까지
+ *  걸쳐 있으면 마침표 바로 뒤가 공백이 아니라서 경계를 놓친다. */
+const SENTENCE_SPLIT = /(?<=[.!?](?:<\/[a-z]+>)*)\s+(?![^<]*>)/;
+
+function splitSentences(el) {
+  if (el.dataset.sw === '1') return;
+  el.dataset.sw = '1';
+
+  // 이미 <br> 로 줄을 박아 둔 곳은 작성자의 의도이므로 건드리지 않는다.
+  if (el.querySelector('br')) return;
+
+  const html = el.innerHTML.trim();
+  const parts = html.split(SENTENCE_SPLIT).map((t) => t.trim()).filter(Boolean);
+  if (parts.length < 2) return;
+
+  const next = parts.map((t) => `<span class="sent">${t}</span>`).join(' ');
+
+  // 인라인 태그가 문장 경계를 걸치고 있으면 쪼갠 결과가 깨진다.  글자가
+  // 그대로인지 확인하고, 다르면 원래대로 둔다 — 깨진 화면보다 어색한
+  // 줄바꿈이 낫다.
+  const probe = document.createElement('div');
+  probe.innerHTML = next;
+  const norm = (t) => t.replace(/\s+/g, ' ').trim();
+  if (norm(probe.textContent) !== norm(el.textContent)) return;
+
+  el.innerHTML = next;
+}
+
+document.querySelectorAll(PROSE.join(',')).forEach(splitSentences);
+
 // 슬라이드 번호 — 발표 중 "몇 장 남았나" 가 보여야 한다.
 const sections = [...document.querySelectorAll('.slides > section')];
 sections.forEach((s, i) => {
@@ -239,6 +295,7 @@ const deck = new Reveal({
   margin: 0.04,
   minScale: 0.2,
   maxScale: 1.6,
+  plugins: [RevealNotes],
   // 발표자 노트(S 키)와 PDF 내보내기(?print-pdf)는 reveal 기본 기능으로 쓴다.
 });
 
@@ -374,14 +431,25 @@ function animate(slide) {
   }
 
   // 감시 타이머 — 무슨 일이 있어도 이 시점엔 완성된 화면이 남는다.
+  //
+  // **지우기 전에 죽여야 한다.**  clearProps 만 하면 아직 돌고 있는 트윈이
+  // 다음 틱에 중간값을 다시 써서, 제목이 clip-path 중간(글자가 가로로 잘린
+  // 상태)에서 굳는다.  헤드리스 캡처에서 재현했다 — 브라우저가 프레임을
+  // 늦게 그리면 실제 발표 화면에서도 같은 일이 난다.
   clearTimeout(animate._guard);
   animate._guard = setTimeout(() => {
-    gsap.set(kids, { clearProps: 'all' });
-    gsap.set(
-      slide.querySelectorAll('.grid > *, .tbl tr, .beyond > *, .timeline .tl-row, .stat__num, .punch'),
-      { clearProps: 'all' },
-    );
-  }, 1800);
+    const all = [
+      ...kids,
+      ...slide.querySelectorAll(
+        '.grid > *, .tbl tr, .beyond > *, .timeline .tl-row, .stat__num, .punch, .b-item--hit, h1, h2, .kicker,'
+        // 선 그리기도 되돌려야 한다 — dashoffset 이 길이만큼 남아 있으면
+        // 선이 통째로 안 보이고 화살표 머리만 떠 있다 (구성도에서 확인).
+        + ' .stage svg path[marker-end], .arch-stage svg path[marker-end]',
+      ),
+    ];
+    gsap.killTweensOf(all);
+    gsap.set(all, { clearProps: 'all' });
+  }, 1500);
 }
 
 deck.on('slidechanged', (e) => animate(e.currentSlide));
@@ -689,6 +757,21 @@ if (archHost) {
   archGoto(0);
 }
 
+/* ── 기술 스택 구성도 — 같은 방식으로 단계마다 확대 ───────── */
+const stackHost = document.getElementById('stack-stage');
+let stackGoto = null;
+if (stackHost) {
+  const svg = buildStack(stackHost);
+  stackGoto = makeStackController(svg, document.getElementById('stack-caption'), reduced);
+  stackGoto(0);
+}
+
+function stackStep(slide) {
+  if (!stackGoto || !slide || slide.id !== 'slide-stack') return;
+  const shown = slide.querySelectorAll('.fragment[data-stack].visible').length;
+  stackGoto(Math.min(shown, STACK_STEPS.length - 1));
+}
+
 /** 이 슬라이드에서 몇 번째 단계인지 = 보인 fragment 수. */
 function archStep(slide) {
   if (!archGoto || !slide || slide.id !== 'slide-arch') return;
@@ -740,22 +823,26 @@ function userStep(slide) {
 deck.on('fragmentshown', (e) => {
   const sec = e.fragment.closest('section');
   archStep(sec);
+  stackStep(sec);
   userStep(sec);
   pathStep(sec);
 });
 deck.on('fragmenthidden', (e) => {
   const sec = e.fragment.closest('section');
   archStep(sec);
+  stackStep(sec);
   userStep(sec);
   pathStep(sec);
 });
 deck.on('slidechanged', (e) => {
   archStep(e.currentSlide);
+  stackStep(e.currentSlide);
   userStep(e.currentSlide);
   pathStep(e.currentSlide);
 });
 deck.on('ready', (e) => {
   archStep(e.currentSlide);
+  stackStep(e.currentSlide);
   userStep(e.currentSlide);
   pathStep(e.currentSlide);
   spinGlobes();
@@ -783,3 +870,42 @@ function spinGlobes() {
 // 먼저 부르면 'ready' 가 등록 전에 지나가 버려서, 그 슬라이드로 바로 들어왔을 때
 // 장면이 한 번도 재생되지 않는다 (8·9페이지가 비어 보이던 원인).
 deck.initialize();
+
+/* ══ 넘침 자가 검사 (?audit=1) ═════════════════════════════
+ *
+ * 슬라이드가 아래로 넘치면 맺음 문장이나 출처 줄이 화면 밖으로 밀려
+ * 나간다.  발표장에서야 알게 되는 종류의 사고다 — 실제로 세 번 겪었다.
+ * 문구를 한 줄 고칠 때마다 32장을 눈으로 확인할 수는 없으므로
+ * **기계가 재게 한다.**
+ *
+ * 한 장씩 실제로 띄워 가며 재는 이유: reveal 은 현재 슬라이드만 그리고
+ * 나머지는 display:none 이라 숨은 채로는 높이를 잴 수 없다.
+ *
+ * 결과는 document.title 에 JSON 으로 싣는다. 헤드리스에서 --dump-dom 으로
+ * 꺼내 쓴다 (tools/check-overflow.mjs).
+ */
+if (location.search.includes('audit')) {
+  const rows = [];
+  const step = (i) => {
+    if (i >= sections.length) {
+      document.title = `AUDIT ${JSON.stringify(rows)}`;
+      document.body.setAttribute('data-audit-done', '1');
+      return;
+    }
+    deck.slide(i);
+    requestAnimationFrame(() => {
+      const sec = sections[i];
+      const wrap = sec.querySelector('.wrap');
+      const kicker = sec.querySelector('.kicker');
+      const over = Math.round(wrap.scrollHeight - wrap.clientHeight);
+      rows.push({
+        i: i + 1,
+        name: sec.dataset.s,
+        label: kicker ? kicker.textContent.trim() : '(표지)',
+        over,
+      });
+      requestAnimationFrame(() => step(i + 1));
+    });
+  };
+  requestAnimationFrame(() => step(0));
+}

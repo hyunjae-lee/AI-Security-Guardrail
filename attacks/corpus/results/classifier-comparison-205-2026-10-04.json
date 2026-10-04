@@ -1,0 +1,36 @@
+{
+  "corpus": 205,
+  "attack": 77,
+  "benign": 128,
+  "threshold": 0.9,
+  "rules": {
+    "hit": 100.0,
+    "hard_fp": 0.0
+  },
+  "models": [
+    {
+      "id": "protectai/deberta-v3-base-prompt-injection-v2",
+      "label": "protectai (영어 전용)",
+      "hit": 63.6,
+      "fp": 39.8,
+      "gain": 0,
+      "cost": 51
+    },
+    {
+      "id": "proventra/mdeberta-v3-base-prompt-injection",
+      "label": "proventra (다국어)",
+      "hit": 37.7,
+      "fp": 3.9,
+      "gain": 0,
+      "cost": 5
+    },
+    {
+      "id": "/tmp/mdeberta-pi",
+      "label": "mDeBERTa 파인튜닝",
+      "hit": 37.7,
+      "fp": 3.9,
+      "gain": 0,
+      "cost": 5
+    }
+  ]
+}

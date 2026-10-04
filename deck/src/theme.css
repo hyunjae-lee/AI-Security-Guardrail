@@ -107,6 +107,20 @@
 }
 .kicker--teal { color: var(--teal); }
 .kicker--red { color: var(--red); }
+/* 호박색 아이브로우 — 「재 보고 결정한 것」·「합의가 필요한 것」 처럼
+   위협(빨강)도 성과(청록)도 아닌 장면에 쓴다. */
+.kicker--amber { color: var(--amber); }
+
+/* 문장 하나 = 줄 하나.  main.js 의 splitSentences() 가 감싼다.
+   블록으로 두는 이유는 inline-block 으로 두면 여러 줄이 된 문장과 짧은
+   문장이 같은 줄에 얹혀 기준선이 어긋나기 때문이다. */
+/* 발표자 노트는 무대 화면에 절대 보이지 않는다 — S 키로 연 창에서만 읽는다.
+   reveal 기본 CSS 가 이미 숨기지만, 우리 선택자가 더 세질 경우를 대비해 못박는다. */
+.reveal aside.notes { display: none !important; }
+
+.sent { display: block; }
+/* 표나 작은 글씨에서는 문장이 짧아 줄만 늘어난다 — 이어 붙인다. */
+.cite .sent, .card__cite .sent { display: inline; }
 
 .lead { font-size: 1.06em; color: var(--ink-2); max-width: 36ch; font-weight: 300; }
 .lead--wide { max-width: 52ch; }
@@ -151,6 +165,8 @@
 .card--red .card__tag { color: var(--red); }
 .card--teal { border-color: rgba(67, 188, 156, 0.45); }
 .card--teal .card__tag { color: var(--teal); }
+.card--amber { border-color: rgba(240, 166, 58, 0.45); }
+.card--amber .card__tag { color: var(--amber); }
 
 /* ── 숫자 ──────────────────────────────────────────────── */
 .stat { display: flex; flex-direction: column; gap: 0.3rem; }
@@ -307,6 +323,8 @@
 .punch em { color: var(--red); font-style: normal; }
 .punch--teal { border-left-color: var(--teal); }
 .punch--teal em { color: var(--teal); }
+.punch--amber { border-left-color: var(--amber); }
+.punch--amber em { color: var(--amber); }
 
 /* ── 실측 표 ─────────────────────────────────────────────── */
 .tbl { width: 100%; border-collapse: collapse; font-size: 0.8em; }
@@ -323,9 +341,16 @@
   text-transform: uppercase;
 }
 .tbl td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+/* 숫자가 아니라 **문장**이 든 표.  오른쪽 정렬하면 줄머리가 들쭉날쭉해져서
+   읽는 눈이 매 줄 시작점을 다시 찾아야 한다. */
+/* `:not(:first-child)` 가 클래스 하나만큼 무게를 더해서, 그냥 `.tbl--text td`
+   로는 위 규칙을 못 이긴다. 같은 모양으로 맞춰 적는다. */
+.tbl--text td:not(:first-child), .tbl--text th { text-align: left; }
 .tbl tr:last-child td { border-bottom: 0; }
 .tbl .big { font-weight: 700; color: var(--teal); font-size: 1.12em; }
 .tbl .dim { color: var(--ink3); }
+/* 나쁜 쪽 수치 — 비교 표에서 「이게 문제다」를 가리킨다. */
+.tbl .bad { color: var(--red); font-weight: 600; }
 .tbl--cmp .big { color: var(--red); }
 
 /* ── 구조 흐름도 ─────────────────────────────────────────── */
