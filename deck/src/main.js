@@ -9,6 +9,7 @@ import Reveal from 'reveal.js';
 import 'reveal.js/dist/reveal.css';
 import './theme.css';
 import { gsap } from 'gsap';
+import { ARCH_STEPS, buildArchitecture, makeArchController } from './arch.js';
 
 const C = {
   amber: '#f0a63a',
@@ -222,6 +223,9 @@ sections.forEach((s, i) => {
 
 const deck = new Reveal({
   hash: true,
+  // 확대 단계까지 주소에 담는다 — 발표 중 특정 단계로 바로 들어갈 수 있고,
+  // 화면을 캡처해 확인할 때도 그 단계를 지정할 수 있다.
+  fragmentInURL: true,
   slideNumber: false,
   controls: true,
   progress: true,
@@ -276,6 +280,51 @@ function animate(slide) {
     },
   );
 
+  // 묶음 안의 낱개도 차례로 올라온다.  카드 네 장이 한 덩어리로 나타나면
+  // 청중의 눈이 어디부터 볼지 정하지 못한다 — 순서를 눈으로 정해 준다.
+  const inner = slide.querySelectorAll(
+    '.grid > *, .tbl tr, .beyond > *, .timeline .tl-row',
+  );
+  if (inner.length) {
+    gsap.killTweensOf(inner);
+    gsap.set(inner, { clearProps: 'all' });
+    gsap.fromTo(
+      inner,
+      { y: 14, opacity: OPACITY_FLOOR },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.5,
+        stagger: 0.055,
+        delay: 0.18,
+        ease: 'power3.out',
+        clearProps: 'all',
+      },
+    );
+  }
+
+  // 큰 숫자는 살짝 눌렸다 펴진다.  숫자를 세어 올리면 중간에 **틀린 값**이
+  // 보이므로(「300,000」 자리에 「11,163」) 크기만 건드린다.
+  const nums = slide.querySelectorAll('.stat__num');
+  if (nums.length) {
+    gsap.fromTo(
+      nums,
+      { scale: 0.94 },
+      { scale: 1, duration: 0.55, stagger: 0.07, delay: 0.24,
+        ease: 'back.out(1.8)', clearProps: 'transform' },
+    );
+  }
+
+  // 결론 한 줄은 왼쪽 띠가 자라면서 들어온다.
+  const punch = slide.querySelector('.punch');
+  if (punch) {
+    gsap.fromTo(
+      punch,
+      { x: -10 },
+      { x: 0, duration: 0.5, delay: 0.3, ease: 'power3.out', clearProps: 'transform' },
+    );
+  }
+
   // Beyond 칸은 해당하는 둘만 켜진다.
   const hits = slide.querySelectorAll('.b-item--hit');
   if (hits.length) {
@@ -286,7 +335,11 @@ function animate(slide) {
   clearTimeout(animate._guard);
   animate._guard = setTimeout(() => {
     gsap.set(kids, { clearProps: 'all' });
-  }, 1200);
+    gsap.set(
+      slide.querySelectorAll('.grid > *, .tbl tr, .beyond > *, .timeline .tl-row, .stat__num, .punch'),
+      { clearProps: 'all' },
+    );
+  }, 1800);
 }
 
 deck.on('slidechanged', (e) => animate(e.currentSlide));
@@ -584,6 +637,27 @@ function playScenario(slide) {
 
 deck.on('slidechanged', (e) => playScenario(e.currentSlide));
 deck.on('ready', (e) => playScenario(e.currentSlide));
+
+/* ── 구조 흐름도 — 방향키로 단계마다 확대 ──────────────────── */
+const archHost = document.getElementById('arch-stage');
+let archGoto = null;
+if (archHost) {
+  const svg = buildArchitecture(archHost);
+  archGoto = makeArchController(svg, document.getElementById('arch-caption'), reduced);
+  archGoto(0);
+}
+
+/** 이 슬라이드에서 몇 번째 단계인지 = 보인 fragment 수. */
+function archStep(slide) {
+  if (!archGoto || !slide || slide.id !== 'slide-arch') return;
+  const shown = slide.querySelectorAll('.fragment[data-arch].visible').length;
+  archGoto(Math.min(shown, ARCH_STEPS.length - 1));
+}
+
+deck.on('fragmentshown', (e) => archStep(e.fragment.closest('section')));
+deck.on('fragmenthidden', (e) => archStep(e.fragment.closest('section')));
+deck.on('slidechanged', (e) => archStep(e.currentSlide));
+deck.on('ready', (e) => archStep(e.currentSlide));
 
 // initialize() 는 **모든 on() 등록이 끝난 뒤**에 불러야 한다.
 // 먼저 부르면 'ready' 가 등록 전에 지나가 버려서, 그 슬라이드로 바로 들어왔을 때

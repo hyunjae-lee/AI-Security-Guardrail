@@ -322,3 +322,37 @@
 .tbl .big { font-weight: 700; color: var(--teal); font-size: 1.12em; }
 .tbl .dim { color: var(--ink3); }
 .tbl--cmp .big { color: var(--red); }
+
+/* ── 구조 흐름도 ─────────────────────────────────────────── */
+.arch-title { font-size: 1.5em; }
+.arch-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* SVG 는 viewBox 밖도 그린다 — 확대하면 그림이 제목 위로 번진다. 잘라낸다. */
+  overflow: hidden;
+}
+.arch-stage svg { width: 100%; height: 100%; max-height: 100%; }
+.arch-caption {
+  flex: 0 0 auto;
+  min-height: 3.1em;
+  font-size: 0.76em;
+  line-height: 1.5;
+  color: var(--ink2);
+  border-left: 3px solid var(--teal);
+  padding: 0.5rem 0 0.5rem 1.1rem;
+  font-weight: 300;
+}
+.arch-caption b { color: var(--ink); font-weight: 700; }
+/* 확대 단계를 넘기는 fragment 는 보이지 않는다 — 방향키 횟수만 센다 */
+.fragment[data-arch] { display: none; }
+
+/* ── 전체 애니메이션 ─────────────────────────────────────── */
+/* 카드·표 행이 차례로 올라오게 한다. 투명도 하한은 지킨다 — 트윈이 멈춰도
+   읽히지 않는 화면이 남으면 안 된다 (f2419ea 회귀와 같은 종류). */
+.reveal .slides section .grid > *,
+.reveal .slides section .tbl tr,
+.reveal .slides section .beyond > *,
+.reveal .slides section .timeline .tl-row { will-change: transform, opacity; }
