@@ -304,7 +304,7 @@ cd web/src/assets/captures && for f in *.png; do
 | 의존성 | `reveal.js`(72.4k★ MIT) + `gsap`(이미 web/ 에서 쓰는 것) 둘뿐 |
 | 구성 | **37장** (4개 장 + 목차 + 진입 화면 4) · `index.html` · `src/theme.css` · `src/main.js` |
 | 조작 | 방향키 이동 · **`S` 발표자 노트(스크립트가 들어 있다)** · `?print-pdf` · `O` 개요 |
-| 검사 | `node deck/tools/check-contrast.mjs` (대비 **7:1**) · `node deck/tools/check-overflow.mjs` (넘침) |
+| 검사 | `check-contrast.mjs` (대비 **7:1**) · `check-overflow.mjs` (넘침) · `check-zoom.mjs` (확대 틀) |
 
 - 색의 뜻은 `web/` 과 같다(호박=질의, 청록=설비, 빨강=차단, 초록=허용). 발표에서
   색을 다시 배우게 하면 안 된다. 다만 바탕은 어둡게 간다 — 강당 프로젝터 기준.
@@ -357,6 +357,10 @@ cd web/src/assets/captures && for f in *.png; do
   **장을 넣고 빼면 노트의 시각을 전부 다시 깔아야 한다** — 끝이 9:35 여야 맞다.
   연습용 전문은 공유 문서(「최종발표 스크립트 — 디지털 국경」)에 있다.
   **슬라이드 문구를 고치면 그 장의 노트도 같이 본다.**
+- **확대 단계의 틀은 눈으로 맞추지 말 것.** 「조금 잘린 것」은 눈에 잘 안 띈다 —
+  1단계에서 상자 윗부분이 잘린 채 커밋됐고, 고치면서 조이다가 이번엔 아랫부분을 잘랐다.
+  `node deck/tools/check-zoom.mjs` 가 `stack.js` 의 상자 좌표와 틀을 대조한다.
+  **틀을 조일 때마다 다시 돌린다.**
 - **한 장이라도 넘치면 맺음 문장이나 출처 줄이 화면 밖으로 밀려나간다.** 실제로 세 번
   겪었다. 문구를 고쳤으면 `node deck/tools/check-overflow.mjs` 를 돌린다
   (개발 서버가 떠 있어야 한다). 이 도구는 DevTools 프로토콜로 붙는다 —
@@ -408,7 +412,8 @@ AI-Security-Guardrail/
     src/stack.js              ← 배치도·기술 스택 (확대 8단계)
     src/scenario-user.js  src/paths.js
     tools/check-contrast.mjs  ← 글자 대비 7:1
-    tools/check-overflow.mjs  ← 32장이 화면 안에 드는지 (CDP)
+    tools/check-overflow.mjs  ← 37장이 화면 안에 드는지 (CDP)
+    tools/check-zoom.mjs      ← 확대 틀이 상자를 자르지 않는지
   web/
     index.html
     vite.config.js            ← base = process.env.VITE_BASE || '/'
