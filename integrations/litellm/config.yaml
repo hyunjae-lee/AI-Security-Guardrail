@@ -1,0 +1,30 @@
+# LiteLLM 프록시 설정 예시 — 교내 앱은 base_url 만 이쪽으로 바꾸면 된다.
+#
+#   litellm --config integrations/litellm/config.yaml
+#
+# 앱 쪽 변경: OpenAI(base_url="http://litellm:4000") — 그게 전부다.
+
+model_list:
+  - model_name: kaist-gpt
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+  - model_name: kaist-claude
+    litellm_params:
+      model: anthropic/claude-sonnet-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+guardrails:
+  - guardrail_name: kaist-guardrail
+    litellm_params:
+      guardrail: integrations.litellm.kaist_guardrail.KaistGuardrail
+      mode: pre_call          # 나가는 질의 검사 (출국)
+      default_on: true
+  - guardrail_name: kaist-guardrail-output
+    litellm_params:
+      guardrail: integrations.litellm.kaist_guardrail.KaistGuardrail
+      mode: post_call         # 돌아온 답변 검사 (입국)
+      default_on: true
+
+litellm_settings:
+  drop_params: true

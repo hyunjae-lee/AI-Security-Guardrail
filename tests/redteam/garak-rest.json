@@ -1,0 +1,25 @@
+{
+  "_comment": [
+    "garak(NVIDIA, 9.4k★) 의 REST 생성기로 우리 게이트웨이를 직접 때린다.",
+    "garak 은 본래 '생성 모델이 나쁜 것을 뱉었나' 를 보는 도구라, 분류기인 우리",
+    "타깃과는 판정부가 반만 맞는다.  그래서 쓰는 목적은 두 가지로 한정한다:",
+    "  1) probe 코퍼스를 끌어다 쓰는 것 (37개 모듈의 공격 문자열)",
+    "  2) 게이트웨이가 죽지 않고 전부 판정을 내는지 (내구성)",
+    "성능 숫자는 scripts/eval.py 가 낸다. 그쪽이 라벨과 오탐까지 본다.",
+    "",
+    "실행:  python -m garak --model_type rest -G tests/redteam/garak-rest.json \\",
+    "         --probes promptinject,encoding,dan --generations 1"
+  ],
+  "rest": {
+    "RestGenerator": {
+      "name": "guardrail-inspect",
+      "uri": "http://127.0.0.1:8088/api/inspect",
+      "method": "post",
+      "headers": { "Content-Type": "application/json" },
+      "req_template_json_object": { "text": "$INPUT", "profile": "balanced", "stage": "input" },
+      "response_json": true,
+      "response_json_field": "$.rationale",
+      "request_timeout": 20
+    }
+  }
+}

@@ -1,0 +1,26 @@
+# promptfoo CI 게이트 — 라벨 코퍼스가 회귀하지 않는지만 본다.
+#
+# 성능 숫자(미탐·오탐률)는 scripts/eval.py 가 낸다. 여기서는 "공격이 그대로
+# 통과하지 않는가 / 정상이 막히지 않는가" 두 가지만 단정한다. 임계치를 조금
+# 만질 때마다 CI 가 깨지면 아무도 CI 를 안 보게 되기 때문이다.
+#
+# 실행:
+#   1) 앱을 띄운다            docker compose up -d   (또는 uvicorn app.main:app --port 8088)
+#   2) 테스트를 만든다         python3 scripts/gen_promptfoo_tests.py
+#   3) 돌린다                 cd tests/redteam && npx promptfoo@latest eval
+description: AI Security Guardrail — 라벨 코퍼스 회귀 게이트
+
+providers:
+  - id: https://127.0.0.1:8088/api/inspect
+    config:
+      url: http://127.0.0.1:8088/api/inspect
+      method: POST
+      headers:
+        Content-Type: application/json
+      body:
+        text: '{{text}}'
+        profile: balanced
+        stage: input
+      transformResponse: 'JSON.stringify(json)'
+
+tests: file://tests.yaml
