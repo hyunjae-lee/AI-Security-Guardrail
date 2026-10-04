@@ -16,21 +16,111 @@ const C = {
   line: '#3d4250', plate: '#1c1f27', ground2: '#14161c',
 };
 
-const LX = 48, LW = 700, RX = 840, RW = 712, TOP = 72, BODY = 470;
+const LX = 40, LW = 790, RX = 872, RW = 688, TOP = 72, BODY = 476;
+const SB = 176;                       // 사이드바 너비
+const MX = LX + SB, MW = LW - SB;     // 본문 영역
 
-/** 브라우저 창 — 주소줄 + 본문. */
-function browser(url, urlColor, inner) {
+/* ── 채팅 앱 껍데기 ──────────────────────────────────────────
+ * ChatGPT·Claude 가 공유하는 모양을 그린다 — 왼쪽 대화 목록, 가운데 메시지,
+ * 아래 입력줄, 위 모델 선택.  **가짜 스크린샷이 아니다.** 우리가 그린 도식이고
+ * 제품 이름은 글자로만 적는다. 청중이 「내가 쓰는 그 화면」으로 알아보면 된다.
+ */
+function chatShell({ url, urlColor, accent, sidebar = true, dim = false, main = '' }) {
+  const o = dim ? 0.3 : 1;
+  const convo = ['장학금 지급 기준 정리', '연구비 정산 서류', '학칙 제38조 해석'];
   return `
     <rect x="${LX}" y="${TOP}" width="${LW}" height="${BODY}" rx="14"
           fill="${C.plate}" stroke="${C.line}" stroke-width="1.5"/>
-    <line x1="${LX}" y1="${TOP + 52}" x2="${LX + LW}" y2="${TOP + 52}" stroke="${C.line}"/>
-    <circle cx="${LX + 26}" cy="${TOP + 26}" r="5" fill="#3a3e49"/>
-    <circle cx="${LX + 44}" cy="${TOP + 26}" r="5" fill="#3a3e49"/>
-    <circle cx="${LX + 62}" cy="${TOP + 26}" r="5" fill="#3a3e49"/>
-    <rect x="${LX + 86}" y="${TOP + 13}" width="${LW - 120}" height="26" rx="13"
+    <!-- 창 상단 -->
+    <line x1="${LX}" y1="${TOP + 46}" x2="${LX + LW}" y2="${TOP + 46}" stroke="${C.line}"/>
+    <circle cx="${LX + 24}" cy="${TOP + 23}" r="4.5" fill="#4a4f5c"/>
+    <circle cx="${LX + 40}" cy="${TOP + 23}" r="4.5" fill="#4a4f5c"/>
+    <circle cx="${LX + 56}" cy="${TOP + 23}" r="4.5" fill="#4a4f5c"/>
+    <rect x="${LX + 78}" y="${TOP + 11}" width="${LW - 110}" height="24" rx="12"
           fill="${C.ground2}" stroke="${C.line}"/>
-    <text x="${LX + 102}" y="${TOP + 31}" font-size="14.5" fill="${urlColor}">${url}</text>
-    ${inner}`;
+    <text x="${LX + 94}" y="${TOP + 28}" font-size="13.5" fill="${urlColor}">${url}</text>
+
+    ${sidebar ? `
+    <g opacity="${o}">
+      <rect x="${LX}" y="${TOP + 46}" width="${SB}" height="${BODY - 46}"
+            fill="${C.ground2}"/>
+      <line x1="${MX}" y1="${TOP + 46}" x2="${MX}" y2="${TOP + BODY}" stroke="${C.line}"/>
+      <rect x="${LX + 16}" y="${TOP + 64}" width="${SB - 32}" height="34" rx="9"
+            fill="${accent}" fill-opacity="0.14" stroke="${accent}" stroke-width="1.2"/>
+      <path d="M${LX + 34} ${TOP + 81} h14 M${LX + 41} ${TOP + 74} v14"
+            stroke="${accent}" stroke-width="1.6" stroke-linecap="round"/>
+      <text x="${LX + 58}" y="${TOP + 86}" font-size="13" font-weight="600" fill="${accent}">새 대화</text>
+      <text x="${LX + 18}" y="${TOP + 128}" font-size="11.5" fill="${C.ink3}"
+            letter-spacing="1">최근</text>
+      ${convo.map((t, i) => `
+        <g>
+          <rect x="${LX + 12}" y="${TOP + 140 + i * 34}" width="${SB - 24}" height="28" rx="7"
+                fill="${i === 0 ? '#23262f' : 'none'}"/>
+          <text x="${LX + 24}" y="${TOP + 159 + i * 34}" font-size="12"
+                fill="${i === 0 ? C.ink2 : C.ink3}">${t}</text>
+        </g>`).join('')}
+      <circle cx="${LX + 30}" cy="${TOP + BODY - 32}" r="12" fill="${accent}" fill-opacity="0.2"/>
+      <text x="${LX + 30}" y="${TOP + BODY - 27}" text-anchor="middle" font-size="11"
+            font-weight="700" fill="${accent}">김</text>
+      <text x="${LX + 50}" y="${TOP + BODY - 28}" font-size="12" fill="${C.ink2}">김○○ · 행정팀</text>
+    </g>` : ''}
+    ${main}`;
+}
+
+/** 모델 선택 알약 — 이 화면이 AI 챗이라는 가장 빠른 신호다. */
+function modelPill(label, accent) {
+  return `
+    <rect x="${MX + 20}" y="${TOP + 60}" width="196" height="28" rx="14"
+          fill="${C.ground2}" stroke="${C.line}"/>
+    <circle cx="${MX + 36}" cy="${TOP + 74}" r="4" fill="${accent}"/>
+    <text x="${MX + 48}" y="${TOP + 79}" font-size="12.5" fill="${C.ink2}">${label}</text>
+    <path d="M${MX + 198} ${TOP + 71} l5 5 l5 -5" stroke="${C.ink3}" stroke-width="1.4"
+          fill="none" stroke-linecap="round"/>`;
+}
+
+function userMsg(y, text, w = 430) {
+  const x = MX + MW - 24 - w;
+  return `
+    <rect x="${x}" y="${y}" width="${w}" height="44" rx="12" fill="#2a2e38"/>
+    <text x="${x + 18}" y="${y + 28}" font-size="14" fill="${C.ink}">${text}</text>`;
+}
+
+function aiMsg(y, lines, accent) {
+  return `
+    <rect x="${MX + 24}" y="${y}" width="26" height="26" rx="7"
+          fill="${accent}" fill-opacity="0.18" stroke="${accent}" stroke-width="1.1"/>
+    <circle cx="${MX + 37}" cy="${y + 13}" r="4.5" fill="${accent}"/>
+    ${lines.map((l, i) => `<text x="${MX + 62}" y="${y + 19 + i * 24}" font-size="14"
+          fill="${C.ink2}">${l}</text>`).join('')}`;
+}
+
+/** 입력줄 — 첨부 클립과 보내기 단추까지 그린다.
+ *  첨부가 있으면 실제 챗 UI 처럼 **입력 칸 위에 한 줄을 더** 만든다.
+ *  같은 줄에 두면 클립 아이콘과 칩이 겹친다. */
+function inputBar(placeholder, accent, chip = '') {
+  const h = chip ? 116 : 72;
+  const y = TOP + BODY - 24 - h;
+  const row = chip ? y + 76 : y + 36;   // 글자·단추가 놓이는 줄
+  return `
+    <rect x="${MX + 24}" y="${y}" width="${MW - 48}" height="${h}" rx="14"
+          fill="${C.ground2}" stroke="${C.line}" stroke-width="1.3"/>
+    ${chip ? chip(MX + 44, y + 12) : ''}
+    <path d="M${MX + 48} ${row - 4} v-6 a7 7 0 0 1 14 0 v14 a11 11 0 0 1 -22 0 v-12"
+          fill="none" stroke="${C.ink3}" stroke-width="1.5" stroke-linecap="round"/>
+    <text x="${MX + 76}" y="${row}" font-size="13.5" fill="${C.ink3}">${placeholder}</text>
+    <circle cx="${MX + MW - 52}" cy="${row - 4}" r="16" fill="${accent}"/>
+    <path d="M${MX + MW - 60} ${row - 4} h14 M${MX + MW - 52} ${row - 11} l7 7 l-7 7"
+          stroke="${C.ground}" stroke-width="2.4" fill="none"
+          stroke-linecap="round" stroke-linejoin="round"/>`;
+}
+
+function fileChip(x, y, name) {
+  return `
+    <rect x="${x}" y="${y}" width="262" height="32" rx="8"
+          fill="${C.amber}" fill-opacity="0.13" stroke="${C.amber}" stroke-width="1.2"/>
+    <path d="M${x + 20} ${y + 20} v-5 a5 5 0 0 1 10 0 v10 a8 8 0 0 1 -16 0 v-9"
+          fill="none" stroke="${C.amber}" stroke-width="1.4" stroke-linecap="round"/>
+    <text x="${x + 40} " y="${y + 21}" font-size="13" fill="${C.amber}">${name}</text>`;
 }
 
 /** 오른쪽 — 그 순간 시스템이 하는 일. */
@@ -38,88 +128,96 @@ function behind(title, color, rows) {
   return `
     <rect x="${RX}" y="${TOP}" width="${RW}" height="${BODY}" rx="14"
           fill="${C.ground2}" stroke="${color}" stroke-width="1.4" stroke-opacity="0.6"/>
-    <text x="${RX + 26}" y="${TOP + 36}" font-size="16.5" font-weight="700" fill="${color}">${title}</text>
+    <text x="${RX + 26}" y="${TOP + 36}" font-size="16" font-weight="700" fill="${color}">${title}</text>
     <line x1="${RX + 26}" y1="${TOP + 52}" x2="${RX + RW - 26}" y2="${TOP + 52}" stroke="${C.line}"/>
     ${rows.map((r, i) => {
       const [label, detail, mark] = r;
-      const y = TOP + 92 + i * 62;
+      const y = TOP + 96 + i * 66;
       return `
         <g>
-          <circle cx="${RX + 42}" cy="${y - 6}" r="11"
+          <circle cx="${RX + 42}" cy="${y - 6}" r="12"
                   fill="${mark === 'x' ? C.red : color}" fill-opacity="0.16"
                   stroke="${mark === 'x' ? C.red : color}" stroke-width="1.3"/>
-          <text x="${RX + 42}" y="${y - 1}" text-anchor="middle" font-size="12.5"
+          <text x="${RX + 42}" y="${y - 1}" text-anchor="middle" font-size="12"
                 font-weight="700" fill="${mark === 'x' ? C.red : color}">${mark === 'x' ? '✕' : i + 1}</text>
-          <text x="${RX + 68}" y="${y - 2}" font-size="16" font-weight="600" fill="${C.ink}">${label}</text>
-          <text x="${RX + 68}" y="${y + 20}" font-size="14" fill="${C.ink2}">${detail}</text>
+          <text x="${RX + 70}" y="${y - 2}" font-size="15.5" font-weight="600" fill="${C.ink}">${label}</text>
+          <text x="${RX + 70}" y="${y + 21}" font-size="13.5" fill="${C.ink2}">${detail}</text>
         </g>`;
     }).join('')}`;
 }
 
-function bubble(x, y, w, h, text, mine) {
-  return `
-    <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="11"
-          fill="${mine ? '#23262f' : '#1a1d25'}"/>
-    <text x="${x + 18}" y="${y + 26}" font-size="15" fill="${C.ink2}">${text}</text>`;
-}
-
-/** 여섯 장면. [왼쪽, 오른쪽] */
+/** 여섯 장면. [왼쪽 — 사용자가 보는 화면, 오른쪽 — 실제로 일어나는 일] */
 const SCENES = [
-  // 1 — 평소처럼 연다
+  // 1 — 평소 쓰던 그 화면을 연다
   [
-    browser('chatgpt.com', C.ink2, `
-      <text x="${LX + 40}" y="${TOP + 200}" font-size="19" fill="${C.ink3}">연결하는 중…</text>
-      <text x="${LX + 40}" y="${TOP + 234}" font-size="15.5" fill="${C.ink3}">평소처럼 주소를 쳤습니다.</text>`),
+    chatShell({
+      url: 'chatgpt.com', urlColor: C.ink2, accent: C.ink3, dim: true,
+      main: `
+        <g opacity="0.35">
+          ${modelPill('GPT-5', C.ink3)}
+          ${aiMsg(TOP + 140, ['무엇을 도와드릴까요?'], C.ink3)}
+        </g>
+        <text x="${MX + 24}" y="${TOP + 250}" font-size="18" fill="${C.ink2}">연결하는 중…</text>
+        <text x="${MX + 24}" y="${TOP + 282}" font-size="14" fill="${C.ink3}">평소 쓰던 그 화면을 열었습니다.</text>`,
+    }),
     behind('캠퍼스 방화벽', C.red, [
       ['TLS 핸드셰이크 시작', 'ClientHello 의 SNI = chatgpt.com'],
       ['차단 목록과 대조', '알려진 생성형 AI 도메인', 'x'],
       ['연결 거부', '복호화하지 않습니다 — 끊을 뿐입니다', 'x'],
     ]),
   ],
-  // 2 — 안내 페이지
+  // 2 — 안내가 뜬다
   [
-    browser('chatgpt.com', C.red, `
-      <rect x="${LX + 40}" y="${TOP + 110}" width="${LW - 80}" height="200" rx="12"
-            fill="rgba(226,87,73,.08)" stroke="${C.red}" stroke-width="1.4"/>
-      <text x="${LX + 64}" y="${TOP + 152}" font-size="18.5" font-weight="700" fill="${C.red}">외부 생성형 AI 직접 접속은 차단돼 있습니다</text>
-      <text x="${LX + 64}" y="${TOP + 186}" font-size="15.5" fill="${C.ink2}">교내 AI 포털에서 같은 모델을 쓸 수 있습니다.</text>
-      <text x="${LX + 64}" y="${TOP + 210}" font-size="15.5" fill="${C.ink2}">학교 계정으로 바로 들어가고, 비용은 기관이 부담합니다.</text>
-      <rect x="${LX + 64}" y="${TOP + 236}" width="190" height="44" rx="10"
-            fill="${C.teal}" fill-opacity="0.16" stroke="${C.teal}" stroke-width="1.4"/>
-      <text x="${LX + 159}" y="${TOP + 264}" text-anchor="middle" font-size="16"
-            font-weight="700" fill="${C.teal}">교내 AI 포털 열기</text>`),
+    chatShell({
+      url: 'chatgpt.com', urlColor: C.red, accent: C.ink3, dim: true,
+      main: `
+        <rect x="${MX + 28}" y="${TOP + 110}" width="${MW - 56}" height="212" rx="14"
+              fill="rgba(242,122,109,.08)" stroke="${C.red}" stroke-width="1.5"/>
+        <circle cx="${MX + 64}" cy="${TOP + 152}" r="15" fill="none" stroke="${C.red}" stroke-width="1.8"/>
+        <path d="M${MX + 57} ${TOP + 145} l14 14 M${MX + 71} ${TOP + 145} l-14 14"
+              stroke="${C.red}" stroke-width="2" stroke-linecap="round"/>
+        <text x="${MX + 92}" y="${TOP + 158}" font-size="17" font-weight="700"
+              fill="${C.red}">외부 생성형 AI 직접 접속은 차단돼 있습니다</text>
+        <text x="${MX + 54}" y="${TOP + 198}" font-size="14.5" fill="${C.ink2}">교내 AI 포털에서 같은 모델을 쓸 수 있습니다.</text>
+        <text x="${MX + 54}" y="${TOP + 224}" font-size="14.5" fill="${C.ink2}">학교 계정으로 바로 들어가고, 비용은 기관이 부담합니다.</text>
+        <rect x="${MX + 54}" y="${TOP + 250}" width="216" height="46" rx="11"
+              fill="${C.teal}" fill-opacity="0.18" stroke="${C.teal}" stroke-width="1.5"/>
+        <text x="${MX + 162}" y="${TOP + 279}" text-anchor="middle" font-size="15"
+              font-weight="700" fill="${C.teal}">교내 AI 포털 열기</text>`,
+    }),
     behind('안내 서버', C.amber, [
       ['DNS 싱크홀', '교내 안내 서버로 보냅니다'],
       ['왜 안내가 필요한가', '그냥 끊으면 「인터넷 고장났다」고 전산실에 전화합니다'],
       ['대안을 같은 화면에서', '막기만 하면 사람들은 폰을 꺼냅니다'],
     ]),
   ],
-  // 3 — 포털 진입
+  // 3 — 포털. 이미 로그인돼 있다
   [
-    browser('ai.kaist.ac.kr', C.teal, `
-      <text x="${LX + 40}" y="${TOP + 104}" font-size="17.5" font-weight="700" fill="${C.teal}">KAIST AI 포털</text>
-      <text x="${LX + 40}" y="${TOP + 132}" font-size="15" fill="${C.ink2}">김○○ 님 (행정팀) 으로 로그인됨</text>
-      ${bubble(LX + 40, TOP + 170, 420, 46, '무엇을 도와드릴까요?', false)}
-      <rect x="${LX + 40}" y="${TOP + 330}" width="${LW - 80}" height="86" rx="11"
-            fill="${C.ground2}" stroke="${C.line}"/>
-      <text x="${LX + 62}" y="${TOP + 362}" font-size="15" fill="${C.ink3}">메시지를 입력하세요…</text>`),
+    chatShell({
+      url: 'ai.kaist.ac.kr', urlColor: C.teal, accent: C.teal,
+      main: `
+        ${modelPill('Claude Sonnet 5', C.teal)}
+        ${aiMsg(TOP + 130, ['안녕하세요 김○○ 님. 무엇을 도와드릴까요?',
+                            '학칙·연구비 규정은 교내 자료에서 바로 찾아 드립니다.'], C.teal)}
+        ${inputBar('메시지를 입력하세요…', C.teal)}`,
+    }),
     behind('포털 · 인증', C.teal, [
       ['교내 SSO 로 로그인', '계정을 새로 만들지 않습니다 — 이미 로그인돼 있습니다'],
       ['권한 등급 확인', '행정팀 → CLR-2. 같은 질문도 등급에 따라 다른 답이 나옵니다'],
-      ['모델 선택', 'Claude · GPT · Gemini — 기관 계정으로'],
+      ['교내 자료 연동', '「우리 학과 졸업요건」에 외부 AI 는 답할 수 없습니다'],
     ]),
   ],
-  // 4 — 평소처럼 묻는다
+  // 4 — 평소처럼 묻고 평소처럼 첨부한다
   [
-    browser('ai.kaist.ac.kr', C.teal, `
-      ${bubble(LX + 40, TOP + 110, 420, 46, '무엇을 도와드릴까요?', false)}
-      ${bubble(LX + 230, TOP + 174, 470, 46, '이번 학기 장학금 지급 대상자 명단 정리해 줘', true)}
-      <g>
-        <rect x="${LX + 420}" y="${TOP + 232}" width="280" height="36" rx="9"
-              fill="rgba(240,166,58,.12)" stroke="${C.amber}" stroke-width="1.2"/>
-        <text x="${LX + 444}" y="${TOP + 255}" font-size="14.5" fill="${C.amber}">📎 장학생_명단_2026.xlsx</text>
-      </g>
-      <text x="${LX + 40}" y="${TOP + 330}" font-size="15" fill="${C.ink3}">평소 쓰던 것과 똑같이 묻고, 똑같이 첨부합니다.</text>`),
+    chatShell({
+      url: 'ai.kaist.ac.kr', urlColor: C.teal, accent: C.teal,
+      main: `
+        ${modelPill('Claude Sonnet 5', C.teal)}
+        ${aiMsg(TOP + 118, ['안녕하세요 김○○ 님. 무엇을 도와드릴까요?'], C.teal)}
+        ${userMsg(TOP + 176, '이번 학기 장학금 지급 대상자 명단 정리해 줘', 440)}
+        ${inputBar('무엇이든 물어보세요', C.teal,
+            (x, y) => fileChip(x, y, '장학생_명단_2026.xlsx'))}`,
+    }),
     behind('출국 검사 — 사용자는 못 봅니다', C.amber, [
       ['첨부파일을 훑습니다', '주민등록번호 1,204건 발견'],
       ['판정 = SANITIZE', '가방째 압수하지 않습니다 — 금지 물건만 뺍니다'],
@@ -128,11 +226,16 @@ const SCENES = [
   ],
   // 5 — 답이 온다
   [
-    browser('ai.kaist.ac.kr', C.teal, `
-      ${bubble(LX + 230, TOP + 110, 470, 46, '이번 학기 장학금 지급 대상자 명단 정리해 줘', true)}
-      ${bubble(LX + 40, TOP + 174, 600, 128, '요청하신 명단을 기준별로 정리했습니다. 성적 우수 32명,', false)}
-      <text x="${LX + 58}" y="${TOP + 226}" font-size="15" fill="${C.ink2}">가계 곤란 18명, 특기자 7명으로 분류했고 지급액 합계는…</text>
-      <text x="${LX + 40}" y="${TOP + 350}" font-size="15" fill="${C.ink3}">그냥 답이 왔습니다. 기다린 느낌도 없었습니다.</text>`),
+    chatShell({
+      url: 'ai.kaist.ac.kr', urlColor: C.teal, accent: C.teal,
+      main: `
+        ${modelPill('Claude Sonnet 5', C.teal)}
+        ${userMsg(TOP + 110, '이번 학기 장학금 지급 대상자 명단 정리해 줘', 440)}
+        ${aiMsg(TOP + 174, ['요청하신 명단을 기준별로 정리했습니다.',
+                            '성적 우수 32명 · 가계 곤란 18명 · 특기자 7명.',
+                            '지급액 합계는 1억 8,400만 원입니다.'], C.teal)}
+        ${inputBar('메시지를 입력하세요…', C.teal)}`,
+    }),
     behind('입국 검사 + 기록', C.green, [
       ['돌아온 답변을 다시 검사', '카나리아 · 개인정보 재노출 · 반출 링크'],
       ['검사에 걸린 시간', '나갈 때 5.0 ms · 돌아올 때 0.3 ms'],
@@ -141,11 +244,16 @@ const SCENES = [
   ],
   // 6 — 결론
   [
-    browser('ai.kaist.ac.kr', C.teal, `
-      <text x="${LX + 40}" y="${TOP + 150}" font-size="22" font-weight="700" fill="${C.ink}">사용자가 의식한 것은</text>
-      <text x="${LX + 40}" y="${TOP + 190}" font-size="22" font-weight="700" fill="${C.teal}">주소가 바뀐 것 하나뿐입니다.</text>
-      <text x="${LX + 40}" y="${TOP + 246}" font-size="16" fill="${C.ink2}">여권을 꺼낼 일도, 가방을 열어 보일 일도 없었습니다.</text>
-      <text x="${LX + 40}" y="${TOP + 274}" font-size="16" fill="${C.ink2}">검사대가 있다는 것조차 몰랐습니다.</text>`),
+    chatShell({
+      url: 'ai.kaist.ac.kr', urlColor: C.teal, accent: C.teal,
+      main: `
+        ${modelPill('Claude Sonnet 5', C.teal)}
+        <text x="${MX + 28}" y="${TOP + 182}" font-size="23" font-weight="700" fill="${C.ink}">사용자가 의식한 것은</text>
+        <text x="${MX + 28}" y="${TOP + 222}" font-size="23" font-weight="700" fill="${C.teal}">주소가 바뀐 것 하나뿐입니다.</text>
+        <text x="${MX + 28}" y="${TOP + 274}" font-size="15" fill="${C.ink2}">여권을 꺼낼 일도, 가방을 열어 보일 일도 없었습니다.</text>
+        <text x="${MX + 28}" y="${TOP + 302}" font-size="15" fill="${C.ink2}">검사대가 있다는 것조차 몰랐습니다.</text>
+        ${inputBar('메시지를 입력하세요…', C.teal)}`,
+    }),
     behind('그 사이 시스템이 한 일', C.teal, [
       ['출국 검사 8단계', '정규화 · 이상 · 자격증명 · 개인정보 · NER · 인젝션 · 유해 · 등급'],
       ['판정과 마스킹', '주민등록번호 1,204건을 치환해 내보냈습니다'],
