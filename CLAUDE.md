@@ -302,9 +302,9 @@ cd web/src/assets/captures && for f in *.png; do
 | 실행 | `cd deck && npm install && npm run dev` → http://127.0.0.1:5174 |
 | 빌드 | `npm run build` (하위 경로 배포 시 `VITE_BASE=/deck/ npm run build`) |
 | 의존성 | `reveal.js`(72.4k★ MIT) + `gsap`(이미 web/ 에서 쓰는 것) 둘뿐 |
-| 구성 | 24장 · `index.html`(카피 원본) · `src/theme.css` · `src/main.js`(도식+연출) |
-| 조작 | 방향키 이동 · `S` 발표자 노트 · `?print-pdf` 로 PDF 내보내기 · `O` 개요 |
-| 검사 | `node deck/tools/check-contrast.mjs` — 글자 대비 **7:1** (강당 기준) |
+| 구성 | **32장** · `index.html`(카피 원본) · `src/theme.css` · `src/main.js`(도식+연출) |
+| 조작 | 방향키 이동 · **`S` 발표자 노트(스크립트가 들어 있다)** · `?print-pdf` · `O` 개요 |
+| 검사 | `node deck/tools/check-contrast.mjs` (대비 **7:1**) · `node deck/tools/check-overflow.mjs` (넘침) |
 
 - 색의 뜻은 `web/` 과 같다(호박=질의, 청록=설비, 빨강=차단, 초록=허용). 발표에서
   색을 다시 배우게 하면 안 된다. 다만 바탕은 어둡게 간다 — 강당 프로젝터 기준.
@@ -336,6 +336,22 @@ cd web/src/assets/captures && for f in *.png; do
   무슨 일이 일어나는지가 그대로 보이면 비유도 용어 해설도 필요 없다.
   (`web/` 의 비유 원칙은 **공항이라는 하나의 일관된 세계**가 있어서 통한다.
   덱에서 비유를 급조하면 세계가 없어 오히려 겉돈다.)
+- **발표 스크립트는 슬라이드 안에 있다.** 각 장의 `<aside class="notes">` 에 그대로 말할
+  문장이 들어 있고, 첫 줄이 **구간·초**와 **「본발표 / 예비」** 표시다. 10분 본발표는
+  **19장**이고 나머지 13장은 질의응답용으로 남겨 둔다 — 지우지 말 것.
+  연습용 전문은 공유 문서(「최종발표 스크립트 — 디지털 국경」)에 있다.
+  **슬라이드 문구를 고치면 그 장의 노트도 같이 본다.**
+- **한 장이라도 넘치면 맺음 문장이나 출처 줄이 화면 밖으로 밀려나간다.** 실제로 세 번
+  겪었다. 문구를 고쳤으면 `node deck/tools/check-overflow.mjs` 를 돌린다
+  (개발 서버가 떠 있어야 한다). 이 도구는 DevTools 프로토콜로 붙는다 —
+  `--virtual-time-budget` + `--dump-dom` 은 GSAP 의 rAF 때문에 끝나지 않는다.
+- **줄바꿈 단위는 어절이 아니라 문장이다.** `word-break: keep-all` 만으로는 다음 문장의
+  앞 두 어절이 앞 줄 꼬리에 매달린다. `main.js` 의 `splitSentences()` 가 런타임에
+  `.lead`·`.punch`·`.card__body` 등의 문장을 `<span class="sent">`(블록)으로 감싼다.
+  **`<br>` 로 박지 말 것** — 화면 폭이 달라지는 순간 다시 어긋난다.
+- **등장 연출의 감시 타이머는 지우기 전에 트윈을 죽여야 한다.** `clearProps` 만 하면
+  아직 돌고 있는 트윈이 다음 틱에 중간값을 다시 쓴다. 제목이 clip-path 중간에서 굳고,
+  화살표 선이 dashoffset 때문에 통째로 사라진 채 머리만 떠 있었다(헤드리스에서 재현).
 - 카피는 `index.html` 안에 둔다. `web/` 의 `strings.js` 규칙을 적용하지 않는 이유는
   reveal.js 의 자연스러운 형태가 시맨틱 HTML 섹션이고, 덱은 그 자체가 카피 원본이기 때문이다.
 - **사실은 전부 출처·날짜와 함께 쓴다.** 카드뉴스 8건과 N2SF 인용은 `web/` 에서
@@ -370,8 +386,13 @@ AI-Security-Guardrail/
   DEPLOY.md                   ← 호스트 제약·도메인·Caddy·CD 등록 절차
   .github/workflows/          ← ci.yml, cd.yml
   deck/                       ← 최종발표 슬라이드 (reveal.js). web/ 과 독립
-    index.html                ← 14장 슬라이드 + 카피 원본
+    index.html                ← 32장 슬라이드 + 카피 원본 + 발표자 노트(스크립트)
     src/theme.css  src/main.js
+    src/arch.js               ← 파이프라인 도면 (확대 8단계)
+    src/stack.js              ← 배치도·기술 스택 (확대 8단계)
+    src/scenario-user.js  src/paths.js
+    tools/check-contrast.mjs  ← 글자 대비 7:1
+    tools/check-overflow.mjs  ← 32장이 화면 안에 드는지 (CDP)
   web/
     index.html
     vite.config.js            ← base = process.env.VITE_BASE || '/'
@@ -404,7 +425,7 @@ M1~M5 및 2차 단계(`/explain` 서빙) 모두 완료. 10개 장면 전부 인�
 
 | 무엇 | 어디 |
 |---|---|
-| 라벨 코퍼스 186건 | `attacks/corpus/` (정상 116 · 공격 70) — 규약은 그 안의 README |
+| 라벨 코퍼스 **205건** | `attacks/corpus/` (정상 128 · 공격 77) — 규약은 그 안의 README |
 | 평가 하네스 | `scripts/eval.py` — 의존성 0, py3.9 shim 포함 |
 | 측정 결과 | `attacks/corpus/results/*.json` (날짜별로 남긴다) |
 | 표준 매핑 | `docs/standards-mapping.md` — OWASP LLM Top 10 · MITRE ATLAS · N2SF |
@@ -454,7 +475,7 @@ NER 이 더하는 것은 **정규식이 못 잡는 이름·주소**뿐이다(패
 | 공격 미탐 | 7/77 (9.1%) | **0/77 (0%)** |
 | 하드 오탐 | 0/128 | **0/128** |
 | 소프트 오탐 | 1/128 (0.8%) | 5/128 (3.9%) |
-| 질의 검사 지연 | 0.20 ms | **4.09 ms** |
+| 질의 검사 지연 | 0.25 ms | **5.02 ms** |
 
 구현에서 꼭 알아야 할 것 셋:
 1. **`spacy.blank("ko")` 는 `mecab-ko` 시스템 패키지를 요구한다**(ImportError 로 확인).
@@ -469,7 +490,8 @@ NER 이 더하는 것은 **정규식이 못 잡는 이름·주소**뿐이다(패
 
 소프트 오탐 5건은 세종대왕·이순신·대전시 유성구·DAN 처럼 **올바른 NER 이 과하게 적용된** 것이고
 판정이 SANITIZE 라 질의는 나간다. 하드 오탐은 0 을 유지한다.
-**사이트의 실측 지연 표(0.62ms)는 이 기능을 켜면 갱신해야 한다.**
+지연은 `web/tools/bench-latency.py --presidio` 로 재며 실행마다 ±5% 흔들린다.
+사이트·덱·README 가 같은 값을 쓰는지 **고칠 때마다 함께 확인한다.**
 
 ### 외부 연동 (2026-10-04)
 | 무엇 | 어디 | 상태 |
@@ -484,20 +506,26 @@ NER 이 더하는 것은 **정규식이 못 잡는 이름·주소**뿐이다(패
 **같은 방법으로 반대 결론이 나왔다** — ML 인젝션 분류기는 「아니오」(한계 기여 0, 비용 5건),
 한국어 NER 은 「예」(미탐 7→0, 하드 오탐 0 유지). 측정 체계가 실제로 판단을 가른다는 증거다.
 
-**분류기를 끄기로 한 근거 (모델 둘을 쟀다)** — 코퍼스 186건, 임계치 0.9:
+**분류기를 끄기로 한 근거 (모델 둘을 쟀다)** — 코퍼스 **205건**, 임계치 0.9.
+분류기가 학습된 과제(인젝션·유출·난독화 **29건**)만 떼어 재는 쪽이 공정하다:
 
-| 모델 | 기반 | 공격 적중 | 정상 오탐 |
+| 모델 | 기반 | 인젝션 29건 적중 | 정상 128건 오탐 |
 |---|---|---|---|
-| protectai/deberta-v3-base-prompt-injection-v2 | DeBERTa-v3 (영어) | 70.0% | **42.2%** |
-| proventra/mdeberta-v3-base-prompt-injection | mDeBERTa (다국어) | 41.4% | 4.3% |
-| **규칙 기반 (우리 엔진)** | — | **98.6%** | **0.0%** |
+| protectai/deberta-v3-base-prompt-injection-v2 | DeBERTa-v3 (영어) | **100%** | **39.8%** |
+| proventra/mdeberta-v3-base-prompt-injection | mDeBERTa (다국어) | 72.4% | 3.9% |
+| **규칙 기반 (우리 엔진)** | — | **100%** | **0.0%** |
 
-영어 전용 모델은 멀쩡한 한국어 질의의 42%를 오판한다. 다국어 모델은 그 문제를
-해결하지만 공격을 41%밖에 못 잡는다. 결정적인 것은 **한계 기여**로,
+**적중률이 문제가 아니었다** — 영어 전용 모델은 인젝션을 하나도 놓치지 않는다.
+문제는 그 모델이 멀쩡한 한국어 질의 128건 중 51건을 인젝션이라고 부르는 것이다.
+결정적인 것은 **한계 기여**로,
 다국어 모델을 규칙 위에 얹으면 **규칙이 놓친 공격은 0건 잡고 정상 5건이 새로 막힌다**
 — 순손실이다. 그 5건은 전부 `benign.trigger` 군이라, 표면적 「이전 지시 무시」
 의미에만 반응하고 문맥을 못 본다는 뜻이다.
-전체 수치는 `attacks/corpus/results/classifier-comparison-2026-10-04.json`.
+전체 수치는 `attacks/corpus/results/classifier-comparison-205-2026-10-04.json` 과
+`classifier-fair-injection-205-2026-10-04.json`.
+
+> `/tmp/mdeberta-pi` 로 받아 둔 「파인튜닝」 가중치는 proventra 와 md5 가 같다 —
+> **같은 모델이다.** 세 종류를 비교한 것이 아니라 둘이다.
 → **공개 인젝션 분류기는 한국어 도메인에서 규칙 기반 가드레일을 보강하지 못한다**
   는 것이 두 번 측정해서 얻은 결론이다. 발표에 쓸 수 있는 음성 결과.
 
