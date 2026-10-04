@@ -342,7 +342,7 @@ function animate(slide) {
   // 묶음 안의 낱개도 차례로 올라온다.  카드 네 장이 한 덩어리로 나타나면
   // 청중의 눈이 어디부터 볼지 정하지 못한다 — 순서를 눈으로 정해 준다.
   const inner = slide.querySelectorAll(
-    '.grid > *, .tbl tr, .beyond > *, .timeline .tl-row',
+    '.grid > *, .tbl tr, .beyond > *, .timeline .tl-row, .chapters > *, .chbar__item',
   );
   if (inner.length) {
     gsap.killTweensOf(inner);
@@ -364,7 +364,7 @@ function animate(slide) {
 
   // 큰 숫자는 살짝 눌렸다 펴진다.  숫자를 세어 올리면 중간에 **틀린 값**이
   // 보이므로(「300,000」 자리에 「11,163」) 크기만 건드린다.
-  const nums = slide.querySelectorAll('.stat__num');
+  const nums = slide.querySelectorAll('.stat__num, .ch-big__num');
   if (nums.length) {
     gsap.fromTo(
       nums,
@@ -441,7 +441,7 @@ function animate(slide) {
     const all = [
       ...kids,
       ...slide.querySelectorAll(
-        '.grid > *, .tbl tr, .beyond > *, .timeline .tl-row, .stat__num, .punch, .b-item--hit, h1, h2, .kicker,'
+        '.grid > *, .tbl tr, .beyond > *, .timeline .tl-row, .stat__num, .punch, .b-item--hit, h1, h2, .kicker, .chapters > *, .chbar__item, .ch-big__num,'
         // 선 그리기도 되돌려야 한다 — dashoffset 이 길이만큼 남아 있으면
         // 선이 통째로 안 보이고 화살표 머리만 떠 있다 (구성도에서 확인).
         + ' .stage svg path[marker-end], .arch-stage svg path[marker-end]',
@@ -896,7 +896,7 @@ if (location.search.includes('audit')) {
     requestAnimationFrame(() => {
       const sec = sections[i];
       const wrap = sec.querySelector('.wrap');
-      const kicker = sec.querySelector('.kicker');
+      const kicker = sec.querySelector('.kicker, .ch-big__q, h1');
       const over = Math.round(wrap.scrollHeight - wrap.clientHeight);
       rows.push({
         i: i + 1,
