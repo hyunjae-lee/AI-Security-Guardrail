@@ -44,10 +44,16 @@ INTENT_PATTERNS = _p(
     r"\bgive\s+me\s+(?:the\s+)?(?:code|script|instructions?|recipe|steps?)\b",
     r"\bwrite\s+(?:me\s+)?(?:a\s+)?(?:working|functional|complete)\b",
     r"\b(?:build|make|create|synthesize|manufacture|produce)\s+(?:a|an|me)\b",
-    r"(?:만드는|제조|합성|제작)\s*(?:법|방법)",
-    r"(?:어떻게|어떡하면)\s*.{0,20}(?:만들|제조|합성|해킹|침입)",
-    r"(?:단계별로|자세히)\s*(?:알려|설명|가르쳐)",
+    r"(?:만드는|제조|합성|제작|뚫는|터는)\s*(?:법|방법|절차)",
+    r"(?:어떻게|어떡하면)\s*.{0,20}(?:만들|제조|합성|해킹|침입|뚫)",
+    r"(?:단계별로|자세히|구체적으로)\s*(?:알려|설명|가르쳐)",
     r"(?:코드|스크립트|프로그램|룰).{0,4}(?:작성|제작|만들|짜|써)",
+    # 「~를 만들어/짜/작성해 줘」 — 목적어가 앞에 오는 한국어 어순을 받는다.
+    r"(?:만들어|짜|작성해|제작해|개발해|구현해)\s*(?:줘|주세요|주라|봐|달라|주실)",
+    # 「~하는 방법/절차/도면/설정값을 알려 줘」 — 방법을 요구하는 일반형.
+    r"(?:방법|절차|과정|도면|설정값|전구체|레시피)(?:과|와|을|를|이|가)?\s*"
+    r"(?:알려|설명|정리해|가르쳐|보여)",
+    r"(?:하는|할)\s*(?:방법|절차|법)(?:을|를)?\s*(?:알려|설명|가르쳐)",
 )
 
 # Framing that indicates defensive, analytical, or educational use.
@@ -58,6 +64,15 @@ DEFENSIVE_PATTERNS = _p(
     r"\b(?:CTF|capture\s+the\s+flag|pentest|penetration\s+test|bug\s+bounty|red\s+team)\b",
     r"\b(?:vulnerability\s+(?:assessment|scan)|security\s+(?:audit|review|research))\b",
     r"(?:탐지|방어|대응|완화|예방|차단|분석|포렌식|모의해킹|취약점\s*진단|보안\s*연구)",
+    r"(?:신고|제보|상담|대처|보안\s*교육|인식\s*제고|피해\s*구제)",
+)
+
+# 방어 어휘 바로 뒤에 회피 표현이 붙으면 완화를 취소한다.
+_EVASION_RE = re.compile(
+    r"(?:탐지|백신|보안|방어|필터|모니터링|로그)\s*(?:를|을)?\s*"
+    r"(?:피하|우회|회피|무력화|속이|뚫)"
+    r"|(?:undetect|evade|bypass)\w*\s+(?:av|edr|detection|antivirus)",
+    re.IGNORECASE,
 )
 
 CATEGORIES: tuple[HarmCategory, ...] = (
@@ -69,6 +84,8 @@ CATEGORIES: tuple[HarmCategory, ...] = (
             r"\b(?:pipe\s+bomb|ied|explosive\s+device|detonator|nerve\s+agent|chemical\s+weapon)\b",
             r"\b(?:bioweapon|biological\s+weapon|weaponi[sz]ed\s+(?:pathogen|anthrax))\b",
             r"(?:폭탄|사제\s*폭발물|기폭\s*장치|생화학\s*무기|신경\s*작용제)",
+            r"(?:총기|권총|소총|사제\s*총)(?:를|을|의)?\s*.{0,16}(?:제작|출력|만들|도면|프린)",
+            r"(?:독성|유독)\s*가스|독가스",
         ),
     ),
     HarmCategory(
@@ -90,7 +107,10 @@ CATEGORIES: tuple[HarmCategory, ...] = (
             r"\bhack\s+(?:into|someone|my\s+(?:ex|neighbor|friend)|their)\b",
             r"\b(?:bypass|crack|brute[- ]force)\s+(?:the\s+)?(?:login|password|2fa|mfa|authentication)\b",
             r"\bsteal\s+(?:someone'?s?\s+)?(?:password|credential|account|session|cookie)s?\b",
-            r"(?:계정|비밀번호)\s*(?:탈취|해킹|크랙)",
+            r"(?:계정|비밀번호)\s*(?:을|를)?\s*(?:대량\s*)?(?:탈취|해킹|크랙|알아내)",
+            r"(?:침입|백도어|무단\s*접속)\s*(?:스크립트|도구|코드|프로그램)",
+            r"(?:몰래|무단으로)\s*(?:들어갈|접속|침입)",
+            r"(?:무차별\s*대입|브루트\s*포스)",
             r"(?:남의|타인의)\s*(?:폰|컴퓨터|계정)(?:을|를)?\s*(?:해킹|몰래)",
         ),
     ),
@@ -101,7 +121,7 @@ CATEGORIES: tuple[HarmCategory, ...] = (
         topic=_p(
             r"\b(?:synthesi[sz]e|cook|manufacture)\s+(?:meth|methamphetamine|fentanyl|mdma|lsd)\b",
             r"\b(?:meth|fentanyl)\s+(?:lab|recipe|synthesis)\b",
-            r"(?:마약|필로폰|메스암페타민|펜타닐)\s*(?:제조|합성|만드는)",
+            r"(?:마약|필로폰|메스암페타민|펜타닐)(?:류)?(?:을|를|의)?\s*(?:제조|합성|만드는)",
         ),
     ),
     HarmCategory(
@@ -146,7 +166,7 @@ CATEGORIES: tuple[HarmCategory, ...] = (
             r"\b(?:phishing|smishing)\s+(?:email|page|site|kit|template)\b",
             r"\bwrite\s+.{0,30}\b(?:scam|fraudulent)\s+(?:message|email|letter)\b",
             r"\b(?:fake|forged|counterfeit)\s+(?:id|passport|invoice|receipt|certificate)\b",
-            r"(?:피싱|보이스피싱|스미싱)\s*(?:메일|문자|사이트|스크립트)",
+            r"(?:피싱|보이스피싱|스미싱)\s*(?:메일|문자|사이트|페이지|폼|스크립트|코드)",
             r"(?:위조|가짜)\s*(?:신분증|여권|영수증|증명서)",
         ),
     ),
@@ -173,6 +193,10 @@ class HarmfulContentDetector(BaseDetector):
         defensive_hit = next(
             (m.group(0) for p in DEFENSIVE_PATTERNS if (m := p.search(target))), None
         )
+        # 방어 어휘를 '회피 대상'으로 쓰면 방어 의도가 아니다.
+        # 「탐지를 피하는 랜섬웨어」가 방어 목적으로 완화되던 것을 막는다(eval 실측).
+        if defensive_hit is not None and _EVASION_RE.search(target):
+            defensive_hit = None
 
         for category in CATEGORIES:
             match = next((m for p in category.topic if (m := p.search(target))), None)

@@ -49,6 +49,32 @@ RULES: tuple[SecretRule, ...] = (
     SecretRule("jwt", "JWT 토큰", re.compile(r"\beyJ[A-Za-z0-9_\-]{10,}\.eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"), Severity.HIGH, 0.85),
     SecretRule("db_uri", "DB 접속 문자열", re.compile(r"\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis)://[^\s:@]+:[^\s@]+@[^\s/]+"), Severity.CRITICAL, 0.93),
     SecretRule("generic_secret", "하드코딩된 자격증명", re.compile(r"(?i)\b(?:password|passwd|secret|api[_-]?key|token)\s*[=:]\s*['\"]([^'\"\s]{8,})['\"]"), Severity.HIGH, 0.7, 3.0),
+    # 한국어로 계정·비밀번호를 **평문으로 주고받는** 형태.  위의 generic_secret 은
+    # `password: "값"` 처럼 등호와 따옴표를 요구해서, 「계정이 admin / Pw123!」 같은
+    # 실제 공유 문장을 통째로 놓치고 있었다 (scripts/eval.py 실측 미탐).
+    SecretRule(
+        "credential_pair_kr",
+        "계정·비밀번호 평문 공유",
+        re.compile(
+            r"(?:계정|아이디|로그인|ID)\s*(?:은|는|이|가)?\s*[:：]?\s*"
+            r"[A-Za-z0-9._%+-]{3,}\s*[/|,]\s*"
+            r"((?=[^\s]*[A-Za-z])(?=[^\s]*\d)[^\s'\"]{8,})"
+        ),
+        Severity.HIGH,
+        0.8,
+        2.5,
+    ),
+    SecretRule(
+        "password_kr",
+        "비밀번호 평문",
+        re.compile(
+            r"(?:비밀번호|패스워드|암호|비번)\s*(?:은|는|이|가)?\s*[:：]?\s*"
+            r"['\"]?((?=[^\s]*[A-Za-z])(?=[^\s]*\d)[^\s'\"]{8,})['\"]?"
+        ),
+        Severity.HIGH,
+        0.75,
+        2.8,
+    ),
 )
 
 CONFIDENTIAL_MARKERS = tuple(

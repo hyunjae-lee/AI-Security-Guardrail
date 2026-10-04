@@ -39,9 +39,13 @@ RULES: tuple[InjectionRule, ...] = (
             r"(?:instruction|prompt|rule|direction|command|message)s?",
             r"disregard\s+(?:all\s+|any\s+)?(?:previous|prior|above|earlier|the\s+system)",
             r"forget\s+(?:everything|all)\s+(?:you|above|before|previously)",
-            r"이전(?:의)?\s*(?:모든\s*)?(?:지시|명령|규칙|프롬프트)(?:사항)?(?:을|를)?\s*(?:무시|잊)",
+            # 한국어는 「이전 모든 지시를 무시」와 「이전 지시를 모두 무시」가 둘 다 쓰인다.
+            # 수량사가 뒤로 가는 어순을 받지 못해 가장 흔한 공격 문장을 놓치고 있었다.
+            r"이전(?:의)?\s*(?:모든\s*)?(?:지시|명령|규칙|프롬프트)(?:사항)?(?:을|를)?\s*"
+            r"(?:모두\s*|전부\s*|싹\s*)?(?:무시|잊)",
             r"위(?:의|에서)?\s*(?:모든\s*)?(?:지시|명령|규칙)(?:을|를)?\s*(?:무시|잊)",
-            r"앞서?\s*(?:받은|말한)?\s*(?:지시|명령)(?:을|를)?\s*(?:무시|취소)",
+            r"앞서?\s*(?:받은|말한)?\s*(?:지시|명령)(?:사항)?(?:은|는|을|를)?\s*"
+            r"(?:전부\s*|모두\s*)?(?:무시|취소|잊)",
             r"override\s+(?:your|the)\s+(?:system\s+)?(?:prompt|instruction|rule|guideline)",
             r"new\s+instructions?\s*[:：]\s*",
             r"실제\s*지시(?:사항)?\s*(?:은|는)\s*(?:다음|아래)",
@@ -56,7 +60,8 @@ RULES: tuple[InjectionRule, ...] = (
             r"\byou\s+are\s+now\s+(?:a|an|in|no\s+longer)\b",
             r"\bact\s+as\s+(?:if\s+you|a|an)\b.{0,40}(?:no\s+restriction|unrestricted|uncensored|jailbroken)",
             r"\bpretend\s+(?:to\s+be|you\s+are)\b.{0,40}(?:no\s+rule|without\s+restriction|unfiltered)",
-            r"\bDAN\b\s*(?:mode|prompt)?",
+            # 접미사를 필수로. 선택(?)이면 「DAN 교수님」 같은 인명이 걸린다(eval 실측).
+            r"\bDAN\b\s*(?:mode|prompt|모드|프롬프트)",
             r"\bdo\s+anything\s+now\b",
             r"developer\s+mode\s+(?:enabled|on|activated)",
             r"(?:god|admin|root|sudo)\s*mode\s*(?:enabled|on|activated)",
@@ -76,8 +81,18 @@ RULES: tuple[InjectionRule, ...] = (
             r"(?:system\s+)?(?:prompt|instruction|rule|guideline|configuration|directive)s?",
             r"what\s+(?:is|are)\s+your\s+(?:system\s+)?(?:prompt|initial\s+instruction|original\s+instruction)s?",
             r"repeat\s+(?:everything|the\s+text)\s+(?:above|before)",
-            r"(?:시스템|초기|원본)\s*프롬프트.{0,20}(?:출력|알려|보여|공개|노출|말해)",
-            r"너의?\s*(?:지시사항|설정|규칙|프롬프트).{0,20}(?:그대로\s*)?(?:출력|알려|보여|공개)",
+            r"(?:시스템|초기|원본|내부)\s*(?:프롬프트|설정|지침|구성).{0,24}"
+            r"(?:출력|알려|보여|공개|노출|말해|적혀|나열)",
+            # 「너의」뿐 아니라 「네/니/너에게 주어진」 꼴도 받는다.
+            r"(?:너의?|네|니|당신의?)\s*(?:지시사항|설정|규칙|프롬프트|지침).{0,24}"
+            r"(?:그대로\s*)?(?:출력|알려|보여|공개|나열)",
+            r"(?:너|당신)에게\s*(?:주어진|부여된)\s*(?:행동\s*)?(?:규칙|지시|지침).{0,20}"
+            r"(?:나열|출력|알려|보여)",
+            r"(?:한\s*글자도\s*빼지\s*말고|토씨\s*하나\s*안\s*틀리게|빠짐없이)\s*"
+            r"(?:알려|출력|보여|적어)",
+            r"(?:프롬프트|시스템\s*메시지)에\s*(?:들어|있는).{0,20}(?:식별자|토큰|키).{0,16}(?:알려|출력|보여)",
+            r"(?:지식베이스|knowledge\s*base|RAG|DB|데이터베이스)\s*(?:접속|연결)\s*"
+            r"(?:정보|주소|계정|문자열)",
             r"위(?:에|의).{0,8}(?:텍스트|내용|말|문장).{0,8}그대로.{0,8}(?:반복|출력)",
             r"내부\s*(?:설정|지침|프롬프트|규칙).{0,12}(?:공개|노출|출력|알려)",
         ),
@@ -97,6 +112,18 @@ RULES: tuple[InjectionRule, ...] = (
         ),
     ),
     InjectionRule(
+        technique="hidden_instruction",
+        label="지시 은닉 요구",
+        severity=Severity.HIGH,
+        confidence=0.78,
+        patterns=_p(
+            r"거꾸로\s*(?:읽|해석|뒤집)",
+            r"(?:첫|앞)\s*글자만\s*(?:이어|모아|붙여)\s*(?:읽|해석)",
+            r"(?:디코드|복호화|decode)\s*(?:해서|한\s*뒤|하여).{0,16}(?:실행|수행|따라|그대로)",
+            r"(?:한\s*글자씩|한\s*자씩)\s*(?:띄어|나눠)(?:서)?\s*(?:출력|써|적)",
+        ),
+    ),
+    InjectionRule(
         technique="indirect_injection",
         label="간접 인젝션 마커",
         severity=Severity.MEDIUM,
@@ -105,7 +132,9 @@ RULES: tuple[InjectionRule, ...] = (
             r"(?:if\s+you\s+are\s+an?\s+(?:AI|language\s+model|assistant)).{0,60}(?:then|you\s+must|please)",
             r"(?:AI|assistant|모델)\s*(?:에게|에|여)\s*[:：].{0,40}(?:무시|실행|전송)",
             r"important\s+(?:note|message)\s+(?:for|to)\s+(?:the\s+)?(?:AI|assistant|model)",
-            r"이\s*(?:문서|페이지|내용)(?:를|을)\s*(?:읽는|처리하는)\s*(?:AI|모델|어시스턴트)(?:는|은)",
+            r"이\s*(?:문서|페이지|내용)(?:를|을)\s*(?:읽는|처리하는)\s*"
+            r"(?:AI|모델|어시스턴트)\s*(?:는|은)",
+            r"(?:AI|모델|어시스턴트)\s*(?:는|은)\s*다음(?:을|를)?\s*(?:반드시\s*)?(?:실행|수행|따르)",
         ),
     ),
     InjectionRule(
@@ -117,7 +146,15 @@ RULES: tuple[InjectionRule, ...] = (
             r"!\[[^\]]*\]\(\s*https?://[^)]*[?&][^)]*=",  # markdown image exfil
             r"(?:send|post|upload|transmit|exfiltrate)\s+(?:it|this|the\s+\w+)\s+to\s+https?://",
             r"(?:append|include|encode)\s+.{0,30}\s+(?:in|into|to)\s+(?:the\s+)?URL",
-            r"(?:결과|대화|내용|정보)(?:를|을|\s*전체를)?\s*.{0,40}https?://",
+            r"(?:결과|대화|내용|정보|답변|기록)(?:를|을|에|\s*전체를)?\s*.{0,40}https?://",
+            # 스킴 없는 도메인으로 보내라는 요구도 반출이다 (webhook.example.io 로 POST).
+            r"(?:대화|내용|결과|명단|자료)(?:를|을)?\s*.{0,30}"
+            r"[a-z0-9-]+\.[a-z]{2,}(?:/\S*)?\s*(?:로|으로|에)\s*"
+            r"(?:POST|전송|업로드|보내|올려)",
+            r"(?:URL|주소|링크)\s*(?:파라미터|쿼리)?(?:에|로)\s*"
+            r"(?:인코딩|실어|붙여|담아).{0,20}(?:링크|주소)?(?:로)?\s*(?:만들|생성)",
+            r"(?:모든|매)\s*(?:답변|응답)(?:에|마다)\s*.{0,30}(?:링크|주소|이미지)(?:를|을)?\s*"
+            r"(?:포함|삽입|붙여|넣어)",
             r"https?://\S{0,40}\?\w+=.{0,30}(?:붙여|전송|삽입|보내)",
             r"마크다운\s*이미지(?:로|으로)?\s*(?:삽입|출력|렌더|만들)",
             r"(?:주소|url)\s*(?:뒤에|끝에|맨\s*뒤)?.{0,10}붙여",
