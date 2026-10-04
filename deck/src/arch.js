@@ -55,7 +55,7 @@ function stageBox(x, y, w, h, [title, sub, kind], idx) {
       ${lines.map((l, i) => `<text x="${x + w / 2}" y="${y + 50 + i * 17}" text-anchor="middle"
             font-size="13.5" fill="${C.ink2}">${l}</text>`).join('')}
       ${isML ? `<text x="${x + w / 2}" y="${y + h - 10}" text-anchor="middle"
-            font-size="11.5" font-weight="700" fill="${C.amber}">ONNX 56MB · 3ms</text>` : ''}
+            font-size="11.5" font-weight="700" fill="${C.amber}">ONNX 56MB</text>` : ''}
     </g>`;
 }
 
@@ -222,7 +222,7 @@ export const ARCH_STEPS = [
    '구성원은 <b>교내 포털</b>만 봅니다. 사람은 웹 채팅으로, 앱·연구실은 OpenAI 호환 API 로 들어옵니다. 여기서 SSO 로 권한 등급(CLR)이 정해집니다.'],
   [[436, 76, 790, 230], ['z-in'],
    '<b>출국 검사 여덟 단계.</b> 앞 단계가 디코딩한 결과를 다음 단계가 보기 때문에, base64 로 감싸 우회할 수 없습니다.'],
-  [[840, 100, 360, 165], ['z-in'],
+  [[700, 98, 342, 154], ['z-in'],
    '여덟 중 <b>기계학습 모델은 하나뿐</b>입니다 — 한국어 이름·주소를 잡는 KoELECTRA. ONNX 로 구워 <b>56MB·CPU 3ms</b> 입니다. GPU 가 필요 없습니다.'],
   [[440, 316, 790, 110], ['z-verdict'],
    '판정은 넷입니다. <b>막는 것이 아니라 등급에 따라 다르게 보냅니다</b> — 가방째 압수하면 사람들은 우회로를 찾습니다.'],
