@@ -1,0 +1,19 @@
+{
+  "name": "guardrail-deck",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "최종발표용 슬라이드 — 디지털 국경 / AI 보안 가드레일",
+  "scripts": {
+    "dev": "vite --port 5174",
+    "build": "vite build",
+    "preview": "vite preview --port 5174"
+  },
+  "devDependencies": {
+    "vite": "^7.1.5"
+  },
+  "dependencies": {
+    "reveal.js": "^5.2.1",
+    "gsap": "^3.13.0"
+  }
+}

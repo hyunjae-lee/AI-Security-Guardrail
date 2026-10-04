@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>디지털 국경 — KAIST AI 보안 가드레일 최종발표</title>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- 01 표지 ─────────────────────────────────────────────── -->
+<section data-s="01">
+  <div class="wrap wrap--center">
+    <p class="kicker">KAIST · 2026 연구 최종발표</p>
+    <h1>디지털 국경</h1>
+    <p class="lead lead--wide" style="font-size:1.25em;margin-top:.6rem">
+      교내 생성형 AI 질의가 국경을 넘는 길목에<br>검사대를 세우는 일에 대하여.
+    </p>
+    <p class="cite foot"><b>guardrail.kaist.ac.kr</b> · 실시간 데모와 설명 사이트가 동작 중</p>
+  </div>
+</section>
+
+<!-- 02 문제 ─────────────────────────────────────────────── -->
+<section data-s="02">
+  <div class="wrap wrap--center">
+    <h1 style="font-size:3.1em">무엇을 입력하든,<br>막는 것이 없습니다.</h1>
+    <p class="lead lead--wide" style="margin-top:1.4rem">
+      지금 이 순간 캠퍼스에서 외부 생성형 AI 로 나가는 질의에는
+      <em>검사대가 없습니다.</em> 누가 무엇을 내보냈는지도 남지 않습니다.
+    </p>
+  </div>
+</section>
+
+<!-- 09 유출 시나리오 A ─────────────────────────────────── -->
+<section data-s="03">
+  <div class="wrap">
+    <p class="kicker kicker--red">01 · 지금 무엇을 넣고 있나</p>
+    <h2>질문 하나에, 전부 실려 나갑니다.</h2>
+    <div class="scenario" id="scn-input"></div>
+    <p class="cite">문제는 질문이 아니라 <b>함께 올라가는 것</b>입니다 — 첨부파일, 붙여넣은 표, 앞선 대화 전부.</p>
+  </div>
+</section>
+
+<!-- 10 유출 시나리오 B ─────────────────────────────────── -->
+<section data-s="04">
+  <div class="wrap">
+    <p class="kicker kicker--red">02 · 국경을 넘은 다음</p>
+    <h2>한 번 넘어가면 되돌릴 수 없습니다.</h2>
+    <div class="scenario" id="scn-after"></div>
+    <p class="cite">세 갈래 모두 <b>우리 관제 밖</b>입니다. 삭제를 요청할 창구도, 확인할 방법도 우리에게 없습니다.</p>
+  </div>
+</section>
+
+<!-- 04 실제 사고 ────────────────────────────────────────── -->
+<section data-s="05">
+  <div class="wrap">
+    <p class="kicker kicker--red">03 · 무슨 일이 있었나</p>
+    <h2>대단한 해킹이 하나도 없습니다.</h2>
+    <div class="spacer"></div>
+    <div class="grid grid--4" style="flex:0 0 auto">
+      <div class="card card--red">
+        <span class="card__tag">붙여넣기</span>
+        <span class="card__title">삼성전자 반도체</span>
+        <span class="card__body">ChatGPT 사용을 허용한 지 20일 만에 설비 점검 소스코드와 사내 회의 녹취가 외부로 넘어갔습니다. 회사는 2023년 5월 사내 생성형 AI 를 전면 금지했습니다.</span>
+        <span class="card__cite">The Register · 2023.04.06</span>
+      </div>
+      <div class="card card--red">
+        <span class="card__tag">공유 버튼 한 번</span>
+        <span class="card__title">대화가 검색에 색인</span>
+        <span class="card__body">「공유」를 누른 대화가 검색 결과에 그대로 올라왔습니다. 이름·이력서·건강 이야기까지 섞여 있었고, OpenAI 는 문제가 된 기능을 없앴습니다.</span>
+        <span class="card__cite">TechCrunch · 2025.07.31</span>
+      </div>
+      <div class="card card--red">
+        <span class="card__tag">클릭 0회</span>
+        <span class="card__title">EchoLeak · CVE-2025-32711</span>
+        <span class="card__body">Microsoft 365 Copilot 취약점. 공격자가 메일에 숨긴 지시문을 이용자가 열지 않아도 AI 가 읽고 따랐고, 메일·문서 내용이 바깥으로 실려 나갔습니다.</span>
+        <span class="card__cite">arXiv 분석 · 2025.09.06</span>
+      </div>
+      <div class="card card--red">
+        <span class="card__tag">화상회의 사칭</span>
+        <span class="card__title">Arup · 약 2,500만 달러</span>
+        <span class="card__body">홍콩 지사 직원이 본사 재무책임자가 참석한 회의 지시대로 15차례 송금했습니다. 그 회의에서 진짜 사람은 본인 한 명뿐이었습니다.</span>
+        <span class="card__cite">CNN 보도 · 홍콩 경찰 발표 · 2024.05.16</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="cite">네 건 모두 <b>평범한 업무 동작</b>에서 났습니다 — 붙여넣기, 공유, 메일 수신, 회의 참석.</p>
+  </div>
+</section>
+
+<!-- 05 한국 사례 ───────────────────────────────────────── -->
+<section data-s="06">
+  <div class="wrap">
+    <p class="kicker kicker--red">04 · 남의 나라 이야기가 아닙니다</p>
+    <h2>수사 문서가 외부 AI 로 갔습니다.</h2>
+    <div class="spacer"></div>
+    <div class="grid grid--2" style="flex:0 0 auto">
+      <div class="card card--red">
+        <span class="card__tag">국정감사에서 드러남</span>
+        <span class="card__title">용인동부경찰서 · 불송치 결정문</span>
+        <span class="card__body">경찰이 <strong>불송치 결정문</strong>을 쓰면서 ChatGPT 를 활용했고, 그 결과 <strong>존재하지 않는 대법원·서울북부지법 판결문 문구</strong>를 인용했습니다. 경찰청장 직무대행은 「내용을 추출할 때는 챗GPT 를 활용한 것」이라고 답했습니다.</span>
+        <span class="card__cite">국회 행정안전위원회 국정감사 · 권칠승 의원 지적 · 2025.10.17</span>
+      </div>
+      <div class="card card--red">
+        <span class="card__tag">두 가지가 한꺼번에</span>
+        <span class="card__title">나갈 때도, 돌아올 때도 아무도 안 봤습니다</span>
+        <span class="card__body">① 수사 기록이라는 가장 민감한 자료가 <strong>외부 민간 서비스</strong>로 넘어갔습니다.<br>② 돌아온 답이 <strong>사실이 아니었습니다</strong>. 판례는 애초에 존재하지 않았습니다.</span>
+        <span class="card__cite">「자체 법률 AI 를 두고 왜 외부 민간 서비스를 썼는지 이해할 수 없다」 — 권칠승 의원</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="punch">검사대가 있었다면 <em>나갈 때 한 번, 돌아올 때 한 번</em> 걸렸을 일입니다.</p>
+  </div>
+</section>
+
+<!-- 대학 ──────────────────────────────────────────────── -->
+<section data-s="07">
+  <div class="wrap">
+    <p class="kicker kicker--red">05 · 그리고 대학이 지목됐습니다</p>
+    <h2>기술유출의 통로로 대학이 지목됐습니다.</h2>
+    <div class="spacer"></div>
+    <div class="grid grid--3" style="flex:0 0 auto">
+      <div class="stat">
+        <span class="stat__num stat__num--red">179<small style="font-size:.5em">건</small></span>
+        <span class="stat__label">2025년 경찰이 적발한 기술유출. 2021년 89건에서 늘었습니다.</span>
+      </div>
+      <div class="stat">
+        <span class="stat__num stat__num--amber">68<small style="font-size:.5em">건</small></span>
+        <span class="stat__label">2026년 7월까지 적발. 해외 유출 9건이 포함돼 있습니다.</span>
+      </div>
+      <div class="stat">
+        <span class="stat__num">40<small style="font-size:.5em">억 원</small></span>
+        <span class="stat__label">대학 보안체계 구축에 투입. 2026년 6월.</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="grid grid--2" style="flex:0 0 auto">
+      <div class="card card--red">
+        <span class="card__tag">2026.08</span>
+        <span class="card__title">대통령실이 관계부처를 불렀습니다</span>
+        <span class="card__body">대학이 기술유출 통로가 되고 있다는 지적에 따라 대응책 마련을 주문했습니다.</span>
+        <span class="card__cite">한국경제 보도</span>
+      </div>
+      <div class="card card--teal">
+        <span class="card__tag">2026.04.29</span>
+        <span class="card__title">연구안보센터가 KAIST 에서 출범했습니다</span>
+        <span class="card__body">과학기술정보통신부가 공모로 <strong>KAIST·중앙대</strong>를 주관기관으로 선정했고, 착수회의는 대전 KAIST 에서 열렸습니다. <strong>KAIST 가 맡은 역할은 「AI 기반 위험평가 등 데이터 중심 관리체계 구축」</strong>입니다.</span>
+        <span class="card__cite">과학기술정보통신부 · 연구안보센터 착수회의</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="punch">KAIST 는 <em>이미 연구안보 거점</em>입니다. 그런데 정작 구성원의 질의는 아직 검사 없이 국경을 넘습니다.</p>
+  </div>
+</section>
+
+<!-- 06 중국 AI 경유 ─────────────────────────────────────── -->
+<section data-s="08">
+  <div class="wrap">
+    <p class="kicker kicker--red">06 · 어디로 가는지조차 모릅니다</p>
+    <h2>이용자는 키미에 물었습니다. 답한 것은 Claude 였습니다.</h2>
+    <div class="spacer"></div>
+    <div class="grid grid--4" style="flex:0 0 auto">
+      <div class="stat">
+        <span class="stat__num stat__num--red">7</span>
+        <span class="stat__label">중국 AI 연구소가 Claude 를 무단 증류<br>(알리바바·문샷·딥시크·Z.ai·미니맥스·샤오미·센스타임)</span>
+      </div>
+      <div class="stat">
+        <span class="stat__num stat__num--amber">1억 8,950만</span>
+        <span class="stat__label">2026년 2월 이후 관측된 전체 교환 건수</span>
+      </div>
+      <div class="stat">
+        <span class="stat__num stat__num--red">1억 5,100만</span>
+        <span class="stat__label">알리바바 한 곳 — 앤스로픽이 측정한 역대 최대 규모</span>
+      </div>
+      <div class="stat">
+        <span class="stat__num">3,500<small style="font-size:.5em">+</small></span>
+        <span class="stat__label">동원된 가짜 계정. 하루 최대 300만 건</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="quote" style="border-left-color:var(--red)">
+      <p class="quote__text" style="font-size:.84em">
+        문샷AI 는 이용자 요청을 키미로 처리하지 않고 <mark style="background:rgba(226,87,73,.2);color:var(--red)">몰래 Claude 로 돌린 뒤</mark>,
+        Claude 의 답변을 그대로 이용자에게 보여 주었습니다. 앤스로픽은
+        &ldquo;이 교환 중 일부에는 <mark style="background:rgba(226,87,73,.2);color:var(--red)">개인 이용자, 대형 다국적 기업, 국가 연계 행위자의 민감정보</mark>가 포함돼 있었다&rdquo;고 밝혔습니다.
+      </p>
+      <p class="quote__src">Anthropic 「Threat Intelligence Report — September 2026」 (2026.09.10) · CNBC · The Hacker News 보도</p>
+    </div>
+    <div class="spacer"></div>
+    <p class="punch">내가 고른 AI 가 내 데이터를 <em>어디로 보내는지</em>, 쓰는 사람은 알 수 없습니다.</p>
+  </div>
+</section>
+
+<!-- 남는다 ────────────────────────────────────────────── -->
+<section data-s="09">
+  <div class="wrap">
+    <p class="kicker kicker--red">07 · 넣은 것은 남습니다</p>
+    <h2>지운다고 지워지지 않습니다.</h2>
+    <div class="spacer"></div>
+    <div class="grid grid--3" style="flex:0 0 auto">
+      <div class="card card--red">
+        <span class="card__tag">약관 개정</span>
+        <span class="card__title">Anthropic</span>
+        <span class="card__body">이용자가 <strong>거부하지 않으면</strong> 대화를 모델 학습에 쓰고 최대 5년간 보관하도록 기본값을 바꿨습니다.</span>
+        <span class="card__cite">Anthropic 공식 공지 · 2025.08.28</span>
+      </div>
+      <div class="card card--red">
+        <span class="card__tag">법원의 기록 요구</span>
+        <span class="card__title">OpenAI</span>
+        <span class="card__body">2026년 1월, 미국 연방법원이 개인 식별을 지운 대화 로그 <strong>2,000만 건</strong>을 제출하라는 명령을 확정했습니다.</span>
+        <span class="card__cite">OpenAI 공식 입장문 · 2025.06.05</span>
+      </div>
+      <div class="card card--red">
+        <span class="card__tag">계정이 곧 기록</span>
+        <span class="card__title">다크웹 ChatGPT 계정 30만 건+</span>
+        <span class="card__body">계정이 넘어가면 <strong>그 안에 쌓아 둔 대화 기록도 같이</strong> 넘어갑니다.</span>
+        <span class="card__cite">IBM X-Force Threat Intelligence Index 2026</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="punch">한 번 넘어간 질의는 <em>우리 정책이 아니라 그쪽 정책</em>을 따릅니다. 그리고 그쪽 정책은 우리에게 묻지 않고 바뀝니다.</p>
+  </div>
+</section>
+
+<!-- 금지는 답이 아니다 ─────────────────────────────────── -->
+<section data-s="10">
+  <div class="wrap">
+    <p class="kicker">08 · 그러면 막으면 되나</p>
+    <h2>막으면, 숨어서 씁니다.</h2>
+    <div class="spacer"></div>
+    <div class="grid grid--2" style="flex:0 0 auto">
+      <div class="card card--red">
+        <span class="card__tag">전면 금지의 결과</span>
+        <span class="card__title">금지는 쓰고 싶은 마음을 없애지 못합니다</span>
+        <span class="card__body">삼성전자는 유출 사고 뒤 2023년 5월 사내 생성형 AI 를 <strong>전면 금지</strong>했습니다. 그래도 업무는 그대로 남습니다. 도구만 보이지 않는 곳으로 옮겨 갑니다.</span>
+        <span class="card__cite">The Register 보도 · 2023.04.06</span>
+      </div>
+      <div class="card card--red">
+        <span class="card__tag">숨은 사용의 증거</span>
+        <span class="card__title">경영진 78% 가 파악하고 있다고 답했지만, 실제는 23%</span>
+        <span class="card__body">승인받지 않은 AI 도구에 사내 문서와 인사 정보를 넣었고, <strong>16% 는 로그인 정보까지</strong> 입력했습니다. 조사 대상 조직의 절반 이상이 지난 1년 안에 AI 관련 사고나 아차 사고를 겪었습니다.</span>
+        <span class="card__cite">The Register 보도 · Okta 의뢰 조사(7개국 784명) · 2026.05.27</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="punch punch--teal">그래서 <em>가방째 압수하지 않습니다.</em> 금지 물건만 빼고 보냅니다 — 업무가 멈추면 사람들은 반드시 우회로를 찾습니다.</p>
+  </div>
+</section>
+
+<!-- 은행권 ─────────────────────────────────────────────── -->
+<section data-s="bank">
+  <div class="wrap">
+    <p class="kicker kicker--red">09 · 지난주에 일어난 일</p>
+    <h2>국내에서 가장 규제가 센 곳이 뚫렸습니다.</h2>
+    <div class="spacer"></div>
+    <div class="grid grid--4" style="flex:0 0 auto">
+      <div class="stat">
+        <span class="stat__num stat__num--red">25,000<small style="font-size:.5em">명</small></span>
+        <span class="stat__label"><strong>신한은행</strong> 고객 정보 유출 · 9.29~30<br>금융감독원 긴급 현장조사</span>
+      </div>
+      <div class="stat">
+        <span class="stat__num stat__num--red">40,000<small style="font-size:.5em">명</small></span>
+        <span class="stat__label"><strong>예가람저축은행</strong> · 9.30<br>전체 고객 20만 명의 20%</span>
+      </div>
+      <div class="stat">
+        <span class="stat__num stat__num--amber">146<small style="font-size:.5em">명</small></span>
+        <span class="stat__label"><strong>현대캐피탈</strong><br>주택대출 모집인 · 10.2</span>
+      </div>
+      <div class="stat">
+        <span class="stat__num" style="font-size:1.5em">KB · 하나 · 부산</span>
+        <span class="stat__label">국민 119명 · 하나 89명<br>부산 외주 개발직원 11명</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="punch">금융권은 국내에서 <strong>망분리·감독기관·예산·전담인력</strong>이 가장 강한 곳입니다.
+      그리고 신한은행 공격 과정에서는 <em>중국어 기반 AI 해킹 도구가 활용된 정황</em>이 포착됐습니다.</p>
+    <p class="cite">파이낸셜뉴스 · 서울신문 · 글로벌이코노믹 보도 (2026.10.01~10.03) · 금융위원회 「금융권 긴급 상황 대응 회의」 개최</p>
+  </div>
+</section>
+
+<!-- 그러면 우리는 ───────────────────────────────────────── -->
+<section data-s="us">
+  <div class="wrap">
+    <p class="kicker kicker--red">10 · 그러면 우리는</p>
+    <h2>KAIST 는 사고 소식이 없습니다. 셋 중 무엇일까요.</h2>
+    <div class="spacer"></div>
+    <div class="grid grid--3" style="flex:0 0 auto">
+      <div class="card card--red">
+        <span class="card__tag">하나</span>
+        <span class="card__title">정말 더 나은 환경이다</span>
+        <span class="card__body">은행보다 보안 예산이 많습니까. 전담 인력이 많습니까. 감독기관이 분기마다 점검합니까. 망분리를 더 엄격하게 했습니까.</span>
+      </div>
+      <div class="card card--red">
+        <span class="card__tag">둘</span>
+        <span class="card__title">아직 차례가 오지 않았다</span>
+        <span class="card__body">사고가 없었다는 것은 안전하다는 뜻일 수도 있고, 아직 순서가 아니라는 뜻일 수도 있습니다. 둘은 겉으로 같아 보입니다.</span>
+      </div>
+      <div class="card card--red">
+        <span class="card__tag">셋</span>
+        <span class="card__title">이미 일어났는데 모른다</span>
+        <span class="card__body">무엇이 나갔는지 아무도 기록하지 않으면, <strong>나간 적이 없는 것과 똑같아 보입니다.</strong></span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="punch">검사하지 않으면 이 셋은 <em>구별되지 않습니다.</em><br>
+      지금 우리는 어느 쪽인지 말할 근거 자체가 없습니다.</p>
+  </div>
+</section>
+
+<!-- 제도화 ─────────────────────────────────────────────── -->
+<section data-s="11">
+  <div class="wrap">
+    <p class="kicker kicker--teal">11 · 제도가 바뀌었습니다</p>
+    <h2>망분리가 끝났습니다.</h2>
+    <div class="spacer"></div>
+    <div class="grid grid--2" style="flex:0 0 auto;gap:2rem">
+      <div class="card" style="border-color:#3a3e49">
+        <span class="card__tag" style="color:var(--ink3)">종전 · 20년 넘게</span>
+        <span class="card__title" style="color:var(--ink2)">「국가정보보안기본지침」 제40조</span>
+        <span class="card__body">내부망과 인터넷망을 <strong>획일적으로 분리</strong>하도록 요구했습니다. 20년 넘게 공공 IT 보안의 토대였던 물리적 망분리 원칙입니다.</span>
+        <span class="card__cite">외부 AI 를 쓰려면 망을 뚫거나, 포기하거나 둘 중 하나였습니다.</span>
+      </div>
+      <div class="card card--teal">
+        <span class="card__tag">개정 · 2026.05.01 시행</span>
+        <span class="card__title">「국가 사이버보안 기본지침」 제39조의2 ~ 제39조의5</span>
+        <span class="card__body">제40조를 <strong>삭제</strong>하고 N2SF 를 신설했습니다. 업무정보를 <strong>기밀(C)·민감(S)·공개(O)</strong> 로 분류해 영역·정보시스템·보안통제를 <strong>차등 적용</strong>합니다.</span>
+        <span class="card__cite">국가정보원 · 2019년 전부개정 이후 가장 큰 변화</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="punch punch--teal">「막아 두기」가 제도적으로 끝났습니다. 이제 필요한 것은 <em>등급을 보고 통과시키는 장치</em>입니다.</p>
+  </div>
+</section>
+
+<!-- 08 N2SF 원문 ───────────────────────────────────────── -->
+<section data-s="12">
+  <div class="wrap">
+    <p class="kicker kicker--teal">12 · 설계 근거</p>
+    <h2>그 제도가 필터를 직접 요구합니다.</h2>
+    <div class="spacer"></div>
+    <div class="doc">
+      <img class="doc__cover" src="/src/assets/n2sf-cover.webp"
+           alt="국가정보원 「국가 망 보안체계(N2SF) 보안 가이드라인 1.0」 표지" />
+      <div class="doc__side">
+        <span class="doc__badge">원문 문서</span>
+        <div class="quote" style="padding:1.3rem 1.7rem">
+          <p class="quote__text" style="font-size:.86em">
+            &ldquo;AI 연계체계를 통해 생성형 AI 서비스 활용 시
+            <mark>프롬프트·콘텐츠 필터링</mark>, 보안등급 식별 등을 통해
+            승인된 공개(O) 등급 외 업무정보가 유출되지 않도록 보호조치를 적용해야 한다.&rdquo;
+          </p>
+          <p class="quote__src">국가정보원 「국가 망 보안체계(N2SF) 보안 가이드라인 1.0」 · 2025.09</p>
+        </div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="punch punch--teal">이 프로젝트는 <em>이 한 문장의 구현</em>입니다. 만들 이유를 찾은 것이 아니라, <em>이미 요구된 것</em>을 만들었습니다.</p>
+  </div>
+</section>
+
+<!-- 10 만든 것 ─────────────────────────────────────────── -->
+<section data-s="13">
+  <div class="wrap">
+    <p class="kicker kicker--teal">13 · 만든 것</p>
+    <h2>국경에 검사대를 세웠습니다. 양방향으로.</h2>
+    <div class="stage" id="stage-gate"></div>
+    <p class="cite">나갈 때 깨끗했어도 <b>돌아올 때 깨끗하다는 보장은 없습니다</b> — 그래서 입국 검사가 따로 있습니다.</p>
+  </div>
+</section>
+
+<!-- 11 판정 ─────────────────────────────────────────────── -->
+<section data-s="14">
+  <div class="wrap">
+    <p class="kicker kicker--teal">14 · 무엇을 하는가</p>
+    <h2>막는 것이 아니라, 등급에 따라 다르게 보냅니다.</h2>
+    <div class="spacer"></div>
+    <div class="grid grid--4" style="flex:0 0 auto">
+      <div class="card" style="border-color:rgba(127,191,87,.5)">
+        <span class="card__tag" style="color:var(--green)">ALLOW</span>
+        <span class="card__title">그대로 통과</span>
+        <span class="card__body">위험 신호가 임계치 미만입니다. 평범한 업무 질의는 지체 없이 나갑니다.</span>
+      </div>
+      <div class="card card--teal">
+        <span class="card__tag">SANITIZE</span>
+        <span class="card__title">금지 물건만 빼고</span>
+        <span class="card__body">개인정보는 치환한 뒤 전달합니다. 가방째 압수하지 않습니다 — 업무가 멈추면 사람들은 우회로를 찾습니다.</span>
+      </div>
+      <div class="card">
+        <span class="card__tag" style="color:var(--amber)">FLAG</span>
+        <span class="card__title">보내고 표시</span>
+        <span class="card__body">전달하되 감사 기록에 남깁니다. 판단이 애매한 것을 사람이 나중에 볼 수 있게 합니다.</span>
+      </div>
+      <div class="card card--red">
+        <span class="card__tag">BLOCK</span>
+        <span class="card__title">반출 금지</span>
+        <span class="card__body">주민번호 같은 최고 등급과 위조된 지시문은 점수와 무관하게 즉시 차단합니다.</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="lead lead--wide">데이터 등급 <em>L0~L4</em> · 권한 등급 <em>CLR-0~4</em> · 같은 질의도 권한이 다르면 다른 답.<br>감사 로그는 <em>판정만 남기고 원문은 남기지 않습니다.</em></p>
+  </div>
+</section>
+
+<!-- 측정 ──────────────────────────────────────────────── -->
+<section data-s="measure">
+  <div class="wrap">
+    <p class="kicker kicker--teal">15 · 그래서 얼마나 잡나</p>
+    <h2>추정치가 아니라 실측입니다.</h2>
+    <div class="spacer"></div>
+    <div class="grid grid--3" style="flex:0 0 auto">
+      <div class="stat">
+        <span class="stat__num stat__num--teal">2.9<small style="font-size:.5em">%</small></span>
+        <span class="stat__label"><strong>공격 미탐</strong> — 70건 중 2건이 그냥 통과했습니다.<br>가장 나쁜 실패라 따로 셉니다.</span>
+      </div>
+      <div class="stat">
+        <span class="stat__num stat__num--teal">0<small style="font-size:.5em">%</small></span>
+        <span class="stat__label"><strong>하드 오탐</strong> — 정상 질의 116건 중 막힌 것은 없습니다.</span>
+      </div>
+      <div class="stat">
+        <span class="stat__num">92.2<small style="font-size:.5em">%</small></span>
+        <span class="stat__label">정상 질의를 <strong>기대한 그대로</strong> 처리했습니다.</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="grid grid--2" style="flex:0 0 auto;gap:2.4rem">
+      <table class="tbl">
+        <tr><th>코퍼스 186건</th><th>구성</th></tr>
+        <tr><td>정상 질의 (한국어)</td><td>116</td></tr>
+        <tr><td class="dim">└ 트리거어가 든 정상 질의</td><td class="dim">35</td></tr>
+        <tr><td>공격 질의 (8개 유형)</td><td>70</td></tr>
+      </table>
+      <table class="tbl">
+        <tr><th>프로파일</th><th>미탐</th><th>하드 오탐</th></tr>
+        <tr><td>엄격 strict</td><td>2.9%</td><td>3.4%</td></tr>
+        <tr><td><strong>균형 balanced</strong></td><td class="big">2.9%</td><td class="big">0%</td></tr>
+        <tr><td>완화 permissive</td><td>4.3%</td><td>0%</td></tr>
+      </table>
+    </div>
+    <div class="spacer"></div>
+    <p class="punch punch--teal">공격 탐지율만 보면 안 됩니다. <em>멀쩡한 질의를 막지 않는가</em>를 같은 비중으로 쟀습니다.</p>
+    <p class="cite">별도로 작성한 라벨 코퍼스 <b>attacks/corpus/</b> 기준 · 재현 <b>python3 scripts/eval.py</b> · 숫자는 코퍼스가 바뀌면 바뀝니다</p>
+  </div>
+</section>
+
+<!-- 지연 실측 ──────────────────────────────────────────── -->
+<section data-s="15">
+  <div class="wrap">
+    <p class="kicker kicker--teal">16 · 그래서 느려지나</p>
+    <h2>검사가 붙잡는 시간은 0.62밀리초입니다.</h2>
+    <div class="spacer"></div>
+    <div class="grid grid--2" style="flex:0 0 auto;gap:2.4rem">
+      <table class="tbl">
+        <tr><th>검사 구간</th><th>중앙값</th><th>최대</th></tr>
+        <tr><td>출국 검사 — 질의</td><td>0.27 ms</td><td class="dim">0.51 ms</td></tr>
+        <tr><td>입국 검사 — 답변</td><td>0.35 ms</td><td class="dim">0.43 ms</td></tr>
+        <tr><td><strong>합계 — 한 번 오갈 때</strong></td><td class="big">0.62 ms</td><td class="dim">0.94 ms</td></tr>
+      </table>
+      <table class="tbl tbl--cmp">
+        <tr><th>무엇과 비교하나</th><th>왕복 한 번</th></tr>
+        <tr><td>가장 가까운 AI 서버</td><td class="big">8.1 ms</td></tr>
+        <tr><td>Anthropic</td><td class="big">36.4 ms</td></tr>
+        <tr><td>Google</td><td class="big">64.8 ms</td></tr>
+      </table>
+    </div>
+    <div class="spacer"></div>
+    <p class="punch punch--teal">외부 AI 가 <em>첫 글자를 내놓기도 전에</em> 검사는 이미 끝나 있습니다.</p>
+    <p class="cite">실측 · balanced 프로파일 · 실제 코퍼스 22건 각 40회 반복의 중앙값과 p95 · Apple M1 Pro · 재현 스크립트 <b>web/tools/bench-latency.py</b>. 네트워크 왕복은 ICMP 10회 최소값이며 <b>하한선</b>입니다.</p>
+  </div>
+</section>
+
+<!-- 12 Beyond 정합 ─────────────────────────────────────── -->
+<section data-s="16">
+  <div class="wrap">
+    <p class="kicker">17 · 왜 지금, 왜 KAIST 인가</p>
+    <h2>Beyond AI 는 가드레일 없이는 불가능합니다.</h2>
+    <div class="spacer" style="flex:0 0 .4rem"></div>
+    <div class="beyond">
+      <div class="b-item b-item--hit">
+        <span class="b-item__name">Beyond AI</span>
+        <span class="b-item__sub">인간중심·<strong>모두를 위한</strong>·자율형 AI 로 확장하는 교육·연구환경</span>
+      </div>
+      <div class="b-item">
+        <span class="b-item__name">Beyond Laboratory</span>
+        <span class="b-item__sub">딥테크 기술 선도와 글로벌 창업 생태계 구축</span>
+      </div>
+      <div class="b-item b-item--hit">
+        <span class="b-item__name">Beyond Barriers</span>
+        <span class="b-item__sub"><strong>규제를 줄이고</strong> 효율적인 연구·교육 환경과 투명한 운영 시스템</span>
+      </div>
+      <div class="b-item">
+        <span class="b-item__name">Beyond Carbon</span>
+        <span class="b-item__sub">친환경·탄소중립 캠퍼스 조성</span>
+      </div>
+      <div class="b-item">
+        <span class="b-item__name">Beyond KAIST</span>
+        <span class="b-item__sub">국제화 캠퍼스와 국제공동연구 확대</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="grid grid--2" style="flex:0 0 auto;gap:2.2rem">
+      <p class="lead lead--wide" style="max-width:none">
+        <strong style="color:var(--teal)">모두를 위한 AI</strong> 가 되면
+        모든 구성원의 질의가 국경을 넘습니다. 쓰는 사람이 늘어날수록
+        검사대 없는 상태의 위험은 비례해서 커집니다.
+      </p>
+      <p class="lead lead--wide" style="max-width:none">
+        <strong style="color:var(--teal)">규제를 줄인다</strong> 는 것은
+        검사를 없애는 것이 아닙니다. 전면 금지나 망분리 대신
+        <em>등급에 따라 통과시키는 것</em>입니다. 그것이 N2SF 의 취지이기도 합니다.
+      </p>
+    </div>
+    <div class="spacer"></div>
+    <p class="cite">KAIST 제18대 <b>배충식</b> 총장 「Beyond Series」 5대 발전전략 · 비전 <b>Fundamentals First, Innovation Forward</b> · 취임식 2026.08.10</p>
+  </div>
+</section>
+
+<!-- 13 다음 단계 ───────────────────────────────────────── -->
+<section data-s="17">
+  <div class="wrap">
+    <p class="kicker kicker--teal">18 · 무엇을 개발하고, 어떻게 적용하는가</p>
+    <h2>세 단계로 적용합니다.</h2>
+    <div class="spacer"></div>
+    <div class="grid grid--3" style="flex:0 0 auto">
+      <div class="card card--teal">
+        <span class="card__tag">1단계 · 측정 — 완료</span>
+        <span class="card__title">숫자를 먼저 만들었습니다</span>
+        <span class="card__body">라벨 코퍼스 186건과 평가 하네스를 만들었고, 첫 측정에서 <strong>미탐 30%</strong>가 드러났습니다. 한국어 유해 요청이 거의 다 뚫리고 있었습니다. 고친 뒤 <strong>2.9%</strong>입니다.</span>
+        <span class="card__cite">측정이 없었으면 이 구멍을 발표 당일에 알았을 것입니다.</span>
+      </div>
+      <div class="card card--teal">
+        <span class="card__tag">2단계 · 등급</span>
+        <span class="card__title">품목표는 각 부서가 쓴다</span>
+        <span class="card__body">무엇이 몇 등급인지는 그 업무를 하는 사람만 압니다. 학적·인사·회계·연구처가 <strong>L0~L4 를 정하고</strong>, 게이트웨이는 그것을 집행합니다.</span>
+        <span class="card__cite">장비는 우리가 만듭니다. 품목표는 우리가 못 씁니다.</span>
+      </div>
+      <div class="card card--teal">
+        <span class="card__tag">3단계 · 적용</span>
+        <span class="card__title">통합 작업 없이 태운다</span>
+        <span class="card__body">OpenAI 호환 게이트웨이로 노출하면 교내 앱이 <strong>코드를 고치지 않고</strong> 가드레일을 통과합니다. 주소만 바꾸면 됩니다.</span>
+        <span class="card__cite">전용 API 를 쓰게 하면 아무도 쓰지 않습니다.</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="lead lead--wide">순서가 중요합니다. <em>측정 없이 모델을 늘리면</em> 좋아졌는지 알 수 없고, 알 수 없는 숫자는 발표에 쓸 수 없습니다.</p>
+  </div>
+</section>
+
+<!-- 14 클로징 ──────────────────────────────────────────── -->
+<section data-s="18">
+  <div class="wrap wrap--center">
+    <h1 style="font-size:3.1em">안 보일 뿐,<br>그대로 돕니다.</h1>
+    <p class="lead lead--wide" style="margin-top:1.4rem;font-size:1.1em">
+      좋은 검사대는 줄을 세우지 않습니다.
+      구성원은 평소처럼 질문하고, 막아야 할 것만 조용히 걸립니다.
+    </p>
+    <p class="cite foot" style="font-size:.56em">
+      <b>guardrail.kaist.ac.kr</b> — 실시간 데모<br>
+      <b>guardrail.kaist.ac.kr/explain/</b> — 「디지털 국경」 설명 사이트
+    </p>
+  </div>
+</section>
+
+</div>
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

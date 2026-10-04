@@ -1,0 +1,324 @@
+/* 최종발표 슬라이드 테마 — web/src/styles/tokens.css 의 디자인 언어를 투사 환경으로 옮긴 것.
+ *
+ * 지면(web/)은 흰 캔버스가 기준이지만 발표는 강당 스크린이다.  바탕을 어둡게
+ * 가져가는 이유는 두 가지다 — 프로젝터에서 흰 화면은 눈이 부시고, 이 프로젝트의
+ * 시맨틱 색(호박·청록·빨강·초록)이 어두운 바탕에서 가장 또렷하다.
+ * 시맨틱 색의 뜻은 web/ 과 동일하게 유지한다.  색이 장면마다 다른 뜻을 가지면
+ * 발표를 따라오는 사람이 색을 다시 배워야 한다.
+ */
+
+:root {
+  /* 바탕 — 순흑이 아니다. 프로젝터는 순흑을 표현하지 못해 회색으로 뭉갠다. */
+  --ground: #0b0c10;
+  --ground-2: #14161c;
+  --plate: #1c1f27;
+  --line: #2e323d;
+
+  /* 글자 */
+  --ink: #f4f3ef;
+  --ink-2: #a8a9b0;
+  --ink-3: #70737d;
+
+  /* 시맨틱 — web/ 의 뜻을 그대로 쓴다 */
+  --amber: #f0a63a; /* 질의 · 가방 */
+  --teal: #43bc9c; /* 가드레일 설비 */
+  --red: #e25749; /* 차단 · 경보 */
+  --green: #7fbf57; /* 허용 */
+  --blue: #2997ff; /* 누를 수 있는 것 (어두운 바탕용 Action Blue) */
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+    Inter, 'Noto Sans KR', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+}
+
+.reveal-viewport { background: var(--ground); }
+
+.reveal {
+  font-family: var(--font-sans);
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+
+  /* 한국어 줄바꿈 — 이것이 없으면 브라우저가 어절 한가운데를 끊는다.
+     ("설 / 비 점검", "이력서·건강 이야기까 / 지" 같은 꼴)
+     keep-all 은 어절을 통째로 유지하고, overflow-wrap 은 그래도 한 줄에
+     안 들어가는 긴 토큰(URL·CVE 번호)만 예외로 끊는다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-break: strict;
+}
+
+.reveal .slides { text-align: left; }
+.reveal .slides section { height: 100%; padding: 0 !important; }
+
+/* 굵기 사다리는 web/ 과 같다 — 300/400/600/700, 500 은 쓰지 않는다 */
+.reveal h1, .reveal h2, .reveal h3 {
+  font-family: var(--font-sans);
+  color: var(--ink);
+  text-transform: none;
+  margin: 0;
+  letter-spacing: -0.028em; /* 큰 글씨일수록 좁힌다 */
+  line-height: 1.1;
+  font-weight: 600;
+  text-shadow: none;
+}
+.reveal h1 { font-size: 2.6em; }
+.reveal h2 { font-size: 1.95em; }
+.reveal h3 { font-size: 1.25em; letter-spacing: -0.018em; }
+.reveal p { line-height: 1.55; margin: 0; }
+.reveal strong { font-weight: 700; color: #fff; }
+.reveal em { font-style: normal; color: var(--amber); }
+.reveal a { color: var(--blue); text-decoration: none; }
+
+/* ── 레이아웃 ───────────────────────────────────────────── */
+.wrap {
+  box-sizing: border-box;
+  height: 100%;
+  padding: 4.2rem 4.6rem 3.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.wrap--center { justify-content: center; }
+.spacer { flex: 1 1 auto; min-height: 0; }
+
+/* 가운데 정렬 슬라이드에서 바닥 한 줄을 붙이는 자리.
+   spacer 로 밀어내면 justify-content:center 와 싸워서 내용이 위로 붙는다. */
+.foot {
+  position: absolute;
+  left: 4.6rem;
+  right: 4.6rem;
+  bottom: 2.9rem;
+}
+
+/* 아이브로우 — SCENE 라벨과 같은 역할. 호박색 + 넓은 자간 */
+.kicker {
+  font-size: 0.62em;
+  font-weight: 600;
+  letter-spacing: 0.17em;
+  color: var(--amber);
+  text-transform: uppercase;
+}
+.kicker--teal { color: var(--teal); }
+.kicker--red { color: var(--red); }
+
+.lead { font-size: 1.02em; color: var(--ink-2); max-width: 36ch; font-weight: 300; }
+.lead--wide { max-width: 52ch; }
+
+/* 출처 — 이 프로젝트는 근거 없는 문장을 쓰지 않는다.
+   그래서 출처 줄이 모든 사실 슬라이드의 고정 부품이다. */
+.cite {
+  font-size: 0.47em;
+  color: var(--ink-3);
+  letter-spacing: 0.01em;
+  font-weight: 400;
+}
+.cite b { color: var(--ink-2); font-weight: 600; }
+
+/* ── 카드 ──────────────────────────────────────────────── */
+.grid { display: grid; gap: 1.1rem; }
+.grid--2 { grid-template-columns: repeat(2, 1fr); }
+.grid--3 { grid-template-columns: repeat(3, 1fr); }
+.grid--4 { grid-template-columns: repeat(4, 1fr); }
+
+.card {
+  background: var(--plate);
+  border: 1px solid var(--line);
+  border-radius: 18px; /* web/ 의 카드 모서리와 같은 값 */
+  padding: 1.5rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-height: 0;
+}
+.card__tag {
+  font-size: 0.5em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--amber);
+  text-transform: uppercase;
+}
+.card__title { font-size: 0.86em; font-weight: 600; line-height: 1.3; }
+.card__body { font-size: 0.6em; color: var(--ink-2); line-height: 1.5; font-weight: 300; }
+.card__cite { font-size: 0.43em; color: var(--ink-3); margin-top: auto; }
+.card--red { border-color: rgba(226, 87, 73, 0.45); }
+.card--red .card__tag { color: var(--red); }
+.card--teal { border-color: rgba(67, 188, 156, 0.45); }
+.card--teal .card__tag { color: var(--teal); }
+
+/* ── 숫자 ──────────────────────────────────────────────── */
+.stat { display: flex; flex-direction: column; gap: 0.3rem; }
+.stat__num {
+  font-size: 2.15em;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.stat__num--red { color: var(--red); }
+.stat__num--amber { color: var(--amber); }
+.stat__num--teal { color: var(--teal); }
+.stat__label { font-size: 0.56em; color: var(--ink-2); font-weight: 300; line-height: 1.4; }
+
+/* ── 인용판 — 남의 원문을 보이는 자리 ───────────────────── */
+.quote {
+  background: var(--ground-2);
+  border-left: 3px solid var(--teal);
+  border-radius: 0 18px 18px 0;
+  padding: 1.8rem 2.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.quote__text { font-size: 0.92em; line-height: 1.58; font-weight: 300; }
+.quote__text mark {
+  background: rgba(67, 188, 156, 0.2);
+  color: var(--teal);
+  font-weight: 700;
+  padding: 0.08em 0.18em;
+  border-radius: 4px;
+}
+.quote__src { font-size: 0.5em; color: var(--ink-3); }
+
+/* ── 타임라인 ──────────────────────────────────────────── */
+.timeline { display: flex; flex-direction: column; gap: 0; }
+.tl-row {
+  display: grid;
+  grid-template-columns: 7.6rem 1.6rem 1fr;
+  align-items: start;
+  gap: 1.1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.tl-row:last-child { border-bottom: 0; }
+.tl-date {
+  font-size: 0.56em;
+  font-weight: 700;
+  color: var(--amber);
+  font-variant-numeric: tabular-nums;
+  padding-top: 0.25em;
+}
+.tl-dot { position: relative; padding-top: 0.55em; }
+.tl-dot i {
+  display: block;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: var(--amber);
+}
+.tl-body { display: flex; flex-direction: column; gap: 0.25rem; }
+.tl-title { font-size: 0.74em; font-weight: 600; line-height: 1.3; }
+.tl-note { font-size: 0.54em; color: var(--ink-2); font-weight: 300; line-height: 1.45; }
+
+/* ── Beyond 5 ─────────────────────────────────────────── */
+.beyond { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.85rem; }
+.b-item {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1.1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--ground-2);
+  opacity: 0.4;
+  transition: opacity 0.4s, border-color 0.4s, background 0.4s;
+}
+.b-item--hit {
+  opacity: 1;
+  border-color: var(--teal);
+  background: rgba(67, 188, 156, 0.09);
+}
+.b-item__name { font-size: 0.66em; font-weight: 700; letter-spacing: -0.01em; }
+.b-item--hit .b-item__name { color: var(--teal); }
+.b-item__sub { font-size: 0.47em; color: var(--ink-2); line-height: 1.45; font-weight: 300; }
+
+/* ── 진행 표시 ─────────────────────────────────────────── */
+.reveal .progress { height: 3px; color: var(--amber); }
+.reveal .controls { color: var(--ink-3); }
+.slide-no {
+  position: absolute;
+  right: 4.6rem; bottom: 2.1rem;
+  font-size: 0.46em;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+/* 도면은 바닥에 앉는다 — 시스템의 유일한 그림자(web/ 과 같은 값) */
+.stage { display: flex; align-items: center; justify-content: center; min-height: 0; flex: 1; }
+.stage svg { width: 100%; height: 100%; max-height: 100%; filter: drop-shadow(3px 5px 30px rgba(0, 0, 0, 0.22)); }
+
+/* 모션을 끄면 완성된 정지 화면이 남아야 한다 (web/ 과 같은 원칙) */
+@media (prefers-reduced-motion: reduce) {
+  .reveal .slides section * { transition: none !important; animation: none !important; }
+  .b-item { opacity: 1; }
+}
+
+/* ── 근거 문서 — 남의 원문 표지 ─────────────────────────── */
+.doc {
+  display: flex;
+  gap: 2.2rem;
+  align-items: center;
+  flex: 0 0 auto;
+}
+.doc__cover {
+  flex: 0 0 auto;
+  width: 212px;
+  border-radius: 10px;
+  /* 시스템의 유일한 그림자 — 종이 한 장이 바닥에 앉는다 */
+  box-shadow: 3px 5px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--line);
+  display: block;
+}
+.doc__side { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.doc__badge {
+  align-self: flex-start;
+  font-size: 0.42em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--teal);
+  border: 1px solid rgba(67, 188, 156, 0.5);
+  border-radius: 9999px;
+  padding: 0.34em 0.9em;
+}
+
+/* ── 유출 시나리오 무대 ──────────────────────────────────── */
+.scenario { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.scenario svg { width: 100%; height: 100%; max-height: 100%; }
+
+/* 채팅창 안의 글자는 UI 글꼴로 — 도면 글자와 구분한다 */
+.ui-text { font-family: var(--font-sans); }
+.mono { font-family: var(--font-mono); }
+
+/* ── 한 줄 결론 띠 ───────────────────────────────────────── */
+.punch {
+  border-left: 3px solid var(--red);
+  padding: 0.9rem 0 0.9rem 1.5rem;
+  font-size: 1.12em;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+}
+.punch em { color: var(--red); font-style: normal; }
+.punch--teal { border-left-color: var(--teal); }
+.punch--teal em { color: var(--teal); }
+
+/* ── 실측 표 ─────────────────────────────────────────────── */
+.tbl { width: 100%; border-collapse: collapse; font-size: 0.72em; }
+.tbl th, .tbl td {
+  text-align: left;
+  padding: 0.72rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+.tbl th {
+  font-size: 0.78em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--ink3);
+  text-transform: uppercase;
+}
+.tbl td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl .big { font-weight: 700; color: var(--teal); font-size: 1.12em; }
+.tbl .dim { color: var(--ink3); }
+.tbl--cmp .big { color: var(--red); }
