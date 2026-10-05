@@ -1144,9 +1144,11 @@
     </div>
     <div class="spacer"></div>
     <p class="punch punch--teal">측정하지 않았다면 <em>공격 열 건 중 세 건이 새는 줄 모른 채</em> 운영했을 것입니다.</p>
+    <p class="cite limit">한계 — 이 시험지는 규칙을 고칠 때도 본 문제라 0% 는 <b>「본 문제」 기준</b>입니다. 처음 보는 표현으로 쓴 새 문장 8개에서는 <b>2개를 놓쳤습니다</b>(인젝션 1 · 유해 요청 1, 2026-10-05).</p>
     <p class="cite">평가셋 <b>attacks/corpus</b> · 1차 측정 186문항(공격 21/70 놓침 · 정상 3/116 차단) → 수정 후 205문항(0/77 · 0/128) · 균형(balanced) 기준 · 남은 비용: 정상 질문 5건(3.9%)은 이름이 섞여 가린 뒤 전달 · 재현 <b>python3 scripts/eval.py</b></p>
   </div>
     <aside class="notes">
+      <p>Q 「평가셋을 보면서 규칙을 고쳤으면 0% 는 당연하지 않나요?」 → 「맞습니다. 그래서 0% 는 본 문제 기준이라고 화면에 적어 두었습니다. 처음 보는 표현으로 8문장을 넣어 보니 2개를 놓쳤습니다 — 둘 다 표현 목록에 기대는 인젝션·유해 요청 쪽입니다. 숫자·형식으로 잡는 개인정보 쪽은 처음 보는 문장도 잡았습니다. 다음 단계는 연구팀이 보지 않은 사람이 쓴 별도 시험지로 다시 재는 것입니다.」</p>
       <p><strong>본발표 · 7:08–7:32  ★ 연구 발표와 데모 발표를 가르는 자리</strong></p>
       <p>「먼저 평가셋 — 정답을 붙여 둔 시험 문제 205개를 만들었습니다. 데모용 샘플이 아니라, 평범한 업무 질문과 공격을 섞어서요.」</p>
       <p>「처음 채점해 보니 공격의 30%를 놓치고 있었습니다. 한국어로 '만들어 줘'라고 하면 위험한 요청인 줄 몰랐던 겁니다. 고친 뒤 0%. 반대로 멀쩡한 질문이 막히던 2.6%도 0이 됐습니다.」</p>
@@ -1195,21 +1197,22 @@
     <h2>못 덮는 자리를 먼저 말합니다.</h2>
     <div class="spacer"></div>
     <div class="grid grid--2" style="flex:0 0 auto;gap:2.2rem">
-      <table class="tbl">
-        <tr><th>덮는다 — OWASP LLM Top 10</th><th>어느 탐지기</th><th>적중</th></tr>
+      <table class="tbl tbl--compact">
+        <tr><th>덮는다 — OWASP LLM Top 10</th><th>어느 탐지기</th><th>적중 (본 문제)</th></tr>
         <tr><td>LLM01 프롬프트 인젝션</td><td>injection · normalizer</td><td>20/20</td></tr>
         <tr><td>LLM02 민감정보 노출</td><td>pii · secrets · 한국어 NER</td><td>22/22</td></tr>
         <tr><td>LLM07 시스템 프롬프트 유출</td><td>canary (출력)</td><td>8/9</td></tr>
         <tr><td>LLM08 벡터·임베딩 약점</td><td>rag_access (CLR)</td><td>10/10</td></tr>
         <tr><td>LLM09 정책 위반 응답</td><td>harmful</td><td>9/9</td></tr>
       </table>
-      <table class="tbl tbl--text">
+      <table class="tbl tbl--text tbl--compact">
         <tr><th>못 덮는다</th><th>왜 범위 밖인가</th></tr>
         <tr><td>LLM03 공급망</td><td>모델·라이브러리 공급망. 게이트웨이의 통제 범위가 아닙니다</td></tr>
         <tr><td>LLM04 데이터·모델 오염</td><td>학습 단계 위협. 우리는 추론 경로만 봅니다</td></tr>
         <tr><td>LLM05 출력 처리 미흡</td><td>호출하는 애플리케이션 책임입니다 (SQL·XSS)</td></tr>
         <tr><td class="bad">LLM06 과도한 권한</td><td><strong>다음 확장 후보입니다.</strong> 교내에 에이전트가 들어오면 도구 실행 단계에 같은 등급 판단을 붙여야 합니다</td></tr>
         <tr><td>LLM10 무제한 소비</td><td>쿼터는 구현했고, 길이 폭탄만 부분 대응입니다</td></tr>
+        <tr><td class="bad">처음 보는 표현</td><td>인젝션·유해 요청은 <strong>표현 목록</strong> 기반 — 새 말투는 놓칠 수 있어 재측정 필요</td></tr>
       </table>
     </div>
     <div class="spacer"></div>
@@ -1220,6 +1223,7 @@
       <p><strong>예비 — 건너뛴다</strong></p>
       <p>「표준 대응은요」 또는 「못 막는 건 뭔가요」가 나오면 꺼낸다.</p>
       <p>LLM06 과도한 권한이 다음 확장 후보라는 것까지 말하면 답이 완결된다.</p>
+      <p>「처음 보는 표현」 줄: 새 문장 8개 시험에서 인젝션 1·유해 요청 1을 놓쳤다(2026-10-05). 형식 기반(주민번호·전화·키)과 NER(이름·주소)은 처음 보는 문장도 잡았다.</p>
     </aside>
 </section>
 

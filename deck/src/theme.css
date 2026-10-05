@@ -824,3 +824,6 @@
 .rec__side { display: flex; flex-direction: column; gap: 1rem; }
 .rec .card__title { font-size: 0.7em; }
 .rec .card__body { font-size: 0.56em; }
+
+.cite.limit { color: var(--amber); }
+.cite.limit b { color: var(--amber); }
