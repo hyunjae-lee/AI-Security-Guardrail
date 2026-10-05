@@ -5,6 +5,7 @@
  * 아이소메트릭인 것과 달리 발표 도식은 평면으로 그린다 — 강당에서 한 번
  * 보고 알아야 하는 그림이라 단면·층을 보여 줄 시간이 없다.
  */
+import { paperize } from './paper.js';
 import Reveal from 'reveal.js';
 // 발표자 노트(S 키) — 스크립트를 종이로 들고 올라가지 않기 위해 슬라이드에 심는다.
 import 'reveal.js/dist/reveal.css';
@@ -28,6 +29,7 @@ const C = {
   plate: '#1c1f27',
   ground2: '#14161c',
 };
+paperize(C);
 
 /* 채팅 앱 화면은 **흰색 기본 테마**로 그린다 — ChatGPT·Claude 를 처음 여는 사람이
  * 보는 모습이 그것이라 청중이 「내가 쓰는 그 화면」으로 바로 알아본다.

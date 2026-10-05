@@ -883,3 +883,27 @@
 .vd--block { color: var(--red); }
 .tbl--qa td:first-child { overflow-wrap: anywhere; }
 .tbl--qa-atk u { color: var(--red); }
+
+/* ── 종이 모드 (`?paper`) — 책자 인쇄용 흰 바탕 ─────────────────
+   색의 뜻은 그대로, 명도만 흰 바탕용 잉크로 내린다(src/paper.js 와 같은 값).
+   터미널 화면은 원래 어두운 화면이라 그대로 둔다. 화면 조작 장치는 숨긴다. */
+html.paper {
+  --ground: #ffffff;
+  --ground-2: #fafafc;
+  --plate: #f5f5f7;
+  --line: #d2d2d7;
+  --ink: #1d1d1f;
+  --ink-2: #3c3c43;
+  --ink-3: #6e6e73;
+  --amber: #9a6408;
+  --teal: #0d7a63;
+  --red: #b3251a;
+  --green: #3f7a24;
+  --blue: #0066cc;
+}
+html.paper .reveal-viewport, html.paper body { background: #fff; }
+html.paper .reveal strong { color: var(--ink); }
+html.paper .reveal .controls, html.paper .reveal .progress,
+html.paper .slide-no, html.paper .cover__btns { display: none !important; }
+html.paper .stage svg { filter: none; }
+html.paper .term { --ink: #f4f3ef; --ink-2: #c7c8ce; --ink-3: #9b9da6; --amber: #f5b355; --teal: #5fcfb0; --red: #f27a6d; --green: #95cf70; color: var(--ink); }

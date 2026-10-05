@@ -8,6 +8,7 @@
  *
  * 발표자가 방향키로 넘긴다 (구조 흐름도와 같은 방식).
  */
+import { paperize } from './paper.js';
 import { gsap } from 'gsap';
 
 const C = {
@@ -15,6 +16,7 @@ const C = {
   ink: '#f4f3ef', ink2: '#c7c8ce', ink3: '#9b9da6',
   line: '#3d4250', plate: '#1c1f27', ground2: '#14161c',
 };
+paperize(C);
 
 /* 채팅 앱 화면은 **흰색 기본 테마**로 그린다 — ChatGPT·Claude 를 처음 여는 사람이
  * 보는 모습이 그것이라 청중이 「내가 쓰는 그 화면」으로 바로 알아본다.

@@ -11,6 +11,7 @@
  * 발표자가 방향키로 넘긴다 (reveal 의 fragment).  자동 재생하지 않는 이유는
  * 설명 속도가 사람마다 다르기 때문이다.
  */
+import { paperize } from './paper.js';
 import { gsap } from 'gsap';
 
 const C = {
@@ -18,6 +19,7 @@ const C = {
   ink: '#f4f3ef', ink2: '#c7c8ce', ink3: '#9b9da6',
   line: '#3d4250', plate: '#1c1f27', ground2: '#14161c',
 };
+paperize(C);
 
 /** 입력 파이프라인 — 왼쪽에서 오른쪽으로 순서대로 거친다. */
 const IN_STAGES = [

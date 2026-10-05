@@ -19,3 +19,4 @@ models/
 
 # 도면 미리보기 출력 (tools/render-scenes.mjs)
 web/tools/.out/
+deck/print/

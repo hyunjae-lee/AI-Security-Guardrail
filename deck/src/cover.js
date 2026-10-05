@@ -16,6 +16,7 @@
  * 전부 CSS 속성(style)으로만 움직이고 attr 는 건드리지 않는다 — clearProps 가
  * attr 를 되돌리지 못하기 때문이다.
  */
+import { paperize } from './paper.js';
 import { gsap } from 'gsap';
 
 const C = {
@@ -23,6 +24,7 @@ const C = {
   ink: '#f4f3ef', ink2: '#c7c8ce', ink3: '#9b9da6',
   line: '#3d4250', plate: '#1c1f27', ground: '#0b0c10', ground2: '#14161c',
 };
+paperize(C);
 
 /* 발표장에서 따라 읽을 수 있는 속도. 처음 만든 것보다 1.5 배 느리다(「50% 더 느리게」). */
 const SPEED = 1 / 1.5;

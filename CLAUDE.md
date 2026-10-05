@@ -314,7 +314,7 @@ cd web/src/assets/captures && for f in *.png; do
 | 실행 | `cd deck && npm install && npm run dev` → http://127.0.0.1:5174 |
 | 빌드 | `npm run build` — 운영에서는 사이트 루트(`/`)에 걸린다 |
 | 의존성 | `reveal.js`(72.4k★ MIT) + `gsap`(이미 web/ 에서 쓰는 것) 둘뿐 |
-| 구성 | **47장** (4개 장 + 목차 + 진입 화면 4) · `index.html` · `src/theme.css` · `src/main.js` |
+| 구성 | **46장** (4개 장 + 목차 + 진입 화면 4) · `index.html` · `src/theme.css` · `src/main.js` |
 | 조작 | 방향키 이동 · `?print-pdf` · `O` 개요. **`S` 스피커 뷰는 뺐다**(2026-10-05 요청) — 원고는 각 장 `<aside class="notes">` 에 남아 있다 |
 | 검사 | `check-contrast.mjs` (대비 **7:1**) · `check-overflow.mjs` (넘침) · `check-zoom.mjs` (확대 틀) |
 
@@ -466,6 +466,8 @@ cd web/src/assets/captures && for f in *.png; do
 - **설명 사이트(`/presentation1/`)는 발표에 쓰지 않는다**(2026-10-05). 서버에는 남겨 두되 덱·시뮬레이터의 링크는 뺐다.
   쓸 만한 자료는 덱으로 옮긴다 — 기록실 도면(`deck/src/assets/records.jpg`, `web/tools/render-scenes.mjs` 로 구운 것)을
   감사 기록 장(`promise`)에 썼다.
+- **감사 기록 장(`promise`)은 뺐다**(2026-10-05 요청). `gov1` 의 출처 줄(정보보호위원회 분과 · N2SF C·S·O)도 뺐다.
+- **종이 모드 `?paper`** — 흰 바탕 인쇄용. CSS 는 `html.paper` 변수, 그림 모듈은 `src/paper.js` 의 `paperize(C)` 한 줄. 책자 PDF 는 `deck/tools/booklet/`(B5, 결과물은 `deck/print/`, git 제외).
 - **「소금 친 해시」라고 쓰지 말 것** — 「지문(같은 질문인지 비교만 되고 원래 문장으로 되돌릴 수 없는 값)」으로 쓴다.
   기술 용어(salt 를 섞은 SHA-256)는 노트에만.
 - 판정 네 갈래 장(`14`)은 입국 검사 풀이(`checks-in`) 바로 뒤다 — 검사 → 판정 순서. 「막으면 숨어서 씁니다」(`10`)는 뺐다.

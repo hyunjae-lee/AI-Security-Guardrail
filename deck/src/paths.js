@@ -9,6 +9,7 @@
  * 「POST /v1/messages → 교내 게이트웨이 → 검사 → api.anthropic.com」 이라고 적는다.
  * 무슨 일이 일어나는지가 그대로 보이면 설명이 필요 없다.
  */
+import { paperize } from './paper.js';
 import { gsap } from 'gsap';
 
 const C = {
@@ -16,6 +17,7 @@ const C = {
   ink: '#f4f3ef', ink2: '#c7c8ce', ink3: '#9b9da6',
   line: '#3d4250', plate: '#1c1f27', ground2: '#14161c', ground: '#0b0c10',
 };
+paperize(C);
 /* 채팅 앱 화면은 **흰색 기본 테마**로 그린다 — ChatGPT·Claude 를 처음 여는 사람이
  * 보는 모습이 그것이라 청중이 「내가 쓰는 그 화면」으로 바로 알아본다.
  * 바탕이 흰색이므로 강조색은 web/ 의 잉크 단계(흰 바탕에서 4.5:1 이상)를 쓴다.

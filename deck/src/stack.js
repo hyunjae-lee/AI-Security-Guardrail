@@ -9,6 +9,7 @@
  * 읽히고, 크게 그리면 전체 배치가 안 보인다.  둘 다 필요하다.
  * 확대 대상이 되는 묶음은 전부 `z-` 로 시작하는 id 를 갖는다.
  */
+import { paperize } from './paper.js';
 import { gsap } from 'gsap';
 
 const C = {
@@ -16,6 +17,7 @@ const C = {
   ink: '#f4f3ef', ink2: '#c7c8ce', ink3: '#9b9da6',
   line: '#3d4250', plate: '#1c1f27', ground2: '#14161c',
 };
+paperize(C);
 
 // 그림의 실제 가장자리에 맞춘 틀.  넉넉하게 잡으면 그만큼 그림이 작아진다 —
 // preserveAspectRatio 가 빈 여백까지 포함해 축소하기 때문이다.
