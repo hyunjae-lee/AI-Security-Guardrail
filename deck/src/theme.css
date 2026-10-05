@@ -726,3 +726,6 @@
 .tbl--map { font-size: 0.58em; }
 .tbl--map th, .tbl--map td { padding: 0.38rem 0.7rem; }
 .tbl--map td:first-child { color: var(--teal); font-weight: 700; white-space: nowrap; }
+.made .card__body { font-size: 0.56em; }
+.made .card__title { font-size: 0.78em; }
+.tbl--spec td:last-child { text-align: left; }
