@@ -1256,22 +1256,25 @@
 <section data-s="15">
   <div class="wrap">
     <p class="kicker kicker--teal">32 · 실증 ③ 지연 — 업무가 느려지나</p>
-    <h2>검사 시간 5.3밀리초 — 눈 깜빡임의 19분의 1.</h2>
+    <h2>검사 시간 약 6밀리초 — 사용자는 느낄 수 없습니다.</h2>
     <div class="spacer"></div>
     <div class="lat" style="flex:0 0 auto">
-      <div class="lat__row lat__row--teal"><span class="lat__label">검사 (나갈 때 + 들어올 때)</span><span class="lat__track"><span class="lat__bar" style="width:5.33%"></span></span><span class="lat__val">5.33 ms</span></div>
-      <div class="lat__row lat__row--ink"><span class="lat__label">가장 가까운 AI 서버 — 네트워크 왕복</span><span class="lat__track"><span class="lat__bar" style="width:8.1%"></span></span><span class="lat__val">8.1 ms</span></div>
-      <div class="lat__row lat__row--ink"><span class="lat__label">Anthropic — 네트워크 왕복</span><span class="lat__track"><span class="lat__bar" style="width:36.4%"></span></span><span class="lat__val">36.4 ms</span></div>
-      <div class="lat__row lat__row--ink"><span class="lat__label">Google — 네트워크 왕복</span><span class="lat__track"><span class="lat__bar" style="width:64.8%"></span></span><span class="lat__val">64.8 ms</span></div>
-      <div class="lat__row lat__row--dim"><span class="lat__label">눈 한 번 깜빡이는 시간</span><span class="lat__track"><span class="lat__bar" style="width:100%"></span></span><span class="lat__val">약 100 ms</span></div>
+      <div class="lat__row lat__row--teal"><span class="lat__label">검사 · 운영 서버</span><span class="lat__track"><span class="lat__bar" style="width:2.5%"></span></span><span class="lat__val">6.2 ms</span></div>
+      <div class="lat__row lat__row--teal2"><span class="lat__label">검사 · 개발 PC (M1 Pro)</span><span class="lat__track"><span class="lat__bar" style="width:2.1%"></span></span><span class="lat__val">5.3 ms</span></div>
+      <div class="lat__row lat__row--dim"><span class="lat__label">눈 한 번 깜빡임</span><span class="lat__track"><span class="lat__bar" style="width:40.0%"></span></span><span class="lat__val">약 100 ms</span></div>
+      <div class="lat__row lat__row--ink"><span class="lat__label">Google 요청 → 첫 응답</span><span class="lat__track"><span class="lat__bar" style="width:67.4%"></span></span><span class="lat__val">168 ms</span></div>
+      <div class="lat__row lat__row--ink"><span class="lat__label">OpenAI 요청 → 첫 응답</span><span class="lat__track"><span class="lat__bar" style="width:91.0%"></span></span><span class="lat__val">228 ms</span></div>
+      <div class="lat__row lat__row--ink"><span class="lat__label">Anthropic 요청 → 첫 응답</span><span class="lat__track"><span class="lat__bar" style="width:100.1%"></span></span><span class="lat__val">250 ms</span></div>
     </div>
     <div class="spacer"></div>
-    <p class="punch punch--teal">외부 AI 까지 신호가 오가는 시간보다 짧습니다 — <em>사용자는 검사를 느낄 수 없습니다.</em></p>
-    <p class="cite">실측 · 균형(balanced) 프로파일 · 실제 질문 22건을 각 40회 반복한 중앙값(나갈 때 5.02 · 들어올 때 0.32 ms, 최대 8.30 ms) · Apple M1 Pro · <b>web/tools/bench-latency.py</b> · 네트워크 왕복은 ICMP 10회 최소값(하한선) · 눈 깜빡임은 일반적인 값</p>
+    <p class="punch punch--teal">AI 회사에 요청을 한 번 보내 첫 응답을 받는 데만 0.17~0.25초 — 검사는 그 <em>27분의 1 이하</em>입니다.</p>
+    <p class="cite">실측 · 균형 프로파일 · 한국어 NER 포함 · 데모 질문 22건 × 40회의 중앙값 · <b>운영 서버</b>(Intel Xeon E3-1230 v6, 운영 컨테이너 안) 3회 반복 6.15~7.47 ms 중 중앙 회차(나갈 때 5.64 · 들어올 때 0.53 ms, 최대 10.4 ms) · AI 회사 요청은 이 서버에서 HTTPS 10회 중앙값(인증 전 응답 — 답변 생성 시간은 빠진 하한선) · <b>web/tools/bench-latency.py</b> · 2026-10-05</p>
   </div>
     <aside class="notes">
       <p><strong>본발표 · 7:50–8:02</strong></p>
-      <p>「검사가 붙잡는 시간은 5.3밀리초입니다. 가장 가까운 AI 서버까지 신호가 한 번 오가는 데만 8.1밀리초가 걸립니다. 눈을 한 번 깜빡이는 시간의 19분의 1 — 사용자는 검사를 느낄 수 없습니다.」</p>
+      <p>「검사 시간은 운영 서버에서 약 6밀리초입니다. 개발 PC에서는 5.3밀리초였습니다. AI 회사에 요청을 한 번 보내고 첫 응답을 받는 데만 0.17초에서 0.25초가 걸립니다 — 검사는 그 27분의 1도 안 됩니다. 사용자는 느낄 수 없습니다.」</p>
+      <p>물으면: 서버에서 ping(ICMP)으로 재면 OpenAI·Anthropic 까지 약 4 ms 로 검사보다 짧다 — 근처 엣지 서버까지의 왕복일 뿐이라 실제 AI 호출의 기준으로 쓰지 않았다. 그래서 비교 기준을 실제 HTTPS 요청으로 바꿨다(2026-10-05).</p>
+      <p>긴 문서는 길이에 비례한다 — 운영 서버에서 질의 2,000자 + 답변 2,000자 172 ms, 10,000자씩 852 ms(1회차).</p>
     </aside>
 </section>
 

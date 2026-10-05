@@ -242,7 +242,8 @@ npm run dev            # http://localhost:5173
   모의 취약 모델 Mock) · 확장 필요(포털·통합로그인·기관 API 계약·교환대 운영).
 - 단계 이름은 엔진 문자열을 바꾸지 않고 `app.js` 의 `STAGE_LABEL`(검사기 이름 → 쉬운 이름·「무엇을 묻는가」)로 바꿔 보인다.
 - **검사 시간은 단계별 `duration_ms` 합**으로 보인다. `guardrail_overhead_ms` 에는 화면 연출용 대기
-  (`GUARDRAIL_STAGE_DELAY`)가 섞여 수백 ms 로 나오므로 「연출 지연 포함 처리 시간」으로만 표기한다 — 발표의 5.3 ms 와 충돌하면 안 된다.
+  (`GUARDRAIL_STAGE_DELAY`)가 섞여 수백 ms 로 나오므로 「연출 지연 포함 처리 시간」으로만 표기한다 — 발표의 검사 시간(운영 서버 6.16 ms)과 충돌하면 안 된다.
+  재배포 직후 첫 요청은 모델 적재로 수백 ms 가 나온다 — 발표 전에 한 번 미리 실행해 둘 것.
 
 ## 기술 스택·제약
 - Vite 7 + vanilla JS + 인라인 SVG. 프레임워크 없음.
@@ -541,6 +542,21 @@ AI-Security-Guardrail/
 
 ## 현재 상태
 M1~M5 및 2차 단계(설명 사이트 서빙 — 현 `/presentation1/`) 모두 완료. 10개 장면 전부 인라인 SVG + 애니메이션 + "실제로는" 패널을 갖췄고, CI/CD로 실호스트에 배포되어 동작 중이다. 남은 것은 카피 교열과 발표 대비 미세 조정 수준.
+
+## 지연 실측 — 운영 서버 기준 (2026-10-05)
+사이트·덱의 지연 수치는 **운영 서버(Intel Xeon E3-1230 v6) 운영 컨테이너 안**에서 잰 값을 쓴다.
+`docker cp web/tools/bench-latency.py ai-security-guardrail:/tmp/bench.py && docker exec -w /app ai-security-guardrail python /tmp/bench.py --presidio`
+
+| | 나갈 때 | 들어올 때 | 합계 (최대) |
+|---|---|---|---|
+| 운영 서버 (3회 중 가운데 회차) | 5.64 ms | 0.53 ms | **6.16 ms** (10.43) — 3회 범위 6.15~7.47 |
+| 개발 PC Apple M1 Pro (이전 값) | 5.02 ms | 0.32 ms | 5.33 ms (8.30) |
+
+- **비교 기준은 ping 이 아니라 HTTPS 요청이다.** 운영 서버에서 ICMP 왕복은 OpenAI 4.5 · Anthropic 4.1 ms 로
+  검사보다 짧다(근처 엣지까지). 그래서 「네트워크 왕복보다 짧다」는 문장은 쓰지 않는다. 대신 같은 서버에서
+  AI 회사에 HTTPS 요청 한 번 → 첫 응답(인증 전 401/403)까지 10회 중앙값: Google 168 · OpenAI 228 · Anthropic 250 ms.
+  결론 문장은 「검사는 그 27분의 1 이하」.
+- 길이 비례(운영 서버 1회차): 100자씩 8.8 ms · 2,000자씩 172.4 ms · 10,000자씩 852.3 ms.
 
 ## 평가 체계 (2026-10-04 신설) — 발표 숫자의 출처
 

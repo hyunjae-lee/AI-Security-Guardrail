@@ -810,3 +810,5 @@
 }
 .kst--done { color: var(--teal); background: rgba(95, 207, 176, 0.12); }
 .kst--ext { color: var(--ink-2); border: 1px dashed var(--ink-3); }
+.lat__row--teal2 .lat__bar { background: rgba(95, 207, 176, 0.55); }
+.lat__row--teal2 .lat__label, .lat__row--teal2 .lat__val { color: var(--teal); }
