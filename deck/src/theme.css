@@ -812,3 +812,15 @@
 .kst--ext { color: var(--ink-2); border: 1px dashed var(--ink-3); }
 .lat__row--teal2 .lat__bar { background: rgba(95, 207, 176, 0.55); }
 .lat__row--teal2 .lat__label, .lat__row--teal2 .lat__val { color: var(--teal); }
+
+/* 계정 연결 — 이 연구의 결과물 칸 표시 */
+.flow4__hl { font-size: 0.5em; font-weight: 700; letter-spacing: 0.06em; color: var(--teal); }
+/* 감사 기록 장 — 기록실 도면(설명 사이트에서 가져옴) + 찾은 것/고친 것 */
+.rec { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 1.4rem; align-items: center; }
+.rec__fig { margin: 0; background: #f5f5f7; border-radius: 18px; padding: 0.8rem 0.8rem 0.6rem; }
+.rec__fig img { display: block; width: 100%; height: auto; }
+.rec__fig figcaption { font-size: 0.5em; color: #333336; text-align: center; margin-top: 0.3rem; }
+.rec__fig figcaption b { color: #b3251a; }
+.rec__side { display: flex; flex-direction: column; gap: 1rem; }
+.rec .card__title { font-size: 0.7em; }
+.rec .card__body { font-size: 0.56em; }

@@ -172,7 +172,7 @@ export function buildArchitecture(host) {
       <text x="226" y="586" text-anchor="middle" font-size="15" font-weight="700" fill="${C.ink2}">감사 기록</text>
       <text x="226" y="610" text-anchor="middle" font-size="13" fill="${C.ink2}">시각 · 탐지 유형 · 판정 · 길이</text>
       <text x="226" y="630" text-anchor="middle" font-size="13.5" font-weight="700" fill="${C.red}">원문은 저장하지 않는다</text>
-      <text x="226" y="648" text-anchor="middle" font-size="12" fill="${C.ink3}">소금 친 해시만 — 같은 질의인지는 알고, 내용은 못 되살린다</text>
+      <text x="226" y="648" text-anchor="middle" font-size="12" fill="${C.ink3}">원문 대신 지문만 — 같은 질문인지 비교만 가능</text>
     </g>
 
     <!-- 흐름선 -->
