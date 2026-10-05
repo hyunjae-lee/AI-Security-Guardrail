@@ -16,7 +16,7 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from .audit import AuditLog
@@ -519,20 +519,48 @@ async def get_stats() -> dict[str, Any]:
     return audit.stats()
 
 
+# URL 배치 (2026-10-05):
+#   /               최종발표 덱 (deck/, reveal.js)
+#   /presentation1/ 「디지털 국경」 설명 사이트 (web/) — 예전 /explain/
+#   /simulator      실시간 데모 (app/static/)
+# 덱을 루트에 StaticFiles 로 마운트하므로 반드시 맨 마지막에 둔다 —
+# 앞서 등록된 /api·/healthz 라우트가 먼저 잡힌다.
+
 if settings.explain_dir.exists():
     # Scrollytelling explainer ("디지털 국경"). Built separately with Vite
-    # (VITE_BASE=/explain/ npm run build) and mounted here so one container
-    # serves both the demo and the story that frames it.
+    # (VITE_BASE=/presentation1/ npm run build) and mounted here so one
+    # container serves the decks, the demo and the story that frames it.
     app.mount(
-        "/explain",
+        "/presentation1",
         StaticFiles(directory=settings.explain_dir, html=True),
-        name="explain",
+        name="presentation1",
     )
+
+    # 루트에 덱이 마운트돼 있어 Starlette 의 슬래시 보정이 닿지 않는다 — 직접 붙인다.
+    @app.get("/presentation1", include_in_schema=False)
+    async def presentation1_slash() -> RedirectResponse:
+        return RedirectResponse("/presentation1/", status_code=301)
+
+    # 예전 주소로 공유된 링크를 살린다.
+    @app.get("/explain", include_in_schema=False)
+    @app.get("/explain/{rest:path}", include_in_schema=False)
+    async def explain_moved(rest: str = "") -> RedirectResponse:
+        return RedirectResponse(f"/presentation1/{rest}", status_code=301)
 
 
 if settings.static_dir.exists():
     app.mount("/static", StaticFiles(directory=settings.static_dir), name="static")
 
-    @app.get("/")
-    async def index() -> FileResponse:
+    @app.get("/simulator", include_in_schema=False)
+    @app.get("/simulator/", include_in_schema=False)
+    async def simulator() -> FileResponse:
         return FileResponse(settings.static_dir / "index.html")
+
+
+if settings.deck_dir.exists():
+    app.mount("/", StaticFiles(directory=settings.deck_dir, html=True), name="deck")
+elif settings.static_dir.exists():
+    # 덱 번들이 없는 환경(기본 Dockerfile·로컬 개발)에서는 루트를 데모로 보낸다.
+    @app.get("/", include_in_schema=False)
+    async def index() -> RedirectResponse:
+        return RedirectResponse("/simulator", status_code=307)

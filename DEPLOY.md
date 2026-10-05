@@ -16,10 +16,11 @@ curl http://127.0.0.1:8088/healthz
 ```
 
 접속: `http://<host-ip>:8088`
-- `/` — 실시간 가드레일 데모
-- `/explain/` — 「디지털 국경」 스크롤텔링 설명 사이트
+- `/` — 최종발표 슬라이드 (`deck/`, reveal.js)
+- `/presentation1/` — 「디지털 국경」 스크롤텔링 설명 사이트 (`web/`). 옛 `/explain/` 은 301 로 넘어온다
+- `/simulator` — 실시간 가드레일 데모
 
-`web/` 번들은 `Dockerfile.full`의 node 스테이지에서 `VITE_BASE=/explain/ npm run build`로 빌드되어 이미지에 포함됩니다 (호스트에 Node 불필요). 로컬 개발은 `cd web && npm run dev` (포트 5173).
+`web/`·`deck/` 번들은 `Dockerfile.full`의 node 스테이지에서 각각 `VITE_BASE=/presentation1/`, `VITE_BASE=/` 로 빌드되어 이미지에 포함됩니다 (호스트에 Node 불필요). 로컬 개발은 `cd web && npm run dev` (5173), `cd deck && npm run dev` (5174).
 
 ## 도메인 (`guardrail.kaist.ac.kr`)
 

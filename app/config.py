@@ -43,8 +43,10 @@ class Settings:
     # 한국어 성능을 scripts/eval.py 로 재고 판단한 뒤에만 켠다.
     use_pi_model: bool = _env_bool("GUARDRAIL_USE_PI_MODEL", False)
     static_dir: Path = BASE_DIR / "static"
-    # Built Vite bundle for the "디지털 국경" explainer, served under /explain.
+    # Built Vite bundle for the "디지털 국경" explainer, served under /presentation1.
     explain_dir: Path = PROJECT_ROOT / "web" / "dist"
+    # Built reveal.js deck (최종발표), served at the site root.
+    deck_dir: Path = PROJECT_ROOT / "deck" / "dist"
     samples_path: Path = PROJECT_ROOT / "attacks" / "samples.json"
 
 

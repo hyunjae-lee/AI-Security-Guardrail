@@ -11,3 +11,5 @@ docker-compose*.yml
 .gitignore
 web/node_modules/
 web/dist/
+deck/node_modules/
+deck/dist/

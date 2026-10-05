@@ -28,17 +28,19 @@ KAIST 구성원의 AI 질의가 "국경(게이트웨이)"을 넘나드는 과정
 | 항목 | 값 |
 |---|---|
 | 공개 주소 | `https://guardrail.kaist.ac.kr` (KAIST 내부망에서만 접근 가능) |
-| 실시간 데모 | `/` |
-| 설명 사이트 | `/explain/` |
+| 최종발표 덱 (`deck/`) | `/` |
+| 설명 사이트 (`web/`) | `/presentation1/` (옛 `/explain/` 은 301 로 넘긴다) |
+| 실시간 데모 (`app/static/`) | `/simulator` |
 | 호스트 | 143.248.4.101 : 8088 (직결도 열려 있음 — CD 헬스체크가 사용) |
 | 앞단 | SSL Manager Caddy가 443 → 8088 리버스 프록시. 설정은 이 저장소가 아니라 호스트의 `/home/kaistcert/workdir/Caddyfile` |
 | 인증서 | 기존 `*.kaist.ac.kr` 와일드카드 (**2026-12-17 만료** — 갱신 필요) |
 
-번들 배선: `Dockerfile.full`의 `node:22-alpine` 스테이지가 `VITE_BASE=/explain/ npm run build` → `COPY --from=web /web/dist ./web/dist`. `app/config.py`의 `explain_dir`(`web/dist`)이 존재할 때만 `app/main.py`가 `/explain`에 `StaticFiles(html=True)`로 마운트한다. 호스트에 Node 불필요.
+번들 배선: `Dockerfile.full`의 `node:22-alpine` 스테이지 둘이 `web/`(`VITE_BASE=/presentation1/`)과 `deck/`(`VITE_BASE=/`)을 빌드해 `web/dist`·`deck/dist` 로 복사한다. `app/main.py` 는 `explain_dir` 이 있으면 `/presentation1` 에, `deck_dir` 이 있으면 **루트 `/` 에** `StaticFiles(html=True)` 로 마운트한다. 루트 마운트가 나머지를 전부 받으므로 **새 라우트는 반드시 그 마운트보다 앞에 등록할 것.** 덱 번들이 없으면 `/` 는 `/simulator` 로 보낸다. 호스트에 Node 불필요.
 
 로컬에서 배포와 동일하게 확인하려면:
 ```bash
-cd web && VITE_BASE=/explain/ npm run build   # /explain/assets/... 경로로 빌드
+cd web && VITE_BASE=/presentation1/ npm run build   # /presentation1/assets/... 경로로 빌드
+cd deck && npm run build                             # 루트(/)용
 # 순수 사이트 개발은  cd web && npm run dev   (5173, base '/')
 ```
 자세한 내용은 저장소의 `DEPLOY.md`.
@@ -95,7 +97,7 @@ npm run dev            # http://localhost:5173
 | 07 | `arrivals` | 입국층 단면 | 돌아온 가방의 검역 — "나갈 때 깨끗했어도 돌아올 때 깨끗하다는 보장은 없다" |
 | 08 | `records` | 기록실 | 판정 스탬프만 찍히고 내용 칸은 비어 있음 |
 | 09 | `shared` | 각 부서의 몫 | "장비는 우리가 만듭니다. 품목표는 우리가 못 씁니다" — 등급 분류 책임 |
-| 10 | `outro` | 아웃트로 | 터미널이 지표 아래로 — "안 보일 뿐 그대로 돕니다" + `/`(데모) 링크 |
+| 10 | `outro` | 아웃트로 | 터미널이 지표 아래로 — "안 보일 뿐 그대로 돕니다" + `/simulator`(데모) 링크 |
 
 부가 블록은 **전부 「자세히」 팝업 안에 있다**: `lead`(리드 문단), `latency`(실측 지연 표 + 측정 방법), `legend`(그림 읽는 법), `cases`(사례 카드), `summary`(정리), `guideline`(N2SF 근거), 전 장면 `reveals`("실제로는" 패널).
 화면에 남는 것은 `headlines`(SCENE 01 카드뉴스)뿐이다 — 인트로의 공감이 목적이라 그림과 같은 급이다.
@@ -300,7 +302,7 @@ cd web/src/assets/captures && for f in *.png; do
 | 항목 | 값 |
 |---|---|
 | 실행 | `cd deck && npm install && npm run dev` → http://127.0.0.1:5174 |
-| 빌드 | `npm run build` (하위 경로 배포 시 `VITE_BASE=/deck/ npm run build`) |
+| 빌드 | `npm run build` — 운영에서는 사이트 루트(`/`)에 걸린다 |
 | 의존성 | `reveal.js`(72.4k★ MIT) + `gsap`(이미 web/ 에서 쓰는 것) 둘뿐 |
 | 구성 | **37장** (4개 장 + 목차 + 진입 화면 4) · `index.html` · `src/theme.css` · `src/main.js` |
 | 조작 | 방향키 이동 · **`S` 발표자 노트(스크립트가 들어 있다)** · `?print-pdf` · `O` 개요 |
@@ -411,7 +413,7 @@ cd web/src/assets/captures && for f in *.png; do
 ## 폴더 구조
 ```
 AI-Security-Guardrail/
-  app/                        ← FastAPI 엔진 + 데모. config.py 의 explain_dir, main.py 의 /explain 마운트
+  app/                        ← FastAPI 엔진 + 데모. config.py 의 explain_dir·deck_dir, main.py 의 /presentation1·/ 마운트
   tests/                      ← pytest (테스트 함수 67개)
   attacks/  scripts/  docs/
   Dockerfile.full             ← node 스테이지에서 web/ 번들 빌드 → 이미지에 포함
@@ -449,7 +451,7 @@ AI-Security-Guardrail/
 ```
 
 ## 현재 상태
-M1~M5 및 2차 단계(`/explain` 서빙) 모두 완료. 10개 장면 전부 인라인 SVG + 애니메이션 + "실제로는" 패널을 갖췄고, CI/CD로 실호스트에 배포되어 동작 중이다. 남은 것은 카피 교열과 발표 대비 미세 조정 수준.
+M1~M5 및 2차 단계(설명 사이트 서빙 — 현 `/presentation1/`) 모두 완료. 10개 장면 전부 인라인 SVG + 애니메이션 + "실제로는" 패널을 갖췄고, CI/CD로 실호스트에 배포되어 동작 중이다. 남은 것은 카피 교열과 발표 대비 미세 조정 수준.
 
 ## 평가 체계 (2026-10-04 신설) — 발표 숫자의 출처
 
