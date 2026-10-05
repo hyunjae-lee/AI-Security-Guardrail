@@ -773,3 +773,32 @@
 .lat__row--teal .lat__bar { background: var(--teal); }
 .lat__row--teal .lat__label, .lat__row--teal .lat__val { color: var(--teal); font-weight: 700; }
 .lat__row--dim .lat__bar { background: var(--line); }
+
+/* ── 실증 방법 — 왼쪽 네 걸음, 오른쪽 실제 저장소 트리 ─────── */
+.method { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 1.6rem; align-items: start; }
+.method__steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.9rem; counter-reset: st; }
+.method__steps li {
+  counter-increment: st; position: relative; padding: 0.2rem 0 0 2.4rem;
+  display: flex; flex-direction: column; gap: 0.2rem;
+}
+.method__steps li::before {
+  content: counter(st); position: absolute; left: 0; top: 0.15rem;
+  width: 1.55em; height: 1.55em; border-radius: 50%; display: grid; place-items: center;
+  font-size: 0.66em; font-weight: 800; color: var(--ground); background: var(--teal);
+}
+.method__steps b { font-size: 0.72em; color: var(--ink); }
+.method__steps span { font-size: 0.56em; line-height: 1.55; color: var(--ink-2); }
+.term { margin: 0; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; background: #0f1116; }
+.term__bar {
+  display: flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.8rem;
+  background: var(--ground-2); border-bottom: 1px solid var(--line); font-size: 0.46em; color: var(--ink-3);
+}
+.term__bar i { width: 0.7em; height: 0.7em; border-radius: 50%; background: #3a3e49; display: inline-block; }
+.term__bar span { margin-left: 0.6rem; }
+.term__body {
+  margin: 0; padding: 0.9rem 1rem; white-space: pre; overflow: hidden;
+  font: 0.47em/1.62 ui-monospace, 'SF Mono', Menlo, 'D2Coding', monospace; color: var(--ink-2);
+}
+.term__body b { color: var(--ink); font-weight: 700; }
+.term__body b.t { color: var(--teal); }
+.term__body i { font-style: normal; color: var(--amber); }
