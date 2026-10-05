@@ -12,19 +12,27 @@
 <!-- 01 표지 ─────────────────────────────────────────────── -->
 <section data-s="01">
   <div class="wrap wrap--center">
-    <p class="kicker">2026 직원 현장연구과정 · 최종 성과 발표</p>
-    <p class="lead lead--wide" style="font-size:1.1em;margin-bottom:.4rem">대학 행정환경을 고려한 생성형 AI 도입을 위한</p>
-    <h1 style="font-size:2.1em">보안 프레임워크 및<br>가드레일 실증 연구</h1>
-    <p class="lead lead--wide" style="font-size:1em;margin-top:.8rem">
-      AI 보안·거버넌스 현장연구팀<br>
-      연구책임자 이현재 (정보보안팀)<br>
-      공동연구원 임종호 (정보전산팀) · 강경덕 (교수학습지원팀)
-    </p>
+    <div class="cover">
+      <div class="cover__text">
+        <p class="kicker">2026 직원 현장연구과정 · 최종 성과 발표</p>
+        <p class="cover__pre">대학 행정환경을 고려한<br>생성형 AI 도입을 위한</p>
+        <h1 class="cover__title">보안 프레임워크 및<br>가드레일 실증 연구</h1>
+        <p class="cover__team">
+          <b>AI 보안·거버넌스 현장연구팀</b><br>
+          연구책임자 이현재 (정보보안팀)<br>
+          공동연구원 임종호 (정보전산팀)<br>
+          공동연구원 강경덕 (교수학습지원팀)
+        </p>
+      </div>
+      <div class="cover__art" id="cover-art"></div>
+    </div>
     <p class="cite foot">연구기간 2026.3.1. – 9.30. · <b>guardrail.kaist.ac.kr</b> 에서 실증 환경이 동작 중</p>
   </div>
     <aside class="notes">
       <p><strong>본발표 · 0:00–0:10</strong></p>
-      <p>「AI 보안·거버넌스 현장연구팀입니다.」 한 문장만 하고 바로 다음 장으로 넘어간다. 과제명·연구원 이름은 화면에 있으니 읽지 않는다 — 첫 문장이 가장 세다.</p>
+      <p>오른쪽 그림이 먼저 말하게 둔다 — 1막(지금: 아무 확인 없이 넘어간다)이 끝나고 2막(검사대가 선다)이 시작될 때 말을 얹는다.</p>
+      <p>「같은 질문, 같은 AI 입니다. 달라진 것은 국경의 검사대 하나입니다. 저희 AI 보안·거버넌스 현장연구팀은 이 기관 전용 가드레일을 만들고 실증했습니다.」</p>
+      <p>과제명·연구원 이름은 화면에 있으니 읽지 않는다. 그림은 결론 화면을 잠시 보여 준 뒤 다시 돈다.</p>
     </aside>
 </section>
 
@@ -46,42 +54,32 @@
 <!-- 목차 ────────────────────────────────────────────────── -->
 <section data-s="toc">
   <div class="wrap">
-    <p class="kicker">발표 순서</p>
-    <h2>네 가지만 말씀드립니다.</h2>
+    <h2>목차</h2>
     <div class="spacer"></div>
-    <div class="chapters">
+    <div class="chapters chapters--titles">
       <div class="ch">
         <span class="ch__num">Ⅰ</span>
         <span class="ch__q">연구 필요성</span>
-        <span class="ch__sub">보안 위협과 운영 리스크 — 지금 무엇이 새고, 왜 지금인가</span>
-        <span class="ch__tag">위협 식별 · 제도</span>
       </div>
       <div class="ch">
         <span class="ch__num">Ⅱ</span>
         <span class="ch__q">보안·가드레일 설계</span>
-        <span class="ch__sub">RAG 접근통제 · 프롬프트 인젝션 대응 · 개인정보 마스킹</span>
-        <span class="ch__tag">구조 · 스택 · 사용자</span>
       </div>
       <div class="ch">
         <span class="ch__num">Ⅲ</span>
         <span class="ch__q">실증 결과</span>
-        <span class="ch__sub">추정이 아니라 실측입니다</span>
-        <span class="ch__tag">측정 · 지연 · 비용</span>
       </div>
       <div class="ch">
         <span class="ch__num">Ⅳ</span>
         <span class="ch__q">적용·확산 방안</span>
-        <span class="ch__sub">장비는 우리가, 품목표는 각 부서가</span>
-        <span class="ch__tag">통합 모델 · 거버넌스</span>
       </div>
     </div>
     <div class="spacer"></div>
-    <p class="punch punch--teal">실증 연구입니다 — 만들었다는 이야기가 아니라 <em>재 봤다는 이야기</em>입니다. 세 번째 장이 이 연구의 몫입니다.</p>
     <p class="cite">연구내용 다섯 — ① 위협·운영 리스크 식별 <b>Ⅰ</b> · ② RAG 접근통제 ③ 프롬프트 인젝션 대응 ④ 개인정보 비식별화·마스킹 <b>Ⅱ·Ⅲ</b> · ⑤ 통합 프레임워크·가드레일 모델 <b>Ⅱ·Ⅳ</b></p>
     <aside class="notes">
       <p><strong>본발표 · 0:20–0:32</strong></p>
       <p>네 칸을 손으로 짚으며 한 번씩만 읽는다. 설명하지 말 것 — 뒤에서 각 장이 다시 나온다.</p>
-      <p>「실증 연구입니다. 만들었다는 이야기가 아니라 재 봤다는 이야기입니다. 세 번째 장이 이 연구의 몫입니다.」</p>
+      <p>「연구 필요성, 보안·가드레일 설계, 실증 결과, 적용·확산 방안 순으로 말씀드리겠습니다. 그중 세 번째, 실제로 재 본 결과가 이 연구의 중심입니다.」</p>
     </aside>
   </div>
 </section>
@@ -97,11 +95,11 @@
     </div>
     <p class="ch-big__num">Ⅰ</p>
     <h1 class="ch-big__q">연구 필요성</h1>
-    <p class="ch-big__sub">보안 위협과 운영 리스크 — 지금 무엇이 새고, 왜 지금인가</p>
+    <p class="ch-big__sub">생성형 AI 를 어떠한 제한 없이, 지금처럼 사용해도 될까?</p>
     <aside class="notes">
       <p><strong>본발표 · 0:32–0:36  (4초)</strong></p>
       <p>멈추지 말고 바로 넘긴다. 숨 고르는 자리다.</p>
-      <p>「먼저, 연구 필요성입니다.」</p>
+      <p>「먼저, 연구 필요성입니다. 생성형 AI 를 어떠한 제한 없이, 지금처럼 사용해도 될까요?」</p>
     </aside>
   </div>
 </section>

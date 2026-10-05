@@ -521,3 +521,36 @@
 }
 /* 진입 화면은 가운데 정렬이라 띠가 absolute 다 — 그만큼 위를 비워 둔다. */
 .chapter .wrap { padding-top: 7rem; }
+
+/* ── 표지 — 왼쪽 과제명, 오른쪽 그림 ─────────────────────── */
+.cover {
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+  gap: 2.2rem;
+  align-items: center;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.cover__text { display: flex; flex-direction: column; gap: 1.1rem; }
+.cover__pre {
+  margin: 0;
+  font-size: 0.92em;
+  font-weight: 300;
+  line-height: 1.42;
+  color: var(--ink-2);
+}
+.reveal .cover__title { font-size: 2.05em; line-height: 1.14; margin: 0; }
+.cover__team {
+  margin: 0.4rem 0 0;
+  font-size: 0.66em;
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--ink-2);
+}
+.cover__team b { color: var(--ink); font-weight: 600; }
+.cover__art { min-height: 0; height: 100%; display: flex; align-items: center; }
+.cover__art svg { width: 100%; height: auto; max-height: 100%; }
+
+/* ── 목차 — 장 제목만 ─────────────────────────────────────── */
+.chapters--titles .ch { padding: 2.2rem 1.6rem 2.4rem; gap: 1.2rem; }
+.chapters--titles .ch__q { font-size: 1.22em; line-height: 1.3; }

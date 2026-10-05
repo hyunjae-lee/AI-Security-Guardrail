@@ -16,6 +16,17 @@ const C = {
   ink: '#f4f3ef', ink2: '#c7c8ce', ink3: '#9b9da6',
   line: '#3d4250', plate: '#1c1f27', ground2: '#14161c', ground: '#0b0c10',
 };
+/* 채팅 앱 화면은 **흰색 기본 테마**로 그린다 — ChatGPT·Claude 를 처음 여는 사람이
+ * 보는 모습이 그것이라 청중이 「내가 쓰는 그 화면」으로 바로 알아본다.
+ * 바탕이 흰색이므로 강조색은 web/ 의 잉크 단계(흰 바탕에서 4.5:1 이상)를 쓴다.
+ * 시스템 쪽(방화벽·검사 단계) 패널은 화면이 아니므로 어두운 채로 둔다. */
+const L = {
+  amber: '#8A5A06', teal: '#0D7A63', red: '#B3251A', green: '#3F7A24',
+  ink: '#1d1d1f', ink2: '#3c3c43', ink3: '#6e6e73',
+  line: '#dcdce2', plate: '#ffffff', ground2: '#f4f4f6', ground: '#ffffff',
+  dot: '#d1d1d6', hover: '#ececf1', bubble: '#f0f0f3',
+};
+
 const MONO = `font-family="ui-monospace, 'SF Mono', Menlo, monospace"`;
 
 const COLS = [36, 548, 1060];
@@ -24,18 +35,20 @@ const WIN_Y = 62, WIN_H = 150;
 const FLOW_Y = 248;
 
 /** 끝단 화면 — 터미널이든 앱이든 같은 창 모양을 쓴다. */
-function win(x, { chrome, accent, lines }) {
+function win(x, { chrome, accent, lines, light = false }) {
+  const K = light ? L : C;
+  const edge = light ? (accent === C.red ? L.red : accent === C.amber ? L.amber : L.teal) : accent;
   return `
     <rect x="${x}" y="${WIN_Y}" width="${CW - 24}" height="${WIN_H}" rx="11"
-          fill="${C.plate}" stroke="${accent}" stroke-width="1.5" stroke-opacity="0.75"/>
-    <line x1="${x}" y1="${WIN_Y + 32}" x2="${x + CW - 24}" y2="${WIN_Y + 32}" stroke="${C.line}"/>
-    <circle cx="${x + 18}" cy="${WIN_Y + 16}" r="3.6" fill="#4a4f5c"/>
-    <circle cx="${x + 31}" cy="${WIN_Y + 16}" r="3.6" fill="#4a4f5c"/>
-    <circle cx="${x + 44}" cy="${WIN_Y + 16}" r="3.6" fill="#4a4f5c"/>
-    <text x="${x + 60}" y="${WIN_Y + 21}" font-size="12.5" fill="${C.ink3}">${chrome}</text>
+          fill="${K.plate}" stroke="${edge}" stroke-width="1.5" stroke-opacity="0.75"/>
+    <line x1="${x}" y1="${WIN_Y + 32}" x2="${x + CW - 24}" y2="${WIN_Y + 32}" stroke="${K.line}"/>
+    <circle cx="${x + 18}" cy="${WIN_Y + 16}" r="3.6" fill="${light ? L.dot : '#4a4f5c'}"/>
+    <circle cx="${x + 31}" cy="${WIN_Y + 16}" r="3.6" fill="${light ? L.dot : '#4a4f5c'}"/>
+    <circle cx="${x + 44}" cy="${WIN_Y + 16}" r="3.6" fill="${light ? L.dot : '#4a4f5c'}"/>
+    <text x="${x + 60}" y="${WIN_Y + 21}" font-size="12.5" fill="${K.ink3}">${chrome}</text>
     ${lines.map((l, i) => {
       const [txt, kind] = Array.isArray(l) ? l : [l, 'mono'];
-      const fill = kind === 'dim' ? C.ink3 : kind === 'warn' ? C.red : C.ink2;
+      const fill = kind === 'dim' ? K.ink3 : kind === 'warn' ? K.red : K.ink2;
       return `<text x="${x + 18}" y="${WIN_Y + 58 + i * 23}" font-size="13"
             fill="${fill}" ${kind === 'mono' ? MONO : ''}>${txt}</text>`;
     }).join('')}`;
@@ -102,7 +115,7 @@ export function buildPaths(host) {
       <text x="${xb}" y="26" font-size="14" font-weight="700" fill="${C.red}" letter-spacing="1.2">B · 소비자 앱</text>
       <text x="${xb}" y="50" font-size="17" font-weight="700" fill="${C.ink}">ChatGPT · Claude 데스크톱 / 모바일</text>
       ${win(xb, {
-        chrome: 'ChatGPT — 설정', accent: C.red,
+        chrome: 'ChatGPT — 설정', accent: C.red, light: true,
         lines: [['계정 · 일반 · 데이터 제어 · 정보', 'plain'],
                 ['서버 주소를 바꾸는 항목이 없음', 'dim'],
                 ['', 'plain'],
@@ -126,7 +139,7 @@ export function buildPaths(host) {
       <text x="${xc}" y="26" font-size="14" font-weight="700" fill="${C.amber}" letter-spacing="1.2">C · 끼워진 AI</text>
       <text x="${xc}" y="50" font-size="17" font-weight="700" fill="${C.ink}">Office Copilot · Workspace Gemini</text>
       ${win(xc, {
-        chrome: '보고서.docx — Word', accent: C.amber,
+        chrome: '보고서.docx — Word', accent: C.amber, light: true,
         lines: [['문서 본문 …', 'dim'],
                 ['Copilot 패널 — 이 문서를 요약해 줘', 'plain'],
                 ['', 'plain'],

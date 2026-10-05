@@ -16,6 +16,17 @@ const C = {
   line: '#3d4250', plate: '#1c1f27', ground2: '#14161c',
 };
 
+/* 채팅 앱 화면은 **흰색 기본 테마**로 그린다 — ChatGPT·Claude 를 처음 여는 사람이
+ * 보는 모습이 그것이라 청중이 「내가 쓰는 그 화면」으로 바로 알아본다.
+ * 바탕이 흰색이므로 강조색은 web/ 의 잉크 단계(흰 바탕에서 4.5:1 이상)를 쓴다.
+ * 시스템 쪽(방화벽·검사 단계) 패널은 화면이 아니므로 어두운 채로 둔다. */
+const L = {
+  amber: '#8A5A06', teal: '#0D7A63', red: '#B3251A', green: '#3F7A24',
+  ink: '#1d1d1f', ink2: '#3c3c43', ink3: '#6e6e73',
+  line: '#dcdce2', plate: '#ffffff', ground2: '#f4f4f6', ground: '#ffffff',
+  dot: '#d1d1d6', hover: '#ececf1', bubble: '#f0f0f3',
+};
+
 const LX = 40, LW = 790, RX = 872, RW = 688, TOP = 72, BODY = 476;
 const SB = 176;                       // 사이드바 너비
 const MX = LX + SB, MW = LW - SB;     // 본문 영역
@@ -30,39 +41,39 @@ function chatShell({ url, urlColor, accent, sidebar = true, dim = false, main = 
   const convo = ['장학금 지급 기준 정리', '연구비 정산 서류', '학칙 제38조 해석'];
   return `
     <rect x="${LX}" y="${TOP}" width="${LW}" height="${BODY}" rx="14"
-          fill="${C.plate}" stroke="${C.line}" stroke-width="1.5"/>
+          fill="${L.plate}" stroke="${L.line}" stroke-width="1.5"/>
     <!-- 창 상단 -->
-    <line x1="${LX}" y1="${TOP + 46}" x2="${LX + LW}" y2="${TOP + 46}" stroke="${C.line}"/>
-    <circle cx="${LX + 24}" cy="${TOP + 23}" r="4.5" fill="#4a4f5c"/>
-    <circle cx="${LX + 40}" cy="${TOP + 23}" r="4.5" fill="#4a4f5c"/>
-    <circle cx="${LX + 56}" cy="${TOP + 23}" r="4.5" fill="#4a4f5c"/>
+    <line x1="${LX}" y1="${TOP + 46}" x2="${LX + LW}" y2="${TOP + 46}" stroke="${L.line}"/>
+    <circle cx="${LX + 24}" cy="${TOP + 23}" r="4.5" fill="${L.dot}"/>
+    <circle cx="${LX + 40}" cy="${TOP + 23}" r="4.5" fill="${L.dot}"/>
+    <circle cx="${LX + 56}" cy="${TOP + 23}" r="4.5" fill="${L.dot}"/>
     <rect x="${LX + 78}" y="${TOP + 11}" width="${LW - 110}" height="24" rx="12"
-          fill="${C.ground2}" stroke="${C.line}"/>
+          fill="${L.ground2}" stroke="${L.line}"/>
     <text x="${LX + 94}" y="${TOP + 28}" font-size="13.5" fill="${urlColor}">${url}</text>
 
     ${sidebar ? `
     <g opacity="${o}">
       <rect x="${LX}" y="${TOP + 46}" width="${SB}" height="${BODY - 46}"
-            fill="${C.ground2}"/>
-      <line x1="${MX}" y1="${TOP + 46}" x2="${MX}" y2="${TOP + BODY}" stroke="${C.line}"/>
+            fill="${L.ground2}"/>
+      <line x1="${MX}" y1="${TOP + 46}" x2="${MX}" y2="${TOP + BODY}" stroke="${L.line}"/>
       <rect x="${LX + 16}" y="${TOP + 64}" width="${SB - 32}" height="34" rx="9"
             fill="${accent}" fill-opacity="0.14" stroke="${accent}" stroke-width="1.2"/>
       <path d="M${LX + 34} ${TOP + 81} h14 M${LX + 41} ${TOP + 74} v14"
             stroke="${accent}" stroke-width="1.6" stroke-linecap="round"/>
       <text x="${LX + 58}" y="${TOP + 86}" font-size="13" font-weight="600" fill="${accent}">새 대화</text>
-      <text x="${LX + 18}" y="${TOP + 128}" font-size="11.5" fill="${C.ink3}"
+      <text x="${LX + 18}" y="${TOP + 128}" font-size="11.5" fill="${L.ink3}"
             letter-spacing="1">최근</text>
       ${convo.map((t, i) => `
         <g>
           <rect x="${LX + 12}" y="${TOP + 140 + i * 34}" width="${SB - 24}" height="28" rx="7"
-                fill="${i === 0 ? '#23262f' : 'none'}"/>
+                fill="${i === 0 ? L.hover : 'none'}"/>
           <text x="${LX + 24}" y="${TOP + 159 + i * 34}" font-size="12"
-                fill="${i === 0 ? C.ink2 : C.ink3}">${t}</text>
+                fill="${i === 0 ? L.ink2 : L.ink3}">${t}</text>
         </g>`).join('')}
       <circle cx="${LX + 30}" cy="${TOP + BODY - 32}" r="12" fill="${accent}" fill-opacity="0.2"/>
       <text x="${LX + 30}" y="${TOP + BODY - 27}" text-anchor="middle" font-size="11"
             font-weight="700" fill="${accent}">김</text>
-      <text x="${LX + 50}" y="${TOP + BODY - 28}" font-size="12" fill="${C.ink2}">김○○ · 행정팀</text>
+      <text x="${LX + 50}" y="${TOP + BODY - 28}" font-size="12" fill="${L.ink2}">김○○ · 행정팀</text>
     </g>` : ''}
     ${main}`;
 }
@@ -71,18 +82,18 @@ function chatShell({ url, urlColor, accent, sidebar = true, dim = false, main = 
 function modelPill(label, accent) {
   return `
     <rect x="${MX + 20}" y="${TOP + 60}" width="196" height="28" rx="14"
-          fill="${C.ground2}" stroke="${C.line}"/>
+          fill="${L.ground2}" stroke="${L.line}"/>
     <circle cx="${MX + 36}" cy="${TOP + 74}" r="4" fill="${accent}"/>
-    <text x="${MX + 48}" y="${TOP + 79}" font-size="12.5" fill="${C.ink2}">${label}</text>
-    <path d="M${MX + 198} ${TOP + 71} l5 5 l5 -5" stroke="${C.ink3}" stroke-width="1.4"
+    <text x="${MX + 48}" y="${TOP + 79}" font-size="12.5" fill="${L.ink2}">${label}</text>
+    <path d="M${MX + 198} ${TOP + 71} l5 5 l5 -5" stroke="${L.ink3}" stroke-width="1.4"
           fill="none" stroke-linecap="round"/>`;
 }
 
 function userMsg(y, text, w = 430) {
   const x = MX + MW - 24 - w;
   return `
-    <rect x="${x}" y="${y}" width="${w}" height="44" rx="12" fill="#2a2e38"/>
-    <text x="${x + 18}" y="${y + 28}" font-size="14" fill="${C.ink}">${text}</text>`;
+    <rect x="${x}" y="${y}" width="${w}" height="44" rx="12" fill="${L.bubble}"/>
+    <text x="${x + 18}" y="${y + 28}" font-size="14" fill="${L.ink}">${text}</text>`;
 }
 
 function aiMsg(y, lines, accent, idBase = '') {
@@ -92,7 +103,7 @@ function aiMsg(y, lines, accent, idBase = '') {
     <circle cx="${MX + 37}" cy="${y + 13}" r="4.5" fill="${accent}"/>
     ${lines.map((l, i) => `<text ${idBase ? `id="${idBase}${i}"` : ''}
           x="${MX + 62}" y="${y + 19 + i * 24}" font-size="14"
-          fill="${C.ink2}">${l}</text>`).join('')}`;
+          fill="${L.ink2}">${l}</text>`).join('')}`;
 }
 
 /** 입력줄 — 첨부 클립과 보내기 단추까지 그린다.
@@ -104,28 +115,28 @@ function inputBar(placeholder, accent, chip = '', type = null) {
   const row = chip ? y + 76 : y + 36;   // 글자·단추가 놓이는 줄
   return `
     <rect x="${MX + 24}" y="${y}" width="${MW - 48}" height="${h}" rx="14"
-          fill="${C.ground2}" stroke="${C.line}" stroke-width="1.3"/>
+          fill="${L.ground2}" stroke="${L.line}" stroke-width="1.3"/>
     ${chip ? chip(MX + 44, y + 12) : ''}
     <path d="M${MX + 48} ${row - 4} v-6 a7 7 0 0 1 14 0 v14 a11 11 0 0 1 -22 0 v-12"
-          fill="none" stroke="${C.ink3}" stroke-width="1.5" stroke-linecap="round"/>
+          fill="none" stroke="${L.ink3}" stroke-width="1.5" stroke-linecap="round"/>
     ${type
-      ? `<text id="${type.typeId}" x="${MX + 76}" y="${row}" font-size="13.5" fill="${C.ink}"></text>
+      ? `<text id="${type.typeId}" x="${MX + 76}" y="${row}" font-size="13.5" fill="${L.ink}"></text>
          <rect id="${type.cursorId}" x="${MX + 76}" y="${row - 14}" width="2.5" height="18"
                fill="${accent}" opacity="0"/>`
-      : `<text x="${MX + 76}" y="${row}" font-size="13.5" fill="${C.ink3}">${placeholder}</text>`}
+      : `<text x="${MX + 76}" y="${row}" font-size="13.5" fill="${L.ink3}">${placeholder}</text>`}
     <circle cx="${MX + MW - 52}" cy="${row - 4}" r="16" fill="${accent}"/>
     <path d="M${MX + MW - 60} ${row - 4} h14 M${MX + MW - 52} ${row - 11} l7 7 l-7 7"
-          stroke="${C.ground}" stroke-width="2.4" fill="none"
+          stroke="${L.ground}" stroke-width="2.4" fill="none"
           stroke-linecap="round" stroke-linejoin="round"/>`;
 }
 
 function fileChip(x, y, name) {
   return `
     <rect x="${x}" y="${y}" width="262" height="32" rx="8"
-          fill="${C.amber}" fill-opacity="0.13" stroke="${C.amber}" stroke-width="1.2"/>
+          fill="${L.amber}" fill-opacity="0.13" stroke="${L.amber}" stroke-width="1.2"/>
     <path d="M${x + 20} ${y + 20} v-5 a5 5 0 0 1 10 0 v10 a8 8 0 0 1 -16 0 v-9"
-          fill="none" stroke="${C.amber}" stroke-width="1.4" stroke-linecap="round"/>
-    <text x="${x + 40} " y="${y + 21}" font-size="13" fill="${C.amber}">${name}</text>`;
+          fill="none" stroke="${L.amber}" stroke-width="1.4" stroke-linecap="round"/>
+    <text x="${x + 40} " y="${y + 21}" font-size="13" fill="${L.amber}">${name}</text>`;
 }
 
 /** 오른쪽 — 그 순간 시스템이 하는 일. */
@@ -156,14 +167,14 @@ const SCENES = [
   // 1 — 평소 쓰던 그 화면을 연다
   [
     chatShell({
-      url: 'chatgpt.com', urlColor: C.ink2, accent: C.ink3, dim: true,
+      url: 'chatgpt.com', urlColor: L.ink2, accent: L.ink3, dim: true,
       main: `
         <g opacity="0.35">
-          ${modelPill('GPT-5', C.ink3)}
-          ${aiMsg(TOP + 140, ['무엇을 도와드릴까요?'], C.ink3)}
+          ${modelPill('GPT-5', L.ink3)}
+          ${aiMsg(TOP + 140, ['무엇을 도와드릴까요?'], L.ink3)}
         </g>
-        <text x="${MX + 24}" y="${TOP + 250}" font-size="18" fill="${C.ink2}">연결하는 중…</text>
-        <text x="${MX + 24}" y="${TOP + 282}" font-size="14" fill="${C.ink3}">평소 쓰던 그 화면을 열었습니다.</text>`,
+        <text x="${MX + 24}" y="${TOP + 250}" font-size="18" fill="${L.ink2}">연결하는 중…</text>
+        <text x="${MX + 24}" y="${TOP + 282}" font-size="14" fill="${L.ink3}">평소 쓰던 그 화면을 열었습니다.</text>`,
     }),
     behind('캠퍼스 방화벽', C.red, [
       ['TLS 핸드셰이크 시작', 'ClientHello 의 SNI = chatgpt.com'],
@@ -174,21 +185,21 @@ const SCENES = [
   // 2 — 안내가 뜬다
   [
     chatShell({
-      url: 'chatgpt.com', urlColor: C.red, accent: C.ink3, dim: true,
+      url: 'chatgpt.com', urlColor: L.red, accent: L.ink3, dim: true,
       main: `
         <rect x="${MX + 28}" y="${TOP + 110}" width="${MW - 56}" height="212" rx="14"
-              fill="rgba(242,122,109,.08)" stroke="${C.red}" stroke-width="1.5"/>
-        <circle cx="${MX + 64}" cy="${TOP + 152}" r="15" fill="none" stroke="${C.red}" stroke-width="1.8"/>
+              fill="rgba(179,37,26,.06)" stroke="${L.red}" stroke-width="1.5"/>
+        <circle cx="${MX + 64}" cy="${TOP + 152}" r="15" fill="none" stroke="${L.red}" stroke-width="1.8"/>
         <path d="M${MX + 57} ${TOP + 145} l14 14 M${MX + 71} ${TOP + 145} l-14 14"
-              stroke="${C.red}" stroke-width="2" stroke-linecap="round"/>
+              stroke="${L.red}" stroke-width="2" stroke-linecap="round"/>
         <text x="${MX + 92}" y="${TOP + 158}" font-size="17" font-weight="700"
-              fill="${C.red}">외부 생성형 AI 직접 접속은 차단돼 있습니다</text>
-        <text x="${MX + 54}" y="${TOP + 198}" font-size="14.5" fill="${C.ink2}">교내 AI 포털에서 같은 모델을 쓸 수 있습니다.</text>
-        <text x="${MX + 54}" y="${TOP + 224}" font-size="14.5" fill="${C.ink2}">학교 계정으로 바로 들어가고, 비용은 기관이 부담합니다.</text>
+              fill="${L.red}">외부 생성형 AI 직접 접속은 차단돼 있습니다</text>
+        <text x="${MX + 54}" y="${TOP + 198}" font-size="14.5" fill="${L.ink2}">교내 AI 포털에서 같은 모델을 쓸 수 있습니다.</text>
+        <text x="${MX + 54}" y="${TOP + 224}" font-size="14.5" fill="${L.ink2}">학교 계정으로 바로 들어가고, 비용은 기관이 부담합니다.</text>
         <rect x="${MX + 54}" y="${TOP + 250}" width="216" height="46" rx="11"
-              fill="${C.teal}" fill-opacity="0.18" stroke="${C.teal}" stroke-width="1.5"/>
+              fill="${L.teal}" fill-opacity="0.18" stroke="${L.teal}" stroke-width="1.5"/>
         <text x="${MX + 162}" y="${TOP + 279}" text-anchor="middle" font-size="15"
-              font-weight="700" fill="${C.teal}">교내 AI 포털 열기</text>`,
+              font-weight="700" fill="${L.teal}">교내 AI 포털 열기</text>`,
     }),
     behind('안내 서버', C.amber, [
       ['DNS 싱크홀', '교내 안내 서버로 보냅니다'],
@@ -199,12 +210,12 @@ const SCENES = [
   // 3 — 포털. 이미 로그인돼 있다
   [
     chatShell({
-      url: 'ai.kaist.ac.kr', urlColor: C.teal, accent: C.teal,
+      url: 'ai.kaist.ac.kr', urlColor: L.teal, accent: L.teal,
       main: `
-        ${modelPill('Claude Sonnet 5', C.teal)}
+        ${modelPill('Claude Sonnet 5', L.teal)}
         ${aiMsg(TOP + 130, ['안녕하세요 김○○ 님. 무엇을 도와드릴까요?',
-                            '학칙·연구비 규정은 교내 자료에서 바로 찾아 드립니다.'], C.teal)}
-        ${inputBar('메시지를 입력하세요…', C.teal)}`,
+                            '학칙·연구비 규정은 교내 자료에서 바로 찾아 드립니다.'], L.teal)}
+        ${inputBar('메시지를 입력하세요…', L.teal)}`,
     }),
     behind('포털 · 인증', C.teal, [
       ['교내 SSO 로 로그인', '계정을 새로 만들지 않습니다 — 이미 로그인돼 있습니다'],
@@ -215,11 +226,11 @@ const SCENES = [
   // 4 — 평소처럼 묻고 평소처럼 첨부한다
   [
     chatShell({
-      url: 'ai.kaist.ac.kr', urlColor: C.teal, accent: C.teal,
+      url: 'ai.kaist.ac.kr', urlColor: L.teal, accent: L.teal,
       main: `
-        ${modelPill('Claude Sonnet 5', C.teal)}
-        ${aiMsg(TOP + 118, ['안녕하세요 김○○ 님. 무엇을 도와드릴까요?'], C.teal)}
-        ${inputBar('', C.teal, (x, y) => fileChip(x, y, '장학생_명단_2026.xlsx'), {
+        ${modelPill('Claude Sonnet 5', L.teal)}
+        ${aiMsg(TOP + 118, ['안녕하세요 김○○ 님. 무엇을 도와드릴까요?'], L.teal)}
+        ${inputBar('', L.teal, (x, y) => fileChip(x, y, '장학생_명단_2026.xlsx'), {
           typeId: 'type-q', cursorId: 'cur-q',
         })}`,
     }),
@@ -232,14 +243,14 @@ const SCENES = [
   // 5 — 답이 온다
   [
     chatShell({
-      url: 'ai.kaist.ac.kr', urlColor: C.teal, accent: C.teal,
+      url: 'ai.kaist.ac.kr', urlColor: L.teal, accent: L.teal,
       main: `
-        ${modelPill('Claude Sonnet 5', C.teal)}
+        ${modelPill('Claude Sonnet 5', L.teal)}
         ${userMsg(TOP + 110, '이번 학기 장학금 지급 대상자 명단 정리해 줘', 440)}
-        ${aiMsg(TOP + 174, ['', '', ''], C.teal, 'type-a')}
+        ${aiMsg(TOP + 174, ['', '', ''], L.teal, 'type-a')}
         <rect id="cur-a" x="${MX + 62}" y="${TOP + 177}" width="2.5" height="19"
-              fill="${C.teal}" opacity="0"/>
-        ${inputBar('메시지를 입력하세요…', C.teal)}`,
+              fill="${L.teal}" opacity="0"/>
+        ${inputBar('메시지를 입력하세요…', L.teal)}`,
     }),
     behind('입국 검사 — 흐르는 중에', C.green, [
       ['꼬리를 붙잡고 흘려보냅니다', '끝에서 240자는 내보내지 않습니다'],
@@ -250,14 +261,14 @@ const SCENES = [
   // 6 — 결론
   [
     chatShell({
-      url: 'ai.kaist.ac.kr', urlColor: C.teal, accent: C.teal,
+      url: 'ai.kaist.ac.kr', urlColor: L.teal, accent: L.teal,
       main: `
-        ${modelPill('Claude Sonnet 5', C.teal)}
-        <text x="${MX + 28}" y="${TOP + 182}" font-size="23" font-weight="700" fill="${C.ink}">사용자가 의식한 것은</text>
-        <text x="${MX + 28}" y="${TOP + 222}" font-size="23" font-weight="700" fill="${C.teal}">주소가 바뀐 것 하나뿐입니다.</text>
-        <text x="${MX + 28}" y="${TOP + 274}" font-size="15" fill="${C.ink2}">여권을 꺼낼 일도, 가방을 열어 보일 일도 없었습니다.</text>
-        <text x="${MX + 28}" y="${TOP + 302}" font-size="15" fill="${C.ink2}">검사대가 있다는 것조차 몰랐습니다.</text>
-        ${inputBar('메시지를 입력하세요…', C.teal)}`,
+        ${modelPill('Claude Sonnet 5', L.teal)}
+        <text x="${MX + 28}" y="${TOP + 182}" font-size="23" font-weight="700" fill="${L.ink}">사용자가 의식한 것은</text>
+        <text x="${MX + 28}" y="${TOP + 222}" font-size="23" font-weight="700" fill="${L.teal}">주소가 바뀐 것 하나뿐입니다.</text>
+        <text x="${MX + 28}" y="${TOP + 274}" font-size="15" fill="${L.ink2}">여권을 꺼낼 일도, 가방을 열어 보일 일도 없었습니다.</text>
+        <text x="${MX + 28}" y="${TOP + 302}" font-size="15" fill="${L.ink2}">검사대가 있다는 것조차 몰랐습니다.</text>
+        ${inputBar('메시지를 입력하세요…', L.teal)}`,
     }),
     behind('그 사이 시스템이 한 일', C.teal, [
       ['출국 검사 8단계', '정규화 · 이상 · 자격증명 · 개인정보 · NER · 인젝션 · 유해 · 등급'],

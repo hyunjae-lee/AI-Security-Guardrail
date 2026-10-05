@@ -15,6 +15,7 @@ import { ARCH_STEPS, buildArchitecture, makeArchController } from './arch.js';
 import { USER_STEPS, buildUserScenario, makeUserController } from './scenario-user.js';
 import { PATH_CAPTIONS, PATH_STEPS, buildPaths, makePathController } from './paths.js';
 import { STACK_STEPS, buildStack, makeStackController } from './stack.js';
+import { buildCover, playCover, settleCover } from './cover.js';
 
 const C = {
   amber: '#f5b355',
@@ -27,6 +28,17 @@ const C = {
   line: '#3d4250',
   plate: '#1c1f27',
   ground2: '#14161c',
+};
+
+/* 채팅 앱 화면은 **흰색 기본 테마**로 그린다 — ChatGPT·Claude 를 처음 여는 사람이
+ * 보는 모습이 그것이라 청중이 「내가 쓰는 그 화면」으로 바로 알아본다.
+ * 바탕이 흰색이므로 강조색은 web/ 의 잉크 단계(흰 바탕에서 4.5:1 이상)를 쓴다.
+ * 시스템 쪽(방화벽·검사 단계) 패널은 화면이 아니므로 어두운 채로 둔다. */
+const L = {
+  amber: '#8A5A06', teal: '#0D7A63', red: '#B3251A', green: '#3F7A24',
+  ink: '#1d1d1f', ink2: '#3c3c43', ink3: '#6e6e73',
+  line: '#dcdce2', plate: '#ffffff', ground2: '#f4f4f6', ground: '#ffffff',
+  dot: '#d1d1d6', hover: '#ececf1', bubble: '#f0f0f3',
 };
 
 /** 모든 SVG 는 이 헬퍼를 경유한다 — role/title/desc 를 빠뜨리지 않기 위해서. */
@@ -489,48 +501,48 @@ function scenarioInput(host) {
     <!-- 채팅창 -->
     <g id="win" >
       <rect x="30" y="26" width="648" height="348" rx="16"
-            fill="${C.plate}" stroke="${C.line}" stroke-width="1.5"/>
-      <line x1="30" y1="70" x2="678" y2="70" stroke="${C.line}" stroke-width="1.5"/>
-      <circle cx="56" cy="48" r="5.5" fill="#3a3e49"/>
-      <circle cx="75" cy="48" r="5.5" fill="#3a3e49"/>
-      <circle cx="94" cy="48" r="5.5" fill="#3a3e49"/>
-      <text x="118" y="54" font-size="14.5" font-weight="600" fill="${C.ink2}">외부 생성형 AI</text>
-      <text x="238" y="54" font-size="13" fill="${C.ink3}">ChatGPT · Claude · Gemini …</text>
+            fill="${L.plate}" stroke="${L.line}" stroke-width="1.5"/>
+      <line x1="30" y1="70" x2="678" y2="70" stroke="${L.line}" stroke-width="1.5"/>
+      <circle cx="56" cy="48" r="5.5" fill="${L.dot}"/>
+      <circle cx="75" cy="48" r="5.5" fill="${L.dot}"/>
+      <circle cx="94" cy="48" r="5.5" fill="${L.dot}"/>
+      <text x="118" y="54" font-size="14.5" font-weight="600" fill="${L.ink2}">외부 생성형 AI</text>
+      <text x="238" y="54" font-size="13" fill="${L.ink3}">ChatGPT · Claude · Gemini …</text>
     </g>
 
     <!-- 앞선 대화 -->
     <g id="hist">
-      <rect x="372" y="92" width="282" height="34" rx="10" fill="#23262f"/>
-      <text x="392" y="114" font-size="13" fill="${C.ink3}">지난주 성적 산출 기준 알려 줘</text>
-      <rect x="54" y="136" width="356" height="50" rx="10" fill="#1a1d25"/>
-      <text x="74" y="157" font-size="13" fill="${C.ink3}">학칙 제38조에 따라 평점은…</text>
-      <text x="74" y="175" font-size="13" fill="${C.ink3}">(앞선 대화도 함께 전송됩니다)</text>
+      <rect x="372" y="92" width="282" height="34" rx="10" fill="${L.bubble}"/>
+      <text x="392" y="114" font-size="13" fill="${L.ink3}">지난주 성적 산출 기준 알려 줘</text>
+      <rect x="54" y="136" width="356" height="50" rx="10" fill="${L.ground2}"/>
+      <text x="74" y="157" font-size="13" fill="${L.ink3}">학칙 제38조에 따라 평점은…</text>
+      <text x="74" y="175" font-size="13" fill="${L.ink3}">(앞선 대화도 함께 전송됩니다)</text>
     </g>
 
     <!-- 입력창 -->
     <g id="box">
       <rect x="54" y="204" width="600" height="148" rx="12"
-            fill="${C.ground2}" stroke="${C.line}" stroke-width="1.5"/>
-      <text id="tx" x="74" y="238" font-size="15" fill="${C.ink}"></text>
-      <rect id="caret" x="74" y="222" width="2" height="20" fill="${C.amber}"/>
+            fill="${L.ground2}" stroke="${L.line}" stroke-width="1.5"/>
+      <text id="tx" x="74" y="238" font-size="15" fill="${L.ink}"></text>
+      <rect id="caret" x="74" y="222" width="2" height="20" fill="${L.amber}"/>
 
       <g id="chip">
         <rect x="74" y="258" width="286" height="34" rx="9"
-              fill="${C.amber}" fill-opacity="0.13" stroke="${C.amber}" stroke-width="1.3"/>
+              fill="${L.amber}" fill-opacity="0.13" stroke="${L.amber}" stroke-width="1.3"/>
         <path d="M92 270 v-4 a5 5 0 0 1 10 0 v10 a8 8 0 0 1 -16 0 v-9"
-              fill="none" stroke="${C.amber}" stroke-width="1.6" stroke-linecap="round"/>
-        <text x="112" y="280" font-size="13.5" fill="${C.amber}">${FILE_NAME}</text>
+              fill="none" stroke="${L.amber}" stroke-width="1.6" stroke-linecap="round"/>
+        <text x="112" y="280" font-size="13.5" fill="${L.amber}">${FILE_NAME}</text>
       </g>
       <g id="warn">
         <rect x="372" y="258" width="222" height="34" rx="9"
-              fill="${C.red}" fill-opacity="0.15" stroke="${C.red}" stroke-width="1.3"/>
-        <text x="392" y="280" font-size="13.5" font-weight="600" fill="${C.red}">주민등록번호 1,204건 포함</text>
+              fill="${L.red}" fill-opacity="0.15" stroke="${L.red}" stroke-width="1.3"/>
+        <text x="392" y="280" font-size="13.5" font-weight="600" fill="${L.red}">주민등록번호 1,204건 포함</text>
       </g>
 
       <g id="send">
-        <circle cx="614" cy="322" r="20" fill="${C.teal}"/>
+        <circle cx="614" cy="322" r="20" fill="${L.teal}"/>
         <path d="M605 322 h17 M614 314 l8 8 l-8 8"
-              stroke="${C.ground}" stroke-width="3" fill="none"
+              stroke="${L.ground}" stroke-width="3" fill="none"
               stroke-linecap="round" stroke-linejoin="round"/>
       </g>
     </g>
@@ -847,6 +859,22 @@ deck.on('ready', (e) => {
   pathStep(e.currentSlide);
   spinGlobes();
 });
+
+/* ── 표지 그림 — 같은 질문, 같은 AI, 달라진 것은 검사대 하나 ───── */
+const coverHost = document.getElementById('cover-art');
+const coverSvg = coverHost ? buildCover(coverHost) : null;
+let coverTl = null;
+
+/** 표지에 있을 때만 돈다. 떠나면 멈추고 결론 화면으로 둔다(무한 반복이라 감시 타이머 대신). */
+function coverStep(slide) {
+  if (!coverSvg) return;
+  if (coverTl) { coverTl.kill(); coverTl = null; }
+  settleCover(coverSvg);
+  if (reduced || !slide || !slide.contains(coverHost)) return;
+  coverTl = playCover(coverSvg);
+}
+deck.on('slidechanged', (e) => coverStep(e.currentSlide));
+deck.on('ready', (e) => coverStep(e.currentSlide));
 
 /** 지구본의 세로 타원만 천천히 돌려 자전처럼 보이게 한다.
  *  전체를 돌리면 가로선까지 기울어져 어지럽다. */
