@@ -804,45 +804,44 @@
 <!-- 기술 스택 표 ────────────────────────────────────────── -->
 <section data-s="tools">
   <div class="wrap">
-    <p class="kicker kicker--teal">19 · 오픈소스 가드레일 도구 활용</p>
-    <h2>남의 것을 쓴 자리와, 우리가 쓴 자리.</h2>
+    <p class="kicker kicker--teal">19 · 오픈소스와 연구회 개발</p>
+    <h2>오픈소스를 쓰고, 빈자리는 연구회가 채웠습니다.</h2>
     <div class="spacer"></div>
-    <div class="grid grid--2" style="flex:0 0 auto;gap:2.2rem">
-      <table class="tbl tbl--text">
-        <tr><th>가져다 쓴 것</th><th>무엇에</th></tr>
-        <tr><td><strong>Microsoft Presidio</strong> 2.2</td><td>영어·국제 식별자 PII</td></tr>
-        <tr><td><strong>KoELECTRA</strong> → ONNX</td><td>한국어 이름·지명 (56 MB)</td></tr>
-        <tr><td><strong>NVIDIA NeMo Guardrails</strong></td><td>입력 레일 · 자가검사</td></tr>
-        <tr><td><strong>LiteLLM</strong></td><td>OpenAI·Anthropic 호환 프록시</td></tr>
-        <tr><td><strong>promptfoo · garak</strong></td><td>외부 레드팀 시나리오</td></tr>
-        <tr><td><strong>FastAPI · Vite · reveal.js</strong></td><td>서비스 · 화면 · 이 발표</td></tr>
+    <div class="grid grid--2" style="flex:0 0 auto;gap:2rem">
+      <table class="tbl tbl--text tbl--compact tbl--why">
+        <tr><th>오픈소스</th><th>왜 필요했나</th></tr>
+        <tr><td><strong>Microsoft Presidio</strong><span class="why__role">개인정보 탐지 틀</span></td><td>이메일·카드번호 같은 국제 형식은 이미 잘 잡습니다 — 새로 만들 이유가 없었습니다</td></tr>
+        <tr><td><strong>KoELECTRA</strong><span class="why__role">한국어 이름·주소 인식</span></td><td>이름·주소는 정해진 형식이 없어 규칙으로 못 잡습니다. GPU 없이 돌도록 줄였습니다</td></tr>
+        <tr><td><strong>LiteLLM</strong><span class="why__role">여러 AI 회사를 한 창구로</span></td><td>ChatGPT·Claude·Gemini 를 같은 방식으로 부르고, 사람별 사용량 한도를 겁니다</td></tr>
+        <tr><td><strong>promptfoo · garak</strong><span class="why__role">공격 시험 자동화</span></td><td>우리가 낸 문제로만 시험하면 스스로 채점하는 셈이라, 외부 공격으로 다시 확인합니다</td></tr>
+        <tr><td><strong>NeMo Guardrails</strong><span class="why__role">표준 대화 규칙 틀</span></td><td class="dim">연결만 해 둠 — 판단에 AI 호출이 더 들어 기본은 꺼 둡니다</td></tr>
       </table>
-      <table class="tbl tbl--text">
-        <tr><th>직접 쓴 것</th><th>왜 직접 써야 했나</th></tr>
-        <tr><td>한국어 유해 의도</td><td>영어 규칙은 한국어 어순을 못 읽음</td></tr>
-        <tr><td>주민번호 체크섬</td><td>국내 식별자는 외국 도구에 없음</td></tr>
-        <tr><td>RAG 권한 통제</td><td>검색 단계에서 걸러야 함</td></tr>
-        <tr><td>데이터 등급 L0~L4</td><td>N2SF 의 C·S·O 와 맞물림</td></tr>
-        <tr><td>평가셋 205문항</td><td>한국어로 된 평가 자료가 없음</td></tr>
-        <tr><td>스트리밍 꼬리 검사</td><td>흘려보내며 검사하는 도구 없음</td></tr>
+      <table class="tbl tbl--text tbl--compact tbl--why tbl--own">
+        <tr><th>연구회 개발</th><th>왜 필요했나</th></tr>
+        <tr><td><strong>한국어 유해 요청 탐지</strong><span class="why__role">「만들어 줘 · 짜 줘」</span></td><td>영어 규칙은 한국어 어순을 못 읽어, 처음엔 공격의 30% 를 놓쳤습니다</td></tr>
+        <tr><td><strong>국내 식별자 검증 9종</strong><span class="why__role">주민번호 검증번호 계산</span></td><td>외국 도구는 주민번호·사업자번호 형식 자체를 모릅니다</td></tr>
+        <tr><td><strong>문서 권한 통제</strong><span class="why__role">직급별로 볼 수 있는 문서</span></td><td>AI 가 문서를 읽기 전에 걸러야, 권한 없는 내용이 답에 섞이지 않습니다</td></tr>
+        <tr><td><strong>데이터 등급 L0~L4</strong><span class="why__role">밖에 보내도 되는 범위</span></td><td>국가 기준(N2SF)의 기밀·민감·공개와 맞춰 그대로 보고합니다</td></tr>
+        <tr><td><strong>대학 업무 평가셋 205건</strong><span class="why__role">정답을 붙여 둔 시험 문제</span></td><td>대학 행정을 다룬 한국어 시험 자료가 없었습니다</td></tr>
+        <tr><td><strong>흘러나오는 답 검사</strong><span class="why__role">끝 240자를 붙잡고 보내기</span></td><td>나오는 대로 보내면 유출이 화면에 뜬 뒤에야 걸립니다</td></tr>
       </table>
     </div>
     <div class="spacer"></div>
-    <p class="punch punch--teal">직접 쓴 자리는 전부 <em>「한국어」와 「대학」</em>입니다.</p>
-    <p class="cite">파이썬 6,038줄 · 프런트 11,047줄 · 테스트 99개. 외부 엔진은 라이브러리가 없으면 내장 탐지기로 자동 대체됩니다.</p>
+    <p class="punch punch--teal">연구회가 개발한 자리는 전부 <em>「한국어」와 「대학」</em>입니다.</p>
   </div>
     <aside class="notes">
-      <p><strong>본발표 · 5:00–5:12</strong></p>
-      <p>「바퀴를 다시 만들지 않았습니다. 개인정보 탐지·대화형 가드레일·AI 중계는 검증된 오픈소스를 씁니다.」 → 다음 장에서 직접 만든 것.</p>
-      <p>「직접 쓴 자리는 전부 한국어와 대학입니다. 그 밖은 이미 있는 것을 씁니다.」</p>
+      <p><strong>본발표 · 5:00–5:12</strong></p></strong></p>
+      <p>「이미 잘 만들어진 것은 오픈소스를 씁니다. 국제 형식의 개인정보, 여러 AI 회사를 한 창구로 묶는 일, 외부 공격 시험이 그렇습니다.」</p>
+      <p>「오픈소스에 없는 자리는 연구회가 개발했습니다. 한국어로 된 위험한 요청, 주민번호, 직급별 문서 권한, 대학 업무 평가셋 — 전부 한국어와 대학입니다.」</p>
+      <p>물으면: 규모는 파이썬 6,038줄 · 프런트 11,047줄 · 테스트 99개. 외부 엔진은 라이브러리가 없으면 내장 탐지기로 자동 대체된다. NeMo 는 자가 점검에 AI 호출이 필요해 기본은 꺼 두었다.</p>
     </aside>
 </section>
 
-<!-- 직접 만든 것 — KAIST·한국 특화 ─────────────────────────── -->
+<!-- 연구회 개발 — KAIST·한국 특화 ─────────────────────────── -->
 <section data-s="made">
   <div class="wrap">
-    <p class="kicker kicker--amber">20 · 직접 개발한 로직</p>
-    <h2>KAIST 에 맞는 판단은 직접 만들었습니다.</h2>
+    <p class="kicker kicker--amber">20 · 연구회 개발 로직</p>
+    <h2>KAIST 에 맞는 판단은 연구회가 개발했습니다.</h2>
     <div class="spacer"></div>
     <div class="grid grid--3 made" style="flex:0 0 auto">
       <div class="card card--amber">
@@ -877,11 +876,11 @@
       </div>
     </div>
     <div class="spacer"></div>
-    <p class="punch punch--amber">바퀴는 빌려 쓰고, <em>한국어와 대학</em>은 직접 만들었습니다.</p>
+    <p class="punch punch--amber">바깥 도구가 대신해 줄 수 없는 자리 — <em>한국어와 대학</em>입니다.</p>
   </div>
     <aside class="notes">
       <p><strong>본발표 · 5:12–5:32</strong></p>
-      <p>「앞 장이 빌려 쓴 것이라면, 이 장은 직접 만든 것입니다. 두 갈래입니다 — 한국이라서 필요한 것, KAIST 라서 필요한 것.」</p>
+      <p>「앞 장에서 말씀드린 연구회 개발 부분을 조금 더 자세히 보겠습니다. 두 갈래입니다 — 한국이라서 필요한 것, KAIST 라서 필요한 것.」</p>
       <p>「한국이라서: 주민번호 검증번호, 한국어로 된 '만들어 줘' 같은 실행 의도. 영어 규칙으로는 공격의 30%를 놓쳤습니다.」</p>
       <p>「KAIST 라서: 학생·교수·행정직원·학사 담당마다 볼 수 있는 문서가 다르고, AI 가 검색하기 전에 걸러 냅니다. 그리고 수강신청·연구비 같은 우리 업무 질의로 평가셋을 만들어, 무엇을 켜고 끌지 숫자로 정했습니다.」</p>
       <p>근거 코드: app/guardrail/pii.py · harmful.py · secrets.py(credential_pair_kr) · rag.py(CLEARANCE) · classify.py(5등급) · attacks/corpus · app/audit.py · app/quota.py · engine.inspect_output_stream(hold=240)</p>

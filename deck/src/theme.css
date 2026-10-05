@@ -857,3 +857,13 @@
   .reveal section.present .close__was span::after { animation: close-strike 0.7s cubic-bezier(.28,.11,.32,1) 0.5s both; }
 }
 @keyframes close-strike { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* 오픈소스 · 연구회 개발 — 「왜 필요했나」가 가장 긴 칸이라 마지막에 넓게 둔다 */
+.tbl--why { table-layout: fixed; width: 100%; }
+.tbl--why th:nth-child(1) { width: 38%; }
+.tbl--why td { vertical-align: top; }
+.tbl--why td:nth-child(2) { color: var(--ink-2); }
+.tbl--why td.dim { color: var(--ink-3); }
+.why__role { display: block; font-size: 0.86em; color: var(--ink-3); margin-top: 0.15rem; }
+.tbl--own th:first-child { color: var(--amber); }
+.tbl--why td { line-height: 1.38; }
