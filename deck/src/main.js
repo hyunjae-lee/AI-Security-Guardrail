@@ -7,7 +7,6 @@
  */
 import Reveal from 'reveal.js';
 // 발표자 노트(S 키) — 스크립트를 종이로 들고 올라가지 않기 위해 슬라이드에 심는다.
-import RevealNotes from 'reveal.js/plugin/notes/notes.esm.js';
 import 'reveal.js/dist/reveal.css';
 import './theme.css';
 import { gsap } from 'gsap';
@@ -15,7 +14,7 @@ import { ARCH_STEPS, buildArchitecture, makeArchController } from './arch.js';
 import { USER_STEPS, buildUserScenario, makeUserController } from './scenario-user.js';
 import { PATH_CAPTIONS, PATH_STEPS, buildPaths, makePathController } from './paths.js';
 import { STACK_STEPS, buildStack, makeStackController } from './stack.js';
-import { buildCover, playCover, settleCover } from './cover.js';
+import { buildCover, makeCoverController } from './cover.js';
 
 const C = {
   amber: '#f5b355',
@@ -307,8 +306,7 @@ const deck = new Reveal({
   margin: 0.04,
   minScale: 0.2,
   maxScale: 1.6,
-  plugins: [RevealNotes],
-  // 발표자 노트(S 키)와 PDF 내보내기(?print-pdf)는 reveal 기본 기능으로 쓴다.
+  // S 키 스피커 뷰는 쓰지 않는다(요청으로 뺐다). 노트는 index.html 의 aside 에 원고로 남는다.
 });
 
 deck.on('ready', (e) => animate(e.currentSlide));
@@ -608,9 +606,9 @@ function playInput(svg) {
 /* ── 장면 B — 국경을 넘은 다음 ────────────────────────────── */
 function scenarioAfter(host) {
   const dests = [
-    ['사업자 서버에 저장', '약관이 정한 기간만큼. 얼마나 남는지는 우리가 정하지 않습니다.'],
-    ['모델 학습에 사용', '거부하지 않으면 그것이 기본값인 경우가 있습니다.'],
-    ['다른 모델·제3자로 전달', '키미 요청이 Claude 로 넘어간 것처럼, 화면에는 표시되지 않습니다.'],
+    ['사업자 서버에 저장', '기간은 그쪽 약관이 정합니다 — Claude 최대 5년 · Gemini 검토 대화 3년'],
+    ['모델 학습에 사용', '끄는 설정이 있어도, 지켜지는지 확인할 방법은 우리에게 없습니다.'],
+    ['다른 모델·제3자로 전달', 'Kimi 요청이 Claude 로 넘어간 것처럼, 화면에는 표시되지 않습니다.'],
   ];
   const card = (i, y, [t, sub]) => `
     <g id="dst-${i}">
@@ -860,21 +858,48 @@ deck.on('ready', (e) => {
   spinGlobes();
 });
 
-/* ── 표지 그림 — 같은 질문, 같은 AI, 달라진 것은 검사대 하나 ───── */
+/* ── 표지 그림 — 발표자가 막을 고른다 ─────────────────────────
+ * 버튼 두 개(마우스)와 빈 fragment 두 개(방향키·클리커)가 같은 막을 가리킨다.
+ * 0 = 대기 · 1 = 「지금」 · 2 = 「기관 전용 가드레일」.  */
 const coverHost = document.getElementById('cover-art');
-const coverSvg = coverHost ? buildCover(coverHost) : null;
-let coverTl = null;
+const coverGo = coverHost ? makeCoverController(buildCover(coverHost), reduced) : null;
+const coverSlide = coverHost?.closest('section');
+let coverStep = -1;
 
-/** 표지에 있을 때만 돈다. 떠나면 멈추고 결론 화면으로 둔다(무한 반복이라 감시 타이머 대신). */
-function coverStep(slide) {
-  if (!coverSvg) return;
-  if (coverTl) { coverTl.kill(); coverTl = null; }
-  settleCover(coverSvg);
-  if (reduced || !slide || !slide.contains(coverHost)) return;
-  coverTl = playCover(coverSvg);
+function setCover(step, play) {
+  coverStep = step;
+  coverGo(step, play);
+  coverSlide.querySelectorAll('[data-cover-btn]').forEach((b) => {
+    b.setAttribute('aria-pressed', String(Number(b.dataset.coverBtn) === step));
+  });
 }
-deck.on('slidechanged', (e) => coverStep(e.currentSlide));
-deck.on('ready', (e) => coverStep(e.currentSlide));
+
+/** reveal 의 현재 fragment 수 → 막. 이미 그 막이면 다시 돌리지 않는다(버튼이 먼저 돌렸다). */
+function coverFromDeck(play) {
+  if (!coverGo || deck.getCurrentSlide() !== coverSlide) return;
+  const step = coverSlide.querySelectorAll('.fragment[data-cover].visible').length;
+  if (step !== coverStep) setCover(step, play);
+}
+
+if (coverGo) {
+  coverSlide.querySelectorAll('[data-cover-btn]').forEach((btn) => {
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      btn.blur(); // 포커스가 버튼에 남으면 이어지는 방향키·클리커 입력이 먹지 않는다
+      const step = Number(btn.dataset.coverBtn);
+      setCover(step, true); // 같은 막을 다시 누르면 처음부터 다시 돈다
+      const { h, v } = deck.getIndices(coverSlide);
+      deck.slide(h, v, step - 1);
+    });
+  });
+  deck.on('fragmentshown', () => coverFromDeck(true));
+  deck.on('fragmenthidden', () => coverFromDeck(true));
+  deck.on('slidechanged', (e) => {
+    if (e.currentSlide !== coverSlide) { coverStep = -1; return; }
+    coverFromDeck(false); // 뒤 장에서 돌아오면 그 막의 끝 장면을 바로 놓는다
+  });
+  deck.on('ready', () => coverFromDeck(false));
+}
 
 /** 지구본의 세로 타원만 천천히 돌려 자전처럼 보이게 한다.
  *  전체를 돌리면 가로선까지 기울어져 어지럽다. */
