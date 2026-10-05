@@ -128,11 +128,11 @@ EchoLeak 도 전부 평범한 업무 동작에서 났다. Okta 조사에서 로�
 
 ```bash
 # Claude Code (서버·개인 PC 공통)
-export ANTHROPIC_BASE_URL=https://ai.kaist.ac.kr
+export ANTHROPIC_BASE_URL=https://aiportal.kaist.ac.kr
 export ANTHROPIC_AUTH_TOKEN=<교내 발급 토큰>    # API_KEY 가 아니라 AUTH_TOKEN 이다
 
 # OpenAI SDK · Codex 계열
-export OPENAI_BASE_URL=https://ai.kaist.ac.kr/v1
+export OPENAI_BASE_URL=https://aiportal.kaist.ac.kr/v1
 export OPENAI_API_KEY=<교내 발급 토큰>
 ```
 

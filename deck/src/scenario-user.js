@@ -210,7 +210,7 @@ const SCENES = [
   // 3 — 포털. 이미 로그인돼 있다
   [
     chatShell({
-      url: 'ai.kaist.ac.kr', urlColor: L.teal, accent: L.teal,
+      url: 'aiportal.kaist.ac.kr', urlColor: L.teal, accent: L.teal,
       main: `
         ${modelPill('Claude Sonnet 5', L.teal)}
         ${aiMsg(TOP + 130, ['안녕하세요 김○○ 님. 무엇을 도와드릴까요?',
@@ -226,7 +226,7 @@ const SCENES = [
   // 4 — 평소처럼 묻고 평소처럼 첨부한다
   [
     chatShell({
-      url: 'ai.kaist.ac.kr', urlColor: L.teal, accent: L.teal,
+      url: 'aiportal.kaist.ac.kr', urlColor: L.teal, accent: L.teal,
       main: `
         ${modelPill('Claude Sonnet 5', L.teal)}
         ${aiMsg(TOP + 118, ['안녕하세요 김○○ 님. 무엇을 도와드릴까요?'], L.teal)}
@@ -243,7 +243,7 @@ const SCENES = [
   // 5 — 답이 온다
   [
     chatShell({
-      url: 'ai.kaist.ac.kr', urlColor: L.teal, accent: L.teal,
+      url: 'aiportal.kaist.ac.kr', urlColor: L.teal, accent: L.teal,
       main: `
         ${modelPill('Claude Sonnet 5', L.teal)}
         ${userMsg(TOP + 110, '이번 학기 장학금 지급 대상자 명단 정리해 줘', 440)}
@@ -261,7 +261,7 @@ const SCENES = [
   // 6 — 결론
   [
     chatShell({
-      url: 'ai.kaist.ac.kr', urlColor: L.teal, accent: L.teal,
+      url: 'aiportal.kaist.ac.kr', urlColor: L.teal, accent: L.teal,
       main: `
         ${modelPill('Claude Sonnet 5', L.teal)}
         <text x="${MX + 28}" y="${TOP + 182}" font-size="23" font-weight="700" fill="${L.ink}">사용자가 의식한 것은</text>

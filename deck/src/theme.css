@@ -709,3 +709,20 @@
 .tl5__item--new .tl5__date { padding-left: 0.2rem; }
 .shift { padding: 1.3rem 1.5rem; }
 .shift__text { font-size: 0.68em; }
+/* 검사 단계 풀이표 — 첫 칸 번호를 크게, 셋째 칸(예시)은 조금 밝게 */
+.tbl--steps { font-size: 0.66em; }
+.tbl--steps th, .tbl--steps td { padding: 0.5rem 0.75rem; vertical-align: top; }
+.tbl--steps td:first-child { white-space: nowrap; color: var(--teal); font-weight: 700; }
+.tbl--steps td:first-child b { display: inline-block; width: 1.4em; color: var(--ink); }
+.tbl--steps td:last-child { color: var(--ink); }
+
+/* N2SF 원문 장 — 원문 구성도(근거 화면) + 인용 + 대응표 */
+.n2sf { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr); gap: 1.4rem; align-items: center; }
+.n2sf__fig { position: relative; margin: 0; border-radius: 11px; overflow: hidden; border: 1px solid var(--line); }
+.n2sf__fig img { display: block; width: 100%; height: auto; }
+.n2sf__quote { padding: 1rem 1.3rem; }
+.n2sf__quote .quote__text { font-size: 0.66em; }
+.n2sf__quote .quote__src { font-size: 0.5em; }
+.tbl--map { font-size: 0.58em; }
+.tbl--map th, .tbl--map td { padding: 0.38rem 0.7rem; }
+.tbl--map td:first-child { color: var(--teal); font-weight: 700; white-space: nowrap; }

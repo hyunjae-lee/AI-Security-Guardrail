@@ -91,13 +91,13 @@ export function buildPaths(host) {
       <text x="${xa}" y="50" font-size="17" font-weight="700" fill="${C.ink}">Claude Code · Codex · SDK</text>
       ${win(xa, {
         chrome: 'research-server — zsh', accent: C.teal,
-        lines: ['$ export ANTHROPIC_BASE_URL=https://ai.kaist.ac.kr',
+        lines: ['$ export ANTHROPIC_BASE_URL=https://aiportal.kaist.ac.kr',
                 '$ export ANTHROPIC_AUTH_TOKEN=kaist-••••',
                 '$ claude',
                 ['● 교내 게이트웨이에 연결됨', 'dim']],
       })}
       ${flow(xa, [
-        ['클라이언트가 교내 주소로 요청', 'POST https://ai.kaist.ac.kr/v1/messages'],
+        ['클라이언트가 교내 주소로 요청', 'POST https://aiportal.kaist.ac.kr/v1/messages'],
         ['게이트웨이가 토큰을 확인하고 등급을 정함', '교내 토큰 → CLR 0~4'],
         ['입력 검사 8단계 → 판정', 'ALLOW / SANITIZE / FLAG / BLOCK'],
         ['통과분만 공급자로 중계', '→ api.anthropic.com'],
@@ -125,7 +125,7 @@ export function buildPaths(host) {
         ['앱이 고정된 주소로 TLS 연결 시도', 'chatgpt.com · api.openai.com'],
         ['방화벽이 ClientHello 의 SNI 를 보고 차단', '복호화하지 않음 — 끊을 뿐'],
         ['앱에는 「네트워크 오류」만 표시', 'HTTP 가 아니라 안내 페이지를 못 띄움'],
-        ['사용자는 교내 포털로 이동', 'ai.kaist.ac.kr · PWA 설치본'],
+        ['사용자는 교내 포털로 이동', 'aiportal.kaist.ac.kr · PWA 설치본'],
       ], C.red)}
       ${footer(xb, 486, C.red, '왜 가로채지 않나', [
         '앱이 인증서 피닝을 써서 TLS 인터셉션은 깨진다',
