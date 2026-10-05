@@ -729,3 +729,20 @@
 .made .card__body { font-size: 0.56em; }
 .made .card__title { font-size: 0.78em; }
 .tbl--spec td:last-child { text-align: left; }
+
+/* 계정 연결 — 번호가 붙은 네 걸음 */
+.flow4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; counter-reset: f; }
+.flow4__step {
+  position: relative; display: flex; flex-direction: column; gap: 0.4rem;
+  padding: 1.1rem 1.1rem 1.2rem; border: 1px solid var(--line); border-radius: 18px; background: var(--plate);
+}
+.flow4__step + .flow4__step::before { /* 앞 칸에서 오는 화살표 */
+  content: '→'; position: absolute; left: -0.95rem; top: 1.1rem; font-size: 0.8em; color: var(--teal);
+}
+.flow4__step--key { border-color: rgba(95, 207, 176, 0.7); background: rgba(95, 207, 176, 0.07); }
+.flow4__n {
+  width: 1.6em; height: 1.6em; border-radius: 50%; display: grid; place-items: center;
+  font-size: 0.6em; font-weight: 800; color: var(--ground); background: var(--teal);
+}
+.flow4 .card__title { font-size: 0.74em; }
+.flow4 .card__body { font-size: 0.56em; }

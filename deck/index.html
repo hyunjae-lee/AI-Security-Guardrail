@@ -937,10 +937,56 @@
     </aside>
 </section>
 
+<!-- 계정은 어떻게 연결되나 ──────────────────────────────── -->
+<section data-s="account">
+  <div class="wrap">
+    <p class="kicker kicker--teal">24 · ChatGPT 인가요, Claude 인가요?</p>
+    <h2>개인 계정 없이, 학교 계정 하나로 고릅니다.</h2>
+    <div class="spacer"></div>
+    <div class="flow4" style="flex:0 0 auto">
+      <div class="flow4__step">
+        <span class="flow4__n">1</span>
+        <span class="card__title">학교 계정으로 로그인</span>
+        <span class="card__body">aiportal.kaist.ac.kr 에 <strong>KAIST 통합로그인</strong>만. ChatGPT·Claude·Gemini 계정은 만들지 않습니다. 직급에 따라 볼 수 있는 교내 자료가 정해집니다.</span>
+      </div>
+      <div class="flow4__step">
+        <span class="flow4__n">2</span>
+        <span class="card__title">포털에서 AI 를 고름</span>
+        <span class="card__body">화면 위 선택 버튼에서 <strong>GPT · Claude · Gemini</strong> 중 하나. ChatGPT 에서 모델을 고르는 바로 그 자리입니다.</span>
+      </div>
+      <div class="flow4__step">
+        <span class="flow4__n">3</span>
+        <span class="card__title">검사소를 지남</span>
+        <span class="card__body">나갈 때 8단계 검사. 개인정보는 가리고, 막아야 할 것은 막습니다.</span>
+      </div>
+      <div class="flow4__step flow4__step--key">
+        <span class="flow4__n">4</span>
+        <span class="card__title">학교 명의로 AI 호출</span>
+        <span class="card__body">교환대가 <strong>학교가 계약한 API 키</strong>로 고른 회사에 보냅니다. 키는 서버에만 있고 사용자에게 보이지 않습니다. 요금은 학교 계약으로 나갑니다.</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <table class="tbl tbl--text tbl--compact" style="flex:0 0 auto">
+      <tr><th></th><th>개인 계정 (ChatGPT 앱 등)</th><th>학교 포털 (기관 API 계약)</th></tr>
+      <tr><td>학습에 쓰이나</td><td>개인용은 설정에 따라 쓰임</td><td><strong>기관용 약관은 기본이 학습 미사용</strong></td></tr>
+      <tr><td>얼마나 남나</td><td>회사 약관이 정함</td><td>계약으로 정함 — 무보관(ZDR) 계약도 가능</td></tr>
+      <tr><td>누가 물었는지</td><td>회사만 앎</td><td>학교 감사 기록 (판정만, 원문 없음)</td></tr>
+      <tr><td>잃는 것</td><td class="dim">—</td><td>앱 고유 기능(메모리·GPTs 등)은 없음 — 대화·파일·교내 자료 검색은 제공</td></tr>
+    </table>
+  </div>
+    <aside class="notes">
+      <p><strong>예비 — 건너뛴다  ★ 「포털이면 ChatGPT 인지 Claude 인지 모르잖아요」「각자 계정은요?」가 나오면 연다</strong></p>
+      <p>「개인 계정은 필요 없습니다. 학교 계정으로 포털에 들어가서, ChatGPT 에서 모델 고르듯 GPT·Claude·Gemini 중에 고릅니다.」</p>
+      <p>「실제 AI 회사와는 학교가 기관 계약을 맺고, 그 키로 서버가 대신 부릅니다. 회사 입장에서는 KAIST 라는 고객 하나입니다. 누가 물었는지는 학교 기록에만 남습니다.」</p>
+      <p>「개인 계정으로 직접 가는 길은 교내망에서 막고 포털로 안내합니다 — 그 길이 열려 있으면 검사가 의미가 없습니다.」 스탠퍼드 AI Playground 가 같은 방식(한 화면에서 여러 회사 모델).</p>
+      <p>정직하게: 앱 고유 기능(ChatGPT 메모리·GPTs, Claude Projects 등)은 API 로는 그대로 오지 않는다. 기관용 약관의 「기본 학습 미사용」은 OpenAI(business)·Anthropic(commercial) 공식 문서 기준 — 구체적 보관 기간은 계약마다 다르다.</p>
+    </aside>
+</section>
+
 <!-- 세 갈래 ─────────────────────────────────────────────── -->
 <section data-s="paths" id="slide-paths">
   <div class="wrap wrap--stage">
-    <p class="kicker kicker--teal">24 · 브라우저 말고 다른 길은</p>
+    <p class="kicker kicker--teal">25 · 브라우저 말고 다른 길은</p>
     <h2 class="arch-title">앱은? CLI 는? 코드는?</h2>
     <div class="arch-stage" id="paths-stage"></div>
     <p class="arch-caption" id="paths-caption"></p>
@@ -958,7 +1004,7 @@
 <!-- 금지는 답이 아니다 ─────────────────────────────────── -->
 <section data-s="10">
   <div class="wrap">
-    <p class="kicker">25 · 그러면 막으면 되나</p>
+    <p class="kicker">26 · 그러면 막으면 되나</p>
     <h2>막으면, 숨어서 씁니다.</h2>
     <div class="spacer"></div>
     <div class="grid grid--2" style="flex:0 0 auto">
@@ -988,7 +1034,7 @@
 <!-- 11 판정 ─────────────────────────────────────────────── -->
 <section data-s="14">
   <div class="wrap">
-    <p class="kicker kicker--teal">26 · 정책 결정 — 인젝션 차단 · 개인정보 마스킹</p>
+    <p class="kicker kicker--teal">27 · 정책 결정 — 인젝션 차단 · 개인정보 마스킹</p>
     <h2>그래서 네 갈래로 나눕니다.</h2>
     <div class="spacer"></div>
     <div class="grid grid--4" style="flex:0 0 auto">
@@ -1046,7 +1092,7 @@
 <!-- 측정 ──────────────────────────────────────────────── -->
 <section data-s="measure">
   <div class="wrap">
-    <p class="kicker kicker--teal">27 · 실증 ① 탐지 성능</p>
+    <p class="kicker kicker--teal">28 · 실증 ① 탐지 성능</p>
     <h2>추정치가 아니라 실측입니다.</h2>
     <div class="spacer"></div>
     <div class="grid grid--3" style="flex:0 0 auto">
@@ -1094,7 +1140,7 @@
 <!-- 재 보고 안 넣은 것 ───────────────────────────────── -->
 <section data-s="nomodel">
   <div class="wrap">
-    <p class="kicker kicker--amber">28 · 실증 ② 재 보고 넣지 않은 것</p>
+    <p class="kicker kicker--amber">29 · 실증 ② 재 보고 넣지 않은 것</p>
     <h2>모델을 더 얹는 것이 늘 개선은 아닙니다.</h2>
     <div class="spacer"></div>
     <table class="tbl" style="flex:0 0 auto">
@@ -1133,7 +1179,7 @@
 <!-- 커버리지 ─────────────────────────────────────────── -->
 <section data-s="coverage">
   <div class="wrap">
-    <p class="kicker kicker--teal">29 · 어디를 덮고, 어디를 못 덮나</p>
+    <p class="kicker kicker--teal">30 · 어디를 덮고, 어디를 못 덮나</p>
     <h2>못 덮는 자리를 먼저 말합니다.</h2>
     <div class="spacer"></div>
     <div class="grid grid--2" style="flex:0 0 auto;gap:2.2rem">
@@ -1168,7 +1214,7 @@
 <!-- 지연 실측 ──────────────────────────────────────────── -->
 <section data-s="15">
   <div class="wrap">
-    <p class="kicker kicker--teal">30 · 실증 ③ 지연 — 업무가 느려지나</p>
+    <p class="kicker kicker--teal">31 · 실증 ③ 지연 — 업무가 느려지나</p>
     <h2>검사가 붙잡는 시간은 5.3밀리초입니다.</h2>
     <div class="spacer"></div>
     <div class="grid grid--2" style="flex:0 0 auto;gap:2.4rem">
@@ -1198,7 +1244,7 @@
 <!-- 우리 약속 검사 ──────────────────────────────────── -->
 <section data-s="promise">
   <div class="wrap">
-    <p class="kicker kicker--amber">31 · 우리 약속도 검사했습니다</p>
+    <p class="kicker kicker--amber">32 · 우리 약속도 검사했습니다</p>
     <h2>「원문은 남기지 않습니다」가 거짓이었습니다.</h2>
     <div class="spacer"></div>
     <div class="grid grid--2" style="flex:0 0 auto;gap:2.4rem">
@@ -1244,7 +1290,7 @@
 <!-- 비용·규모 ───────────────────────────────────────── -->
 <section data-s="cost">
   <div class="wrap">
-    <p class="kicker kicker--teal">32 · 실증 ④ 도입 비용</p>
+    <p class="kicker kicker--teal">33 · 실증 ④ 도입 비용</p>
     <h2>1U 서버 두 대, GPU 없이 됩니다.</h2>
     <div class="spacer"></div>
     <div class="grid grid--2" style="flex:0 0 auto;gap:2.2rem">
@@ -1303,7 +1349,7 @@
 <!-- 12 Beyond 정합 ─────────────────────────────────────── -->
 <section data-s="16">
   <div class="wrap">
-    <p class="kicker">33 · 왜 지금, 왜 KAIST 인가</p>
+    <p class="kicker">34 · 왜 지금, 왜 KAIST 인가</p>
     <h2>Beyond AI 는 가드레일 없이는 불가능합니다.</h2>
     <div class="spacer" style="flex:0 0 .4rem"></div>
     <div class="beyond">
@@ -1354,7 +1400,7 @@
 <!-- 13 다음 단계 ───────────────────────────────────────── -->
 <section data-s="17">
   <div class="wrap">
-    <p class="kicker kicker--teal">34 · 교내 단계적 도입 방안</p>
+    <p class="kicker kicker--teal">35 · 교내 단계적 도입 방안</p>
     <h2>세 단계로 적용합니다.</h2>
     <div class="spacer"></div>
     <div class="grid grid--3" style="flex:0 0 auto">
@@ -1389,7 +1435,7 @@
 <!-- 거버넌스 — 누가 ─────────────────────────────────── -->
 <section data-s="gov1">
   <div class="wrap">
-    <p class="kicker kicker--amber">35 · AI 거버넌스 — 등급표는 누가 쓰는가</p>
+    <p class="kicker kicker--amber">36 · AI 거버넌스 — 등급표는 누가 쓰는가</p>
     <h2>기술은 끝났습니다. 남은 것은 합의입니다.</h2>
     <div class="spacer"></div>
     <table class="tbl tbl--text" style="flex:0 0 auto">
@@ -1417,7 +1463,7 @@
 <!-- 거버넌스 — 어떻게 ───────────────────────────────── -->
 <section data-s="gov2">
   <div class="wrap">
-    <p class="kicker kicker--amber">36 · AI 거버넌스 — 어떤 순서로 하는가</p>
+    <p class="kicker kicker--amber">37 · AI 거버넌스 — 어떤 순서로 하는가</p>
     <h2>네 단계, 그리고 해마다 다시.</h2>
     <div class="spacer"></div>
     <div class="grid grid--4" style="flex:0 0 auto">
