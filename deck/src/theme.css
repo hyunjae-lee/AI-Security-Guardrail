@@ -609,3 +609,9 @@
 .kimi { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 1.6rem; align-items: start; }
 .kimi__side { display: flex; flex-direction: column; gap: 1rem; }
 .kimi .stat__num { font-size: 1.5em; }
+.news--3 { grid-template-columns: repeat(3, 1fr); }
+.news--3 .card__title { font-size: 0.64em; line-height: 1.4; }
+/* 썸네일을 누르면 기사 원문이 새 탭으로 열린다 */
+.news__link { display: block; position: relative; color: inherit; }
+.news__link:hover img { opacity: 0.85; }
+.news__link:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
