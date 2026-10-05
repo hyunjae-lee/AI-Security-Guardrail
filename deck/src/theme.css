@@ -802,3 +802,11 @@
 .term__body b { color: var(--ink); font-weight: 700; }
 .term__body b.t { color: var(--teal); }
 .term__body i { font-style: normal; color: var(--amber); }
+
+/* 실증 완료 / 확장 필요 표시 — 아이브로우 줄 끝에 붙는 작은 알약 */
+.kst {
+  display: inline-block; margin-left: 0.6em; padding: 0.15em 0.7em; border-radius: 9999px;
+  font-size: 0.82em; letter-spacing: 0.04em; vertical-align: 0.05em; text-transform: none;
+}
+.kst--done { color: var(--teal); background: rgba(95, 207, 176, 0.12); }
+.kst--ext { color: var(--ink-2); border: 1px dashed var(--ink-3); }

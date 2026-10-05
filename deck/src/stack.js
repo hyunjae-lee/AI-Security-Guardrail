@@ -22,16 +22,23 @@ const C = {
 const VB = [10, 44, 1462, 564];
 
 /** 제품명·판본을 함께 적는 상자. 가장 아래 줄이 「무슨 기술인가」다. */
-function box(x, y, w, h, title, sub, tech, accent, filled = false) {
+/** status: 'done' = 실증 완료(실선, 지금 동작) · 'ext' = 확장 필요(점선, 운영 전환 때 갖출 것).
+ *  발표에서 「지금 접속해 볼 수 있나요」에 정직하게 답하기 위해 상자마다 구분한다. */
+function box(x, y, w, h, title, sub, tech, accent, filled = false, status = null) {
   const subs = sub.split('\n');
+  const ext = status === 'ext';
+  const statusText = status === 'done' ? '실증 완료' : ext ? '확장 필요' : '';
   return `
     <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="11"
           fill="${filled ? 'rgba(95,207,176,.09)' : C.plate}"
-          stroke="${accent}" stroke-width="${filled ? 2 : 1.3}"/>
+          stroke="${ext ? C.ink3 : accent}" stroke-width="${filled ? 2 : 1.3}"
+          ${ext ? 'stroke-dasharray="6 5"' : ''}/>
     <text x="${x + w / 2}" y="${y + 27}" text-anchor="middle"
-          font-size="17" font-weight="700" fill="${accent}">${title}</text>
+          font-size="17" font-weight="700" fill="${ext ? C.ink2 : accent}">${title}</text>
     ${subs.map((l, i) => `<text x="${x + w / 2}" y="${y + 50 + i * 18}" text-anchor="middle"
           font-size="13.5" fill="${C.ink2}">${l}</text>`).join('')}
+    ${statusText ? `<text x="${x + w / 2}" y="${y + h - (tech ? 30 : 12)}" text-anchor="middle"
+          font-size="12" font-weight="700" fill="${ext ? C.ink3 : C.teal}">${ext ? '◌ ' : '● '}${statusText}</text>` : ''}
     ${tech ? `<text x="${x + w / 2}" y="${y + h - 12}" text-anchor="middle"
           font-size="12" font-weight="700" fill="${C.ink3}"
           font-family="ui-monospace,SFMono-Regular,Menlo,monospace">${tech}</text>` : ''}`;
@@ -78,7 +85,7 @@ export function buildStack(host) {
             fill="none" stroke="${C.teal}" stroke-width="1"
             stroke-dasharray="6 6" opacity=".45"/>
       <text x="${X - 4}" y="78" font-size="13" font-weight="700"
-            fill="${C.teal}" letter-spacing=".12em">교내 — 이 저장소가 만든 것</text>
+            fill="${C.teal}" letter-spacing=".12em">교내 — ● 실선은 이 연구가 만든 것</text>
     </g>
 
     <g id="z-dev">
@@ -87,30 +94,30 @@ export function buildStack(host) {
     </g>
 
     <g id="z-entry">
-      ${box(X, 96, 268, 112, '교내 AI 포털 (웹)', '사람이 쓰는 화면\naiportal.kaist.ac.kr', 'Vite 7 + GSAP 3', C.teal)}
-      ${box(X, 224, 268, 112, 'OpenAI 호환 API', '앱 · 연구실 · CLI\n주소만 바꾼다', '/v1/chat/completions', C.teal)}
+      ${box(X, 96, 268, 112, '교내 AI 포털 (웹)', '사람이 쓰는 화면\naiportal.kaist.ac.kr', '', C.teal, false, 'ext')}
+      ${box(X, 224, 268, 112, 'OpenAI 호환 API', '앱 · 연구실 · CLI\n주소만 바꾼다', '', C.teal, false, 'ext')}
     </g>
 
     <g id="z-proxy">
-      ${box(X + 316, 158, 226, 180, '교환대 (LiteLLM)', '어느 AI 로 보낼지\n답을 실시간 중계\n사람별 사용량 한도', 'litellm · 2노드 HA', C.teal)}
+      ${box(X + 316, 158, 226, 180, '교환대 (LiteLLM)', '어느 AI 로 보낼지\n답을 실시간 중계\n사람별 사용량 한도', '설정 파일 작성 완료', C.teal, false, 'ext')}
     </g>
 
     <g id="z-gate">
-      ${box(X + 590, 126, 244, 244, '가드레일 게이트웨이', '출국 검사 8단\n입국 검사 6단\n판정 4갈래', 'FastAPI 0.115 · py3.12', C.teal, true)}
+      ${box(X + 590, 126, 244, 244, '가드레일 게이트웨이', '출국 검사 8단\n입국 검사 6단\n판정 4갈래', 'FastAPI 0.115 · py3.12', C.teal, true, 'done')}
     </g>
 
     <g id="z-engine">
-      ${box(X + 590, 400, 118, 116, '규칙', '정규식\n체크섬', '순수 파이썬', C.teal)}
-      ${box(X + 716, 400, 118, 116, '한국어 NER', 'KoELECTRA\n-small', 'ONNX 56MB', C.amber)}
+      ${box(X + 590, 400, 118, 116, '규칙', '정규식\n체크섬', '', C.teal, false, 'done')}
+      ${box(X + 716, 400, 118, 116, '한국어 NER', 'KoELECTRA\n-small', '', C.amber, false, 'done')}
     </g>
 
     <g id="z-audit">
-      ${box(X + 316, 400, 226, 116, '감사 저장소', '판정 · 룰 ID · 길이\n원문은 넣지 않는다', 'SQLite → PostgreSQL', C.green)}
+      ${box(X + 316, 400, 226, 116, '감사 저장소', '판정 · 룰 ID · 길이\n원문은 넣지 않는다', 'SQLite (운영: PostgreSQL)', C.green, false, 'done')}
     </g>
 
     <g id="z-border">
-      ${box(1138, 158, 148, 180, '캠퍼스 경계', '외부 AI 직결\n차단\n이 길만 허용', '방화벽 / SNI', C.red)}
-      ${box(1314, 158, 148, 180, '외부 생성형 AI', 'OpenAI\nAnthropic\nGoogle', '우리 관제 밖', C.red)}
+      ${box(1138, 158, 148, 180, '캠퍼스 경계', '외부 AI 직결\n차단\n이 길만 허용', '방화벽 / SNI', C.red, false, 'ext')}
+      ${box(1314, 158, 148, 180, '외부 생성형 AI', 'OpenAI\nAnthropic\nGoogle', '기관 계약 필요', C.red, false, 'ext')}
     </g>
 
     <g id="z-wires">
@@ -135,11 +142,11 @@ export function buildStack(host) {
 /** 확대 단계 — [viewBox, 선명하게 둘 묶음, 캡션] */
 export const STACK_STEPS = [
   [VB, null,
-   '실증 환경 전체 — 점선 안이 교내입니다. 질문은 <b>왼쪽 입구 → 중계기 → 검사소 → 국경</b> 순서로 나갑니다. <b>GPU 는 한 장도 쓰지 않습니다.</b>'],
+   '실증 환경 전체 — 질문은 <b>입구 → 교환대 → 검사소 → 국경</b> 순서로 나갑니다. <b>● 실선 = 실증 완료</b>(지금 동작), <b>◌ 점선 = 확장 필요</b>(운영 전환 때 갖출 것). GPU 는 쓰지 않습니다.'],
   [[12, 84, 504, 264], ['z-dev', 'z-entry'],
-   '<b>입구는 둘</b>입니다. ① 사람은 웹 포털 <b>aiportal.kaist.ac.kr</b> 에 학교 계정으로 들어옵니다. ② 앱·CLI·연구실 코드는 업계 표준(OpenAI 호환) API 로 들어옵니다 — 프로그램에서 <b>접속 주소 한 줄만 바꾸면</b> 됩니다.'],
+   '<b>입구는 둘 — 둘 다 확장 필요</b>입니다. ① 사람은 웹 포털 <b>aiportal.kaist.ac.kr</b> 에 학교 계정으로 들어옵니다. ② 앱·CLI·연구실 코드는 업계 표준(OpenAI 호환) API 로 들어옵니다 — 프로그램에서 <b>접속 주소 한 줄만 바꾸면</b> 됩니다.'],
   [[520, 130, 420, 240], ['z-proxy'],
-   '<b>교환대(LiteLLM, 오픈소스)</b> — 포털과 여러 AI 회사 사이에서 ① 질문을 <b>어느 AI 로 보낼지</b> 정하고 ② <b>사람별 사용량 한도</b>(분당 20회·하루 500회)를 겁니다. 외부 AI 는 <b>쓴 만큼 돈을 내는 구조</b>라, 한도가 없으면 자동화 스크립트 하나나 도용된 계정 하나가 학교의 한 달 AI 예산을 하루에 쓸 수 있습니다.'],
+   '<b>교환대(LiteLLM, 오픈소스) — 설정은 작성 완료, 운영 배포는 확장 필요.</b> 포털과 여러 AI 회사 사이에서 ① 질문을 <b>어느 AI 로 보낼지</b> 정하고 ② <b>사람별 사용량 한도</b>(분당 20회·하루 500회)를 겁니다. 외부 AI 는 <b>쓴 만큼 돈을 내는 구조</b>라, 한도가 없으면 자동화 스크립트 하나나 도용된 계정 하나가 학교의 한 달 AI 예산을 하루에 쓸 수 있습니다.'],
   [[800, 100, 420, 300], ['z-gate'],
    '<b>검사소(가드레일 게이트웨이) — 이 연구의 결과물입니다.</b> 모든 질문이 반드시 지나는 곳으로, 나갈 때 8단계·들어올 때 6단계를 검사해 <b>통과·가림·기록·차단</b> 중 하나로 판정합니다. <b>이 서버가 멈추면 외부로 가는 길도 닫힙니다</b> — 검사 없이 나가는 일은 없습니다.'],
   [[800, 380, 400, 170], ['z-engine'],

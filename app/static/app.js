@@ -63,11 +63,35 @@ function redactionSummary(parts) {
 }
 
 const ACTION_META = {
-  block: { icon: "⛔", label: "차단 (BLOCK)", cls: "v-block" },
-  sanitize: { icon: "🧼", label: "마스킹 후 전달 (MASK)", cls: "v-sanitize" },
-  flag: { icon: "🚩", label: "전달 + 검토 표시 (FLAG)", cls: "v-flag" },
-  allow: { icon: "✅", label: "정상 통과 (ALLOW)", cls: "v-allow" },
+  block: { label: "차단", cls: "v-block" },
+  sanitize: { label: "가리고 전달", cls: "v-sanitize" },
+  flag: { label: "전달 + 기록에 표시", cls: "v-flag" },
+  allow: { label: "그대로 통과", cls: "v-allow" },
 };
+const ACTION_SHORT = { block: "차단", sanitize: "가림", flag: "표시", allow: "통과" };
+
+// 엔진의 검사기 이름 → 화면용 쉬운 이름과 「무엇을 묻는가」.
+// 엔진 문자열(app/guardrail/)은 그대로 두고 화면에서만 바꾼다 — 발표 덱의 표현과 맞춘다.
+const STAGE_LABEL = {
+  normalizer: ["정규화", "숨기거나 꼬아 쓴 글자를 펼쳐 봅니다"],
+  anomaly: ["이상 탐지", "너무 길거나 같은 말이 반복되나"],
+  secrets: ["자격증명", "비밀번호·API 키가 섞였나"],
+  pii: ["개인정보", "주민·카드번호 등 — 있으면 가립니다"],
+  presidio_pii: ["한국어 이름·주소", "사람 이름·주소가 있나 (AI 모델)"],
+  injection: ["인젝션", "「규칙 무시」 같은 조작 시도인가"],
+  pi_model: ["ML 인젝션 분류기", "측정 후 기본 꺼짐"],
+  nemo_rails: ["NeMo 레일", "외부 안전 규칙"],
+  harmful: ["유해 요청", "무기·해킹을 만들어 달라는가"],
+  rag_access: ["권한·등급", "내 권한으로 볼 수 있는 자료인가"],
+  data_classifier: ["데이터 등급", "5등급 중 어디에 해당하나"],
+  canary: ["카나리아", "AI 에 숨긴 표식이 답에 나왔나"],
+  secrets_leak: ["자격증명", "답에 비밀번호·키가 섞였나"],
+  pii_leak: ["개인정보", "가린 정보가 답에서 되살아났나"],
+  exfil: ["반출 링크", "링크·이미지에 정보를 실어 보내나"],
+  harmful_output: ["응답 유해성", "위험한 내용을 답했나"],
+  refusal_consistency: ["거절 확인", "막아야 할 질문에 AI 가 답했나 — 기록만 합니다"],
+};
+const SEV_LABEL = { critical: "심각", high: "높음", medium: "중간", low: "낮음", info: "참고" };
 
 // ---------------------------------------------------------------- bootstrap
 async function boot() {
@@ -104,7 +128,7 @@ function populateSelectors(cfg, samples) {
   (cfg.backends || []).forEach((b) => {
     const o = document.createElement("option");
     o.value = b.id;
-    o.textContent = b.label + (b.available ? "" : " (미설정)");
+    o.textContent = b.label + (b.available ? "" : " — 확장 필요 (기관 API 키)");
     o.disabled = !b.available;
     o.title = b.description;
     backendSel.appendChild(o);
@@ -159,14 +183,14 @@ function populateSelectors(cfg, samples) {
 function renderIntegrations(integ) {
   const box = $("#integrations");
   const items = [
-    { id: "presidio", label: "Microsoft Presidio (PII/NER)", status: integ.presidio_status },
+    { id: "presidio", label: "한국어 이름·주소 인식 (Presidio)", status: integ.presidio_status },
     { id: "nemo", label: "NVIDIA NeMo Guardrails", status: integ.nemo_status },
   ];
   box.innerHTML = items
     .map((i) => {
       const on = !!integ[i.id];
       const st = i.status && i.status !== "off" ? ` · ${esc(i.status)}` : "";
-      return `<span class="integ-chip ${on ? "on" : ""}">${on ? "● " : "○ "}${esc(
+      return `<span class="integ-chip ${on ? "on" : ""}">${on ? "켜짐 · " : "꺼짐 · "}${esc(
         i.label
       )}${st}</span>`;
     })
@@ -224,10 +248,10 @@ function renderDiffs() {
     $("#di-ug").className = "diff-text";
     $("#di-ug").innerHTML = renderOriginalWithExposure(diffWords(g.original_prompt, g.forwarded_prompt || ""));
     $("#di-g").className = "diff-text";
-    $("#di-g").innerHTML = `<span class="danger-tok">⛔ 입력 파이프라인에서 차단 — AI로 전달되지 않음</span>`;
+    $("#di-g").innerHTML = `<span class="danger-tok">나갈 때 검사에서 차단 — AI 에 전달되지 않음</span>`;
     $("#di-note").innerHTML =
-      `<b>무방비 경로</b>에서는 위 원본 프롬프트가 <b>그대로</b> AI에 전달됩니다. ` +
-      `가드레일은 AI에 도달하기 전에 요청 자체를 차단했습니다.`;
+      `<b>가드레일이 없으면</b> 위 질문이 <b>그대로</b> AI 에 전달됩니다. ` +
+      `가드레일은 AI 에 닿기 전에 요청 자체를 막았습니다.`;
   } else if (g.forwarded_prompt != null) {
     const parts = diffWords(g.original_prompt, g.forwarded_prompt);
     $("#di-ug").className = "diff-text";
@@ -236,35 +260,35 @@ function renderDiffs() {
     $("#di-g").innerHTML = renderDiff(parts) || esc(g.forwarded_prompt);
     const red = redactionSummary(parts);
     $("#di-note").innerHTML = g.input_modified
-      ? `가드레일이 AI 전달 전에 민감정보 <b>${red.join(", ") || "일부"}</b>를 치환했습니다. ` +
-        `무방비 경로에서는 <b>빨간 표시 부분이 원본 그대로</b> AI에 전달됩니다.`
-      : `이 요청은 마스킹 대상 민감정보가 없어 <b>원문 그대로</b> 전달되었습니다(위험 신호는 별도 탐지).`;
+      ? `가드레일이 AI 에 보내기 전에 민감정보 <b>${red.join(", ") || "일부"}</b>를 가렸습니다. ` +
+        `가드레일이 없으면 <b>빨간 부분이 원본 그대로</b> AI 에 전달됩니다.`
+      : `가릴 민감정보가 없어 <b>원문 그대로</b> 전달됐습니다(위험 신호는 따로 탐지합니다).`;
   }
 
   // ---- ② response: AI → 사용자 ----
   if (u) {
     const r = u.response || {};
-    const txt = r.refused ? "🛑 (AI가 자체적으로 거절)" : r.error ? "오류: " + r.error : r.text || "(빈 응답)";
+    const txt = r.refused ? "(AI 가 스스로 거절했습니다)" : r.error ? "오류: " + r.error : r.text || "(빈 응답)";
     $("#do-ug").className = "diff-text";
     $("#do-ug").innerHTML = highlightResponse(txt, state.canary);
   }
   if (g.blocked_at === "output") {
     $("#do-g").className = "diff-text";
-    $("#do-g").innerHTML = `<span class="danger-tok">⛔ 출력 파이프라인에서 차단 — 사용자에게 전달되지 않음</span>`;
+    $("#do-g").innerHTML = `<span class="danger-tok">들어올 때 검사에서 차단 — 사용자에게 전달되지 않음</span>`;
     $("#do-note").innerHTML =
-      `AI가 생성한 응답에는 정책 위반(예: 시스템 프롬프트/카나리아 유출)이 있었지만, ` +
-      `<b>출력 가드레일이 사용자 전달을 차단</b>했습니다. 무방비 경로(좌)는 그대로 노출됩니다.`;
+      `AI 답변에 정책 위반(예: 숨긴 표식·내부 설정 유출)이 있었지만 ` +
+      `<b>들어올 때 검사가 전달을 막았습니다</b>. 가드레일이 없으면 그대로 노출됩니다.`;
   } else if (g.blocked_at === "input") {
     $("#do-g").className = "diff-text";
-    $("#do-g").innerHTML = `<span class="danger-tok">⛔ 입력 단계에서 차단되어 응답 자체가 생성되지 않음</span>`;
+    $("#do-g").innerHTML = `<span class="danger-tok">나갈 때 차단되어 답변 자체가 만들어지지 않음</span>`;
   } else if (g.raw_response != null) {
     const parts = diffWords(g.raw_response, g.delivered_text);
     $("#do-g").className = "diff-text";
     $("#do-g").innerHTML = renderDiff(parts) || esc(g.delivered_text);
     const red = redactionSummary(parts);
     $("#do-note").innerHTML = g.output_modified
-      ? `AI 응답에서 <b>${red.join(", ") || "민감정보"}</b>를 마스킹한 뒤 전달했습니다.`
-      : `AI 응답에 위반 사항이 없어 <b>변경 없이</b> 전달되었습니다.`;
+      ? `AI 답변에서 <b>${red.join(", ") || "민감정보"}</b>를 가린 뒤 전달했습니다.`
+      : `AI 답변에 문제가 없어 <b>그대로</b> 전달됐습니다.`;
   }
 }
 
@@ -273,8 +297,11 @@ function stageEl(s) {
   const hits = s.findings.length;
   const cls = s.action === "block" ? "block" : hits ? "hit" : "clean";
   div.className = `stage ${cls}`;
-  div.innerHTML = `<span class="s-dot"></span><span class="s-name">${esc(s.title)}</span>` +
-    `<span class="s-count">${hits ? hits + "건" : "이상 없음"}</span>`;
+  const [name, ask] = STAGE_LABEL[s.detector] || [s.title, ""];
+  div.title = s.title;
+  div.innerHTML = `<span class="s-dot"></span><span class="s-name">${esc(name)}</span>` +
+    `<span class="s-count">${s.action === "block" ? "차단" : hits ? hits + "건" : "이상 없음"}</span>` +
+    (ask ? `<span class="s-ask">${esc(ask)}</span>` : "");
   requestAnimationFrame(() => div.classList.add("done"));
   return div;
 }
@@ -286,10 +313,10 @@ function renderFindings(findings, stageLabel) {
     const div = document.createElement("div");
     div.className = `finding sev-${f.severity}`;
     div.innerHTML =
-      `<span class="sev-badge">${esc(f.severity)}</span>` +
+      `<span class="sev-badge">${esc(SEV_LABEL[f.severity] || f.severity)}</span>` +
       `<div class="f-body"><div class="f-msg">${esc(f.message)}</div>` +
       `<div class="f-meta"><span class="f-cat">${esc(f.category)}</span>` +
-      (f.evidence ? ` · 근거: <span class="f-evidence">${esc(f.evidence)}</span>` : "") +
+      (f.evidence ? ` · 근거 <span class="f-evidence">${esc(f.evidence)}</span>` : "") +
       ` · <span class="f-stage">${esc(stageLabel)}</span></div></div>` +
       `<div class="f-score">${f.score}</div>`;
     box.appendChild(div);
@@ -312,7 +339,7 @@ async function runDemo() {
   state.running = true;
   state.run = {};
   $("#run").disabled = true;
-  $("#conn").textContent = "● 연결됨 (SSE)";
+  $("#conn").textContent = "실행 중";
   resetLanes();
 
   const body = {
@@ -344,7 +371,7 @@ async function runDemo() {
     }
   } catch (e) {
     console.error(e);
-    $("#conn").textContent = "● 오류";
+    $("#conn").textContent = "오류";
   } finally {
     state.running = false;
     $("#run").disabled = false;
@@ -380,7 +407,7 @@ function dispatch(event, d) {
     case "unguarded_done": {
       $("#ug-arrow-1").classList.remove("flowing");
       const r = d.response || {};
-      const txt = r.refused ? "🛑 (모델이 자체적으로 거절함)" : r.error ? "오류: " + r.error : r.text || "(빈 응답)";
+      const txt = r.refused ? "(AI 가 스스로 거절했습니다)" : r.error ? "오류: " + r.error : r.text || "(빈 응답)";
       $("#ug-response").innerHTML = highlightResponse(txt, state.canary);
       if (d.leak_count > 0) {
         $("#ug-response").classList.add("danger");
@@ -388,7 +415,7 @@ function dispatch(event, d) {
       }
       const leaks = d.leaked || [];
       $("#ug-leaks").innerHTML = leaks
-        .map((f) => `<div class="leak-item">⚠️ ${esc(f.message)} <b>[${esc(f.category)}]</b></div>`)
+        .map((f) => `<div class="leak-item">${esc(f.message)} <b>${esc(f.category)}</b></div>`)
         .join("");
       state.run.unguarded = d;
       renderDiffs();
@@ -398,9 +425,11 @@ function dispatch(event, d) {
       $("#g-input").classList.add("active");
       break;
     case "stage": {
+      // 실제 검사 시간 = 엔진이 잰 단계별 시간의 합. 화면 연출용 대기(step delay)는 빠진다.
+      state.run.engineMs = (state.run.engineMs || 0) + (d.duration_ms || 0);
       const target = d.phase === "input" ? "#stages-input" : "#stages-output";
       $(target).appendChild(stageEl(d));
-      if (d.findings?.length) renderFindings(d.findings, d.phase === "input" ? "입력검사" : "출력검사");
+      if (d.findings?.length) renderFindings(d.findings, d.phase === "input" ? "나갈 때" : "들어올 때");
       if (d.phase === "output") {
         $("#g-input").classList.remove("active");
         $("#g-input").classList.add("passed");
@@ -429,11 +458,11 @@ function dispatch(event, d) {
       $("#g-output").classList.remove("active");
       if (d.blocked_at === "input") {
         $("#g-input").classList.add("blocked");
-        $("#g-delivered").textContent = "⛔ 입력 파이프라인에서 차단되어 AI에 전달되지 않았습니다.";
+        $("#g-delivered").textContent = "나갈 때 검사에서 차단되어 AI 에 전달되지 않았습니다.";
         $("#g-delivered").classList.add("danger");
       } else if (d.blocked_at === "output") {
         $("#g-output").classList.add("blocked");
-        $("#g-delivered").textContent = "⛔ AI 응답에서 정책 위반이 감지되어 사용자 전달이 차단되었습니다.";
+        $("#g-delivered").textContent = "AI 답변에서 정책 위반이 발견되어 전달을 막았습니다.";
         $("#g-delivered").classList.add("danger");
       } else {
         $("#g-output").classList.add("passed");
@@ -447,10 +476,10 @@ function dispatch(event, d) {
       showVerdict(d);
       break;
     case "done":
-      $("#conn").textContent = "● 완료";
+      $("#conn").textContent = "완료";
       break;
     case "error":
-      $("#conn").textContent = "● 오류: " + (d.message || "");
+      $("#conn").textContent = "오류: " + (d.message || "");
       break;
   }
 }
@@ -462,7 +491,7 @@ function showVerdict(s) {
   const v = $("#verdict");
   v.className = "verdict " + meta.cls;
   const prevented = s.prevented
-    ? `<b style="color:var(--safe)">가드레일이 실제 유출을 차단했습니다.</b> `
+    ? `<b class="ok">가드레일이 없었다면 새었을 내용을 막았습니다.</b> `
     : "";
   const grade =
     s.data_grade && s.data_grade_label
@@ -472,15 +501,16 @@ function showVerdict(s) {
       : "";
   const rag =
     (s.rag_denied || []).length > 0
-      ? `<span class="grade-badge g4">RAG 권한초과 차단 ${s.rag_denied.length}건</span>`
+      ? `<span class="grade-badge g4">권한 밖 자료 ${s.rag_denied.length}건 제외</span>`
       : "";
   v.innerHTML =
-    `<span class="v-icon">${meta.icon}</span>` +
-    `<div><div>가드레일 최종 판정: ${meta.label} ${grade} ${rag}</div>` +
+    `<span class="v-dot"></span>` +
+    `<div><div class="v-main">최종 판정 — ${meta.label} ${grade} ${rag}</div>` +
     `<div class="v-detail">${prevented}` +
-    `무방비 경로 유출 ${s.unguarded_leak_count}건 · 탐지 ${s.finding_count}건 · ` +
-    `입력점수 ${s.input_score} / 출력점수 ${s.output_score} · ` +
-    `가드레일 오버헤드 ${s.guardrail_overhead_ms}ms</div></div>`;
+    `가드레일 없을 때 유출 ${s.unguarded_leak_count}건 · 탐지 ${s.finding_count}건 · ` +
+    `점수 나갈 때 ${s.input_score} / 들어올 때 ${s.output_score} · ` +
+    `실제 검사 시간 ${(state.run.engineMs || 0).toFixed(2)} ms ` +
+    `<span class="muted">(화면 연출 지연 포함 처리 시간 ${Math.round(s.guardrail_overhead_ms)} ms)</span></div></div>`;
 }
 
 // ---------------------------------------------------------------- audit
@@ -501,12 +531,12 @@ function renderStats(s) {
   const grid = $("#stat-grid");
   const byAction = s.by_action || {};
   const cards = [
-    { v: s.total || 0, l: "총 요청" },
-    { v: byAction.block || 0, l: "차단(BLOCK)", cls: "danger" },
-    { v: (byAction.sanitize || 0) + (byAction.flag || 0), l: "치환·검토" },
-    { v: byAction.allow || 0, l: "정상 통과" },
-    { v: s.leaks_prevented || 0, l: "유출 방지", cls: "accent" },
-    { v: (s.avg_latency_ms || 0) + "ms", l: "평균 오버헤드" },
+    { v: s.total || 0, l: "전체 요청" },
+    { v: byAction.block || 0, l: "차단", cls: "danger" },
+    { v: (byAction.sanitize || 0) + (byAction.flag || 0), l: "가림 · 기록 표시" },
+    { v: byAction.allow || 0, l: "그대로 통과" },
+    { v: s.leaks_prevented || 0, l: "막은 유출", cls: "accent" },
+    { v: Math.round(s.avg_latency_ms || 0) + " ms", l: "평균 처리 시간 (화면 연출 지연 포함)" },
   ];
   let html = cards
     .map(
@@ -520,7 +550,7 @@ function renderStats(s) {
   if (top.length) {
     const max = Math.max(...top.map((t) => t.count));
     html +=
-      `<div class="stat-card" style="grid-column:1/-1"><div class="stat-label" style="margin-bottom:8px">탐지 카테고리 분포</div><div class="cat-bars">` +
+      `<div class="stat-card" style="grid-column:1/-1"><div class="stat-label" style="margin-bottom:8px">탐지 유형 분포</div><div class="cat-bars">` +
       top
         .map(
           (t) =>
@@ -537,7 +567,7 @@ function renderStats(s) {
 function renderAuditRows(rows) {
   const tbody = $("#audit-rows");
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="7" class="muted">아직 기록이 없습니다. 데모를 실행해 보세요.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="muted">아직 기록이 없습니다. 시뮬레이션을 실행해 보세요.</td></tr>`;
     return;
   }
   tbody.innerHTML = rows
@@ -546,10 +576,10 @@ function renderAuditRows(rows) {
       const cats = (r.categories || []).slice(0, 3).map((c) => `<span class="f-cat">${esc(c)}</span>`).join(", ");
       return (
         `<tr><td>${esc(t)}</td><td>${esc(r.profile)}</td><td>${esc(r.backend)}</td>` +
-        `<td><span class="act-badge act-${r.final_action}">${esc(r.final_action)}</span></td>` +
+        `<td><span class="act-badge act-${r.final_action}">${esc(ACTION_SHORT[r.final_action] || r.final_action)}</span></td>` +
         `<td>${r.input_score ?? "-"} / ${r.output_score ?? "-"}</td>` +
         `<td>${cats || "-"}</td>` +
-        `<td class="prompt-cell">${esc(r.prompt_preview || "")}</td></tr>`
+        `<td class="prompt-cell">원문 미저장${r.prompt_length != null ? " · " + r.prompt_length + "자" : ""}</td></tr>`
       );
     })
     .join("");
