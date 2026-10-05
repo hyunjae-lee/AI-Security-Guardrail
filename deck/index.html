@@ -627,12 +627,13 @@
         </div>
       </article>
     </div>
-    <p class="punch punch--teal">공통점은 하나 — <em>데이터 등급을 정하고, 그 등급이 갈 수 있는 기관의 통로</em>를 둡니다.</p>
+    <p class="punch punch--teal">공통점 — 막지 않고 <em>기관이 계약하거나 직접 운영하는 통로</em>를 따로 냅니다. 하버드·스탠퍼드는 <em>데이터 등급별로 쓸 수 있는 도구</em>까지 정했습니다.</p>
   </div>
     <aside class="notes">
       <p><strong>본발표 · 3:28–3:43</strong></p>
       <p>「세계 주요 대학은 막지 않습니다. 하버드는 학습에 쓰이지 않는 교내 샌드박스를, 스탠퍼드는 고위험 데이터까지 승인한 플랫폼을, 미시간은 자체 GPT 를, 옥스퍼드는 기관 계약을 택했습니다.」</p>
-      <p>「공통점은 하나 — 등급을 정하고, 그 등급이 갈 수 있는 기관의 통로를 둡니다.」 썸네일을 누르면 기사 원문이 열린다.</p>
+      <p>「공통점은 — 막지 않고, 기관이 계약하거나 직접 운영하는 통로를 따로 낸다는 것입니다. 하버드와 스탠퍼드는 여기에 데이터 등급별로 쓸 수 있는 도구까지 정해 두었습니다.」 썸네일을 누르면 기사 원문이 열린다.</p>
+      <p>정확히: 등급별 허용 도구가 확인된 곳은 하버드(Level 1~3)·스탠퍼드(Low/Moderate/High)와 미시간(Moderate 까지, 요약 기준). 옥스퍼드는 기관 계약만 확인 — 등급 규정까지는 확인하지 않았다.</p>
       <p>정확히: 하버드 Level 2 규정은 HMS 지침 기준(HUIT 원문 403). 미시간 공식 기사(record.umich.edu)는 접근이 막혀 학생신문 기사로 연결 — 「학습 미사용」은 원문 미확인이라 화면에서 뺐다.</p>
     </aside>
 </section>
@@ -786,7 +787,7 @@
         <tr><td>주민번호 체크섬</td><td>국내 식별자는 외국 도구에 없음</td></tr>
         <tr><td>RAG 권한 통제</td><td>검색 단계에서 걸러야 함</td></tr>
         <tr><td>데이터 등급 L0~L4</td><td>N2SF 의 C·S·O 와 맞물림</td></tr>
-        <tr><td>라벨 코퍼스 205건</td><td>한국어 평가셋이 없음</td></tr>
+        <tr><td>평가셋 205문항</td><td>한국어로 된 평가 자료가 없음</td></tr>
         <tr><td>스트리밍 꼬리 검사</td><td>흘려보내며 검사하는 도구 없음</td></tr>
       </table>
     </div>
@@ -1070,7 +1071,10 @@
       </div>
     </div>
     <div class="spacer"></div>
-    <p class="lead lead--wide">RAG 권한 기반 접근통제 — 데이터 등급 <em>L0~L4</em> · 권한 등급 <em>CLR-0~4</em> · 같은 질의도 권한이 다르면 다른 답.<br>감사 로그는 <em>판정만 남기고 원문은 남기지 않습니다.</em></p>
+    <div class="grid grid--2" style="flex:0 0 auto;gap:1.4rem">
+      <p class="lead lead--wide" style="max-width:none;font-size:.82em"><strong>권한별 검색</strong> — 같은 질문이라도 <em>직급(권한 등급 0~4)</em>에 따라 AI 가 참고할 수 있는 교내 자료가 다릅니다.</p>
+      <p class="lead lead--wide" style="max-width:none;font-size:.82em"><strong>원문 없는 기록</strong> — 감사 기록에는 <em>판정만 남고</em>, 질문 원문은 남지 않습니다.</p>
+    </div>
   </div>
     <aside class="notes">
       <p><strong>본발표 · 6:44–6:56</strong></p>
@@ -1103,47 +1107,36 @@
 <section data-s="measure">
   <div class="wrap">
     <p class="kicker kicker--teal">28 · 실증 ① 탐지 성능</p>
-    <h2>추정치가 아니라 실측입니다.</h2>
+    <h2>측정이 구멍을 찾았고, 고친 뒤 0 이 됐습니다.</h2>
+    <p class="lead lead--wide" style="max-width:none;font-size:.78em"><strong>평가셋</strong> = 정답(통과·가림·차단)을 미리 붙여 둔 <strong>시험 문제 205개</strong> — 평범한 업무 질문 128 + 공격 77. 엔진을 돌려 자동으로 채점합니다.</p>
     <div class="spacer"></div>
-    <div class="grid grid--3" style="flex:0 0 auto">
-      <div class="stat">
-        <span class="stat__num stat__num--teal">0<small style="font-size:.5em">%</small></span>
-        <span class="stat__label"><strong>공격 미탐</strong> — 77건 모두 걸렸습니다.<br>그냥 통과한 것이 없습니다.</span>
+    <div class="ba" style="flex:0 0 auto">
+      <div class="ba__item">
+        <span class="ba__label">놓친 공격</span>
+        <span class="ba__nums"><span class="ba__before">30%</span><span class="ba__arrow">→</span><span class="ba__after">0%</span></span>
+        <span class="ba__sub">한국어 「만들어 줘」를 읽지 못해 <strong>유해 요청 9건 중 7건</strong>이 그대로 통과하고 있었습니다.</span>
       </div>
-      <div class="stat">
-        <span class="stat__num stat__num--teal">0<small style="font-size:.5em">%</small></span>
-        <span class="stat__label"><strong>하드 오탐</strong> — 정상 질의 128건 중 막힌 것은 없습니다.</span>
+      <div class="ba__item">
+        <span class="ba__label">막힌 정상 업무</span>
+        <span class="ba__nums"><span class="ba__before">2.6%</span><span class="ba__arrow">→</span><span class="ba__after">0%</span></span>
+        <span class="ba__sub">「징계 수준이 어떻게 되나요」 같은 <strong>평범한 질문이 차단</strong>되던 오류를 고쳤습니다.</span>
       </div>
-      <div class="stat">
-        <span class="stat__num">89.8<small style="font-size:.5em">%</small></span>
-        <span class="stat__label">정상 질의를 <strong>기대한 그대로</strong> 처리했습니다.</span>
+      <div class="ba__item">
+        <span class="ba__label">놓친 이름·주소</span>
+        <span class="ba__nums"><span class="ba__before">7건</span><span class="ba__arrow">→</span><span class="ba__after">0건</span></span>
+        <span class="ba__sub">규칙으로는 못 잡는 사람 이름·주소 — <strong>한국어 인식 모델을 측정 후 도입</strong>했습니다.</span>
       </div>
     </div>
     <div class="spacer"></div>
-    <div class="grid grid--2" style="flex:0 0 auto;gap:2.4rem">
-      <table class="tbl">
-        <tr><th>코퍼스 205건</th><th>구성</th></tr>
-        <tr><td>정상 질의 (한국어)</td><td>128</td></tr>
-        <tr><td class="dim">└ 트리거어가 든 정상 질의</td><td class="dim">35</td></tr>
-        <tr><td>공격 질의 (9개 유형)</td><td>77</td></tr>
-      </table>
-      <table class="tbl">
-        <tr><th>프로파일</th><th>미탐</th><th>하드 오탐</th></tr>
-        <tr><td>엄격 strict</td><td>0%</td><td>3.9%</td></tr>
-        <tr><td><strong>균형 balanced</strong></td><td class="big">0%</td><td class="big">0%</td></tr>
-        <tr><td>완화 permissive</td><td>1.3%</td><td>0%</td></tr>
-      </table>
-    </div>
-    <div class="spacer"></div>
-    <p class="punch punch--teal">공격 탐지율만 보면 안 됩니다. <em>멀쩡한 질의를 막지 않는가</em>를 같은 비중으로 측정했습니다.</p>
-    <p class="cite">별도로 작성한 라벨 코퍼스 <b>attacks/corpus/</b> 기준 · 재현 <b>python3 scripts/eval.py</b> · 숫자는 코퍼스가 바뀌면 바뀝니다</p>
+    <p class="punch punch--teal">측정하지 않았다면 <em>공격 열 건 중 세 건이 새는 줄 모른 채</em> 운영했을 것입니다.</p>
+    <p class="cite">평가셋 <b>attacks/corpus</b> · 1차 측정 186문항(공격 21/70 놓침 · 정상 3/116 차단) → 수정 후 205문항(0/77 · 0/128) · 균형(balanced) 기준 · 남은 비용: 정상 질문 5건(3.9%)은 이름이 섞여 가린 뒤 전달 · 재현 <b>python3 scripts/eval.py</b></p>
   </div>
     <aside class="notes">
       <p><strong>본발표 · 7:02–7:28  ★ 연구 발표와 데모 발표를 가르는 자리</strong></p>
-      <p>「성능은 데모 샘플이 아니라 따로 만든 라벨 코퍼스 205건으로 측정했습니다. 규칙을 그 샘플 보며 썼으니, 거기서 나온 숫자는 성능이 아니니까요.」</p>
-      <p>「공격 77건 미탐 0퍼센트. 정상 128건 중 막힌 것 0건입니다.」</p>
-      <p>— 한 박자 쉬고 —</p>
-      <p>「공격 탐지율만 보면 안 됩니다. 멀쩡한 질의를 막지 않는가를 같은 비중으로 측정했습니다.」</p>
+      <p>「먼저 평가셋 — 정답을 붙여 둔 시험 문제 205개를 만들었습니다. 데모용 샘플이 아니라, 평범한 업무 질문과 공격을 섞어서요.」</p>
+      <p>「처음 채점해 보니 공격의 30%를 놓치고 있었습니다. 한국어로 '만들어 줘'라고 하면 위험한 요청인 줄 몰랐던 겁니다. 고친 뒤 0%. 반대로 멀쩡한 질문이 막히던 2.6%도 0이 됐습니다.」</p>
+      <p>— 한 박자 쉬고 — 「측정하지 않았다면, 공격 열 건 중 세 건이 새는 줄 모른 채 운영했을 겁니다.」</p>
+      <p>물으면: 프로파일 비교(균형 기준이 최적) — 엄격은 놓친 공격 0% 에 정상 차단 3.9%, 완화는 놓친 공격 1.3% 에 정상 차단 0%. 남은 비용은 정상 질문 5건이 이름이 섞여 가려진 것(차단 아님).</p>
     </aside>
 </section>
 
@@ -1151,38 +1144,32 @@
 <section data-s="nomodel">
   <div class="wrap">
     <p class="kicker kicker--amber">29 · 실증 ② 측정 후 도입하지 않은 것</p>
-    <h2>모델을 더 얹는 것이 늘 개선은 아닙니다.</h2>
+    <h2 class="h2--two">AI 모델을 하나 더 얹으면 나아질까? 측정 결과는 「아니오」였습니다.</h2>
     <div class="spacer"></div>
-    <table class="tbl" style="flex:0 0 auto">
-      <tr><th>프롬프트 인젝션 분류기</th><th>인젝션 29건<br>적중</th><th>정상 128건<br>오탐</th><th>우리 규칙 위에 얹으면</th></tr>
-      <tr><td>protectai deberta-v3 (영어 전용)</td><td>100%</td><td class="bad">39.8%</td><td>새로 잡음 <strong>0건</strong> · 새로 막음 <strong>51건</strong></td></tr>
-      <tr><td>proventra mDeBERTa (다국어)</td><td>72.4%</td><td>3.9%</td><td>새로 잡음 <strong>0건</strong> · 새로 막음 <strong>5건</strong></td></tr>
-      <tr><td><strong>우리 규칙</strong></td><td class="big">100%</td><td class="big">0%</td><td class="dim">—</td></tr>
-    </table>
-    <div class="spacer"></div>
-    <div class="grid grid--2" style="flex:0 0 auto;gap:2.2rem">
-      <div class="card card--amber">
-        <span class="card__tag">자기 과제에서는 잘 잡는다</span>
-        <span class="card__title">문제는 적중률이 아니었습니다</span>
-        <span class="card__body">영어 전용 모델은 인젝션을 <strong>하나도 놓치지 않았지만</strong>, 「졸업논문 제출 마감일」도 인젝션이라고 합니다.</span>
+    <div class="grid grid--3" style="flex:0 0 auto">
+      <div class="stat stat--card">
+        <span class="stat__num stat__num--red">51<small style="font-size:.45em">건</small></span>
+        <span class="stat__label"><strong>영어 전용 인젝션 분류기</strong> — 공격은 다 잡았지만, 정상 질문 128건 중 <strong>51건(39.8%)</strong>을 공격으로 판정했습니다. 「졸업논문 제출 마감일」도 공격이라고 합니다.</span>
       </div>
-      <div class="card card--amber">
-        <span class="card__title">한계 기여가 0 입니다</span>
-        <span class="card__body">분류기가 <strong>새로 잡는 공격은 0건</strong>, 새로 막히는 정상 질의만 남습니다. 한국어 NER 은 같은 기준으로 측정한 뒤 도입했습니다.</span>
+      <div class="stat stat--card">
+        <span class="stat__num stat__num--amber">0<small style="font-size:.45em">건</small></span>
+        <span class="stat__label"><strong>다국어 인젝션 분류기</strong> — 우리 규칙이 놓친 공격을 <strong>새로 잡은 것이 0건</strong>. 정상 질문 5건만 새로 막았습니다.</span>
       </div>
-      
+      <div class="stat stat--card stat--good">
+        <span class="stat__num stat__num--teal">7→0</span>
+        <span class="stat__label"><strong>한국어 이름·주소 인식 모델</strong> — 같은 측정에서 놓친 공격을 7건에서 0건으로 줄였습니다. <strong>이것은 도입했습니다.</strong></span>
+      </div>
     </div>
     <div class="spacer"></div>
-    <p class="punch punch--amber"><em>측정으로 확인한 뒤 제외했습니다</em> — 제외한 근거도 연구 결과입니다.</p>
-    <p class="cite">임계치 0.9 · 코퍼스 205건 · <b>attacks/corpus/results/classifier-comparison-205-2026-10-04.json</b> · 어댑터는 <b>app/guardrail/adapters/transformer_injection.py</b> (기본 꺼짐)</p>
+    <p class="punch punch--amber">같은 측정으로 하나는 <em>도입하고</em> 둘은 <em>제외했습니다</em> — 감이 아니라 숫자로 정했습니다.</p>
+    <p class="cite">임계치 0.9 · 평가셋 205문항 · protectai deberta-v3(영어) · proventra mDeBERTa(다국어) · KoELECTRA NER · <b>attacks/corpus/results/</b> 2026-10-04 · 분류기 어댑터는 기본 꺼짐</p>
   </div>
     <aside class="notes">
       <p><strong>본발표 · 7:28–7:46  ★ 음성 결과</strong></p>
-      <p>「안 넣었다」가 아니라 「측정해 보고 도입하지 않았다」로 말할 것.</p>
-      <p>「영어 전용 모델은 인젝션 29건을 하나도 놓치지 않았습니다. 적중률은 문제가 아니었습니다.」</p>
-      <p>「문제는 오탐입니다. 정상 한국어 질의 128건 중 51건을 인젝션이라고 합니다.」</p>
-      <p>「한계 기여가 0입니다 — 새로 잡는 공격 0건, 새로 막히는 정상 5건. 순손실입니다.」</p>
-      <p>「반대로 한국어 개체명 인식은 같은 기준으로 측정한 뒤 도입했습니다. 같은 방법으로 반대 결론이 나온 것이 측정 체계가 실제로 판단을 가른다는 증거입니다.」</p>
+      <p>「AI 모델을 하나 더 얹으면 나아질까요? 측정해 보니 아니었습니다.」</p>
+      <p>「영어 전용 분류기는 공격은 다 잡았는데, 멀쩡한 한국어 질문 128개 중 51개를 공격이라고 했습니다. 다국어 분류기는 우리 규칙이 놓친 공격을 하나도 더 잡지 못했습니다.」</p>
+      <p>「반대로 한국어 이름·주소를 찾는 모델은 같은 측정에서 놓친 공격을 7건에서 0건으로 줄여서 도입했습니다. 같은 방법으로 반대 결론이 나왔다는 것이 — 이 측정 체계가 실제로 판단을 가른다는 증거입니다.」</p>
+      <p>물으면: 분류기가 학습된 과제(인젝션·유출·난독화 29건)만 떼어 재면 영어 모델 적중 100%·다국어 72.4%. 문제는 적중률이 아니라 오탐과 한계 기여였다.</p>
     </aside>
 </section>
 
@@ -1225,29 +1212,22 @@
 <section data-s="15">
   <div class="wrap">
     <p class="kicker kicker--teal">31 · 실증 ③ 지연 — 업무가 느려지나</p>
-    <h2>검사가 붙잡는 시간은 5.3밀리초입니다.</h2>
+    <h2>검사 시간 5.3밀리초 — 눈 깜빡임의 19분의 1.</h2>
     <div class="spacer"></div>
-    <div class="grid grid--2" style="flex:0 0 auto;gap:2.4rem">
-      <table class="tbl">
-        <tr><th>검사 구간</th><th>중앙값</th><th>최대</th></tr>
-        <tr><td>출국 검사 — 질의</td><td>5.02 ms</td><td class="dim">7.92 ms</td></tr>
-        <tr><td>입국 검사 — 답변</td><td>0.32 ms</td><td class="dim">0.37 ms</td></tr>
-        <tr><td><strong>합계 — 한 번 오갈 때</strong></td><td class="big">5.33 ms</td><td class="dim">8.30 ms</td></tr>
-      </table>
-      <table class="tbl tbl--cmp">
-        <tr><th>무엇과 비교하나</th><th>왕복 한 번</th></tr>
-        <tr><td>가장 가까운 AI 서버</td><td class="big">8.1 ms</td></tr>
-        <tr><td>Anthropic</td><td class="big">36.4 ms</td></tr>
-        <tr><td>Google</td><td class="big">64.8 ms</td></tr>
-      </table>
+    <div class="lat" style="flex:0 0 auto">
+      <div class="lat__row lat__row--teal"><span class="lat__label">검사 (나갈 때 + 들어올 때)</span><span class="lat__track"><span class="lat__bar" style="width:5.33%"></span></span><span class="lat__val">5.33 ms</span></div>
+      <div class="lat__row lat__row--ink"><span class="lat__label">가장 가까운 AI 서버 — 네트워크 왕복</span><span class="lat__track"><span class="lat__bar" style="width:8.1%"></span></span><span class="lat__val">8.1 ms</span></div>
+      <div class="lat__row lat__row--ink"><span class="lat__label">Anthropic — 네트워크 왕복</span><span class="lat__track"><span class="lat__bar" style="width:36.4%"></span></span><span class="lat__val">36.4 ms</span></div>
+      <div class="lat__row lat__row--ink"><span class="lat__label">Google — 네트워크 왕복</span><span class="lat__track"><span class="lat__bar" style="width:64.8%"></span></span><span class="lat__val">64.8 ms</span></div>
+      <div class="lat__row lat__row--dim"><span class="lat__label">눈 한 번 깜빡이는 시간</span><span class="lat__track"><span class="lat__bar" style="width:100%"></span></span><span class="lat__val">약 100 ms</span></div>
     </div>
     <div class="spacer"></div>
-    <p class="punch punch--teal">외부 AI 가 <em>첫 글자를 내놓기도 전에</em> 검사는 이미 끝나 있습니다.</p>
-    <p class="cite">실측 · balanced 프로파일 · 실제 코퍼스 22건 각 40회 반복의 중앙값과 p95 · Apple M1 Pro · 재현 스크립트 <b>web/tools/bench-latency.py</b>. 네트워크 왕복은 ICMP 10회 최소값이며 <b>하한선</b>입니다.</p>
+    <p class="punch punch--teal">외부 AI 까지 신호가 오가는 시간보다 짧습니다 — <em>사용자는 검사를 느낄 수 없습니다.</em></p>
+    <p class="cite">실측 · 균형(balanced) 프로파일 · 실제 질문 22건을 각 40회 반복한 중앙값(나갈 때 5.02 · 들어올 때 0.32 ms, 최대 8.30 ms) · Apple M1 Pro · <b>web/tools/bench-latency.py</b> · 네트워크 왕복은 ICMP 10회 최소값(하한선) · 눈 깜빡임은 일반적인 값</p>
   </div>
     <aside class="notes">
       <p><strong>본발표 · 7:46–7:58</strong></p>
-      <p>「검사가 붙잡는 시간은 왕복 5.33밀리초입니다. 가장 가까운 AI 서버까지 네트워크 왕복만 8.1밀리초입니다 — 외부 AI 가 첫 글자를 내놓기도 전에 검사는 끝나 있습니다.」</p>
+      <p>「검사가 붙잡는 시간은 5.3밀리초입니다. 가장 가까운 AI 서버까지 신호가 한 번 오가는 데만 8.1밀리초가 걸립니다. 눈을 한 번 깜빡이는 시간의 19분의 1 — 사용자는 검사를 느낄 수 없습니다.」</p>
     </aside>
 </section>
 
@@ -1417,7 +1397,7 @@
       <div class="card card--teal">
         <span class="card__tag">1단계 · 측정 — 완료</span>
         <span class="card__title">숫자를 먼저 만들었습니다</span>
-        <span class="card__body">라벨 코퍼스 <strong>205건</strong>과 평가 하네스를 만들었고, 첫 측정에서 <strong>미탐 30%</strong>가 드러났습니다. 한국어 유해 요청이 거의 다 뚫리고 있었습니다. 고친 뒤 <strong>0%</strong>입니다.</span>
+        <span class="card__body">평가셋 <strong>205문항</strong>(정답을 붙인 질문 모음)과 자동 채점 도구를 만들었고, 첫 측정에서 <strong>미탐 30%</strong>가 드러났습니다. 한국어 유해 요청이 거의 다 뚫리고 있었습니다. 고친 뒤 <strong>0%</strong>입니다.</span>
         <span class="card__cite">측정이 없었으면 이 구멍을 발표 당일에 알았을 것입니다.</span>
       </div>
       <div class="card card--teal">
@@ -1434,7 +1414,7 @@
       </div>
     </div>
     <div class="spacer"></div>
-    <p class="lead lead--wide">순서가 중요합니다. <em>측정 없이 모델을 늘리면</em> 좋아졌는지 알 수 없고, 알 수 없는 숫자는 발표에 쓸 수 없습니다.</p>
+    <p class="lead lead--wide" style="max-width:none"><em>측정 → 등급 → 적용</em>의 순서를 지킵니다 — 측정 없이 기능만 늘리면 나아졌는지 확인할 수 없습니다.</p>
   </div>
     <aside class="notes">
       <p><strong>예비 — 건너뛴다</strong></p>
@@ -1500,11 +1480,11 @@
     <div class="spacer"></div>
     <table class="tbl tbl--text" style="flex:0 0 auto">
       <tr><th>주체</th><th>이 일에서의 역할</th><th>이 주체만 정할 수 있는 등급</th></tr>
-      <tr><td><strong>CISO · 정보통신처</strong></td><td>간사 · 게이트웨이 운영 · 집행 · 감사</td><td class="dim">— 집행만. 등급은 정하지 않습니다</td></tr>
+      <tr><td><strong>CISO · 학술정보처</strong></td><td>간사 · 게이트웨이 운영 · 집행 · 감사</td><td class="dim">— 집행만. 등급은 정하지 않습니다</td></tr>
       <tr><td><strong>학사·학적팀</strong></td><td>등급 소유자</td><td>성적 · 학적 · 장학 · 징계</td></tr>
-      <tr><td><strong>인사·총무팀</strong></td><td>등급 소유자</td><td>인사기록 · 급여 · 평정 · 채용</td></tr>
+      <tr><td><strong>인사·고객경영팀</strong></td><td>등급 소유자</td><td>인사기록 · 급여 · 평정 · 채용</td></tr>
       <tr><td><strong>연구처·산학협력단</strong></td><td>등급 소유자</td><td>연구노트 · 제안서 · IP · 보안과제</td></tr>
-      <tr><td><strong>기획처·재무팀</strong></td><td>등급 소유자</td><td>계약 · 입시 · 예산 · 위원회 회의록</td></tr>
+      <tr><td><strong>기획처·회계팀·예산팀</strong></td><td>등급 소유자</td><td>계약 · 입시 · 예산 · 위원회 회의록</td></tr>
       <tr><td><strong>법무·개인정보보호 담당</strong></td><td>적법성 검토</td><td>개인정보 국외이전 · 보존기간 · 동의</td></tr>
       <tr><td><strong>교무처 · 학생·직원 대표</strong></td><td>수용성 · 오탐 창구</td><td class="dim">— 막혀서 일이 안 되는 자리</td></tr>
           </table>
@@ -1515,7 +1495,7 @@
     <aside class="notes">
       <p><strong>본발표 · 9:02–9:18  ★ 향후 과제 ①</strong></p>
       <p>「기술은 끝났습니다. 남은 것은 합의입니다.」</p>
-      <p>「정보통신처가 등급을 정하면 안 됩니다. 성적은 학사팀이, 인사기록은 인사팀이, 연구노트는 연구처가 정합니다. 무엇이 몇 등급인지는 그 업무를 하는 사람만 압니다.」</p>
+      <p>「학술정보처가 등급을 정하면 안 됩니다. 성적은 학사팀이, 인사기록은 인사팀이, 연구노트는 연구처가 정합니다. 무엇이 몇 등급인지는 그 업무를 하는 사람만 압니다.」</p>
       <p>「장비는 우리가 만듭니다. 품목표는 우리가 못 씁니다.」</p>
     </aside>
 </section>
@@ -1536,7 +1516,7 @@
       <div class="card card--amber">
         <span class="card__tag">2단계 · 부여</span>
         <span class="card__title">부서가 직접 L0~L4</span>
-        <span class="card__body">정보통신처는 양식과 예시만 줍니다. <strong>정하지 못한 항목은 기본 L2</strong> — 보수적인 쪽이 기본값입니다.</span>
+        <span class="card__body">학술정보처는 양식과 예시만 줍니다. <strong>정하지 못한 항목은 기본 L2</strong> — 보수적인 쪽이 기본값입니다.</span>
         <span class="card__cite">「모르겠다」가 「허용」이 되면 안 됩니다.</span>
       </div>
       <div class="card card--teal">
@@ -1553,14 +1533,14 @@
       </div>
     </div>
     <div class="spacer"></div>
-    <p class="punch punch--amber">부서가 검수한 등급이 쌓이면 <em>국내 대학 최초의 데이터 등급 라벨 코퍼스</em>가 됩니다 — 향후 연구과제입니다.</p>
+    <p class="punch punch--amber">부서가 검수한 등급이 쌓이면 <em>국내 대학 최초의 데이터 등급 학습 자료</em>가 됩니다 — 향후 연구과제입니다.</p>
     <p class="cite">사람이 쓴 등급표가 학습 데이터가 됩니다 — 이 순서를 뒤집으면 아무것도 검증할 수 없습니다.</p>
   </div>
     <aside class="notes">
       <p><strong>본발표 · 9:18–9:34  ★ 향후 과제 ②</strong></p>
       <p>네 칸을 다 읽지 않는다. 1단계와 마지막 문단만.</p>
       <p>「목록 → 등급 부여 → N2SF 와 매핑 → 집행과 재심. 가장 오래 걸리는 건 1단계입니다. 정하지 못한 항목은 기본 L2 로 둡니다 — 모르겠다가 허용이 되면 안 됩니다.」</p>
-      <p>「지금 엔진은 등급을 추천만 합니다. 부서가 검수한 결과가 쌓이면 그게 국내 대학 최초의 데이터 등급 라벨 코퍼스가 되고, 그걸로 추천 모델을 다시 학습시킬 수 있습니다. 사람이 쓴 등급표가 학습 데이터가 되는 겁니다.」</p>
+      <p>「지금 엔진은 등급을 추천만 합니다. 부서가 검수한 결과가 쌓이면 그게 국내 대학 최초의 데이터 등급 학습 자료가 되고, 그걸로 추천 모델을 다시 학습시킬 수 있습니다. 사람이 쓴 등급표가 학습 데이터가 되는 겁니다.」</p>
       <p>— 이 문장이 「연구가 끝나고 무엇이 남는가」에 대한 답이다. 가장 천천히 말할 것.</p>
     </aside>
 </section>
