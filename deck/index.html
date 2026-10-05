@@ -416,21 +416,60 @@
     <p class="kicker kicker--teal">09 · 국가는 어떻게 움직였나</p>
     <h2 class="h2--two">「중요한 정보는 입력하지 마세요」에서<br>「중요한 정보가 있는지 검사하고 보내세요」로.</h2>
     <div class="spacer"></div>
-    <div class="timeline timeline--tight" style="flex:0 0 auto">
-      <div class="tl-row"><span class="tl-date">2023.06</span><span class="tl-dot"><i></i></span><span class="tl-body"><span class="tl-title">국가정보원 「챗GPT 등 생성형 AI 활용 보안 가이드라인」</span><span class="tl-note">민감정보를 입력하지 말라 — 이용자에게 맡기는 권고</span></span></div>
-      <div class="tl-row"><span class="tl-date">2025.08</span><span class="tl-dot"><i></i></span><span class="tl-body"><span class="tl-title">개인정보보호위원회 「생성형 AI 개발·활용을 위한 개인정보 처리 안내서」</span><span class="tl-note">수명주기 4단계별 안전조치 · 탈옥에 대비한 다층 방어</span></span></div>
-      <div class="tl-row"><span class="tl-date">2025.09</span><span class="tl-dot"><i></i></span><span class="tl-body"><span class="tl-title">국가정보원 「국가 망 보안체계(N2SF) 보안 가이드라인 1.0」</span><span class="tl-note">업무정보를 C·S·O 로 나누고, 생성형 AI 에는 프롬프트·콘텐츠 필터링을 요구</span></span></div>
-      <div class="tl-row"><span class="tl-date">2026.04</span><span class="tl-dot"><i></i></span><span class="tl-body"><span class="tl-title">과학기술정보통신부 연구안보센터 출범 — KAIST·중앙대 주관</span><span class="tl-note">KAIST 의 몫은 「AI 기반 위험평가 등 데이터 기반 관리체계」</span></span></div>
-      <div class="tl-row"><span class="tl-date">2026.05</span><span class="tl-dot"><i></i></span><span class="tl-body"><span class="tl-title">「국가 사이버보안 기본지침」 시행 — 획일적 망분리 조항 삭제</span><span class="tl-note">제40조 삭제 · 제39조의2~5 로 N2SF 신설</span></span></div>
+    <div class="tl5" style="flex:0 0 auto">
+      <span class="tl5__turn fragment" data-fragment-index="1" aria-hidden="true"><i>전환점</i></span>
+      <span class="tl5__era tl5__era--old">권고 — 이용자에게 맡긴다</span>
+      <span class="tl5__era tl5__era--new fragment" data-fragment-index="1">제도 — 기관이 검사한다</span>
+      <div class="tl5__item tl5__item--old">
+        <span class="tl5__date">2023.06</span><span class="tl5__dot"></span>
+        <span class="tl5__org">국가정보원</span>
+        <span class="tl5__title">생성형 AI 활용 보안 가이드라인</span>
+        <span class="tl5__note">민감정보를 입력하지 말라</span>
+      </div>
+      <div class="tl5__item tl5__item--old">
+        <span class="tl5__date">2025.08</span><span class="tl5__dot"></span>
+        <span class="tl5__org">개인정보보호위원회</span>
+        <span class="tl5__title">생성형 AI 개인정보 처리 안내서</span>
+        <span class="tl5__note">단계별 안전조치 권고</span>
+      </div>
+      <div class="tl5__item tl5__item--new fragment" data-fragment-index="1">
+        <span class="tl5__date">2025.09</span><span class="tl5__dot"></span>
+        <span class="tl5__org">국가정보원</span>
+        <span class="tl5__title">N2SF 보안 가이드라인 1.0</span>
+        <span class="tl5__note">등급 분류 + <b>프롬프트·콘텐츠 필터링</b> 요구</span>
+      </div>
+      <div class="tl5__item tl5__item--new fragment" data-fragment-index="1">
+        <span class="tl5__date">2026.04</span><span class="tl5__dot"></span>
+        <span class="tl5__org">과학기술정보통신부</span>
+        <span class="tl5__title">연구안보센터 출범 (KAIST 주관)</span>
+        <span class="tl5__note">AI 기반 위험평가 · 데이터 관리체계</span>
+      </div>
+      <div class="tl5__item tl5__item--new fragment" data-fragment-index="1">
+        <span class="tl5__date">2026.05</span><span class="tl5__dot"></span>
+        <span class="tl5__org">국가정보원</span>
+        <span class="tl5__title">「국가 사이버보안 기본지침」</span>
+        <span class="tl5__note"><b>망분리 조항 삭제</b> · N2SF 신설</span>
+      </div>
     </div>
     <div class="spacer"></div>
-    <p class="punch punch--teal">권고에서 제도로 — 이제 기관에 요구되는 것은 <em>검사해서 통과시키는 장치</em>입니다.</p>
+    <div class="grid grid--2" style="flex:0 0 auto;gap:1.6rem">
+      <div class="shift shift--old">
+        <span class="shift__icon"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="24" cy="24" r="18"/><path d="M11 11 L37 37"/></svg></span>
+        <span class="shift__text"><b>이전 — 「입력하지 마세요」</b>사람의 기억과 선의에 맡깁니다. 무엇이 나갔는지 기관은 모릅니다.</span>
+      </div>
+      <div class="shift shift--new fragment" data-fragment-index="1">
+        <span class="shift__icon"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 4 L40 10 V22 C40 33 33 40 24 44 C15 40 8 33 8 22 V10 Z"/><path d="M16 24 L22 30 L33 18"/></svg></span>
+        <span class="shift__text"><b>이제 — 「검사하고 보내세요」</b>등급을 나누고, 나가는 내용을 걸러 내고, 기록을 남깁니다.</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
     <p class="cite">전자신문 (2023.06.29) · 정책브리핑 (2025.08.06) · 전자신문 (2025.09.30) · 과학기술정보통신부 착수회의 (2026.04.29) · 법무법인 화우 뉴스레터 (2026.05.07)</p>
   </div>
     <aside class="notes">
       <p><strong>본발표 · 2:44–3:00</strong></p>
-      <p>「국가는 3년 동안 이렇게 움직였습니다. 처음엔 넣지 말라는 권고였습니다. 지금은 제도입니다 — 등급을 나누고, 검사하고, 보내라.」</p>
-      <p>연구안보센터 줄을 짚는다: 「그리고 그 연구안보의 데이터 관리체계를 맡은 곳이 바로 KAIST 입니다.」 → 다음 두 장에서 망분리 삭제와 N2SF 원문을 본다.</p>
+      <p>처음에는 왼쪽 두 칸(권고)과 「이전」 카드만 보인다. 「처음 3년은 권고였습니다. 민감정보를 넣지 말라 — 사람에게 맡겼습니다.」</p>
+      <p>→ 넘기면 오른쪽 세 칸(제도)과 「이제」 카드가 켜진다. 「작년 9월부터 바뀌었습니다. 등급을 나누고, 프롬프트와 콘텐츠를 걸러 내라. 올해 5월에는 망분리 조항이 아예 삭제됐습니다. 그리고 연구안보의 데이터 관리체계를 맡은 곳이 바로 KAIST 입니다.」</p>
+      <p>→ 다음 두 장에서 망분리 삭제와 N2SF 원문을 본다.</p>
     </aside>
 </section>
 
@@ -442,8 +481,8 @@
     <div class="spacer"></div>
     <div class="grid grid--2" style="flex:0 0 auto;gap:2rem">
       <div class="card" style="border-color:#3a3e49">
-        <span class="card__tag" style="color:var(--ink3)">종전 · 20년 넘게</span>
-        <span class="card__title" style="color:var(--ink2)">「국가정보보안기본지침」 제40조</span>
+        <span class="card__tag" style="color:var(--ink-3)">종전 · 20년 넘게</span>
+        <span class="card__title" style="color:var(--ink-2)">「국가정보보안기본지침」 제40조</span>
         <span class="card__body">내부망과 인터넷망을 <strong>획일적으로 분리</strong>하도록 요구했습니다. 20년 넘게 공공 IT 보안의 토대였던 물리적 망분리 원칙입니다.</span>
         <span class="card__cite">외부 AI 를 쓰려면 망을 뚫거나, 포기하거나 둘 중 하나였습니다.</span>
       </div>
