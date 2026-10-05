@@ -827,3 +827,33 @@
 
 .cite.limit { color: var(--amber); }
 .cite.limit b { color: var(--amber); }
+
+/* ── 클로징 — 2장의 첫 문장으로 돌아가 줄을 긋고, 표지 2막을 한 번 더 돌린다 ──
+   마크업 그대로가 끝 화면이다(줄이 그어진 상태). 연출은 줄이 그어지는 것 하나뿐이고
+   동작 줄이기에서는 붙이지 않는다. */
+.close {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
+  gap: 2.4rem;
+  align-items: center;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-bottom: 2.2rem;
+}
+.close__text { display: flex; flex-direction: column; gap: 1.2rem; }
+.close__was { font-size: 0.92em; color: var(--ink-3); font-weight: 300; }
+.close__was span { position: relative; }
+.close__was span::after {
+  content: ''; position: absolute; left: -0.1em; right: -0.1em; top: 52%;
+  height: 3px; border-radius: 2px; background: var(--red); transform-origin: left center;
+}
+.reveal .close__now { font-size: 2.55em; line-height: 1.12; }
+.close__lead { max-width: 32ch; }
+.close__punch { font-size: 0.82em; }
+.close__art { min-height: 0; height: 100%; display: flex; align-items: center; }
+.close__art svg { width: 100%; height: auto; max-height: 100%; }
+.close__foot { font-size: 0.56em; color: var(--ink-2); }
+@media (prefers-reduced-motion: no-preference) {
+  .reveal section.present .close__was span::after { animation: close-strike 0.7s cubic-bezier(.28,.11,.32,1) 0.5s both; }
+}
+@keyframes close-strike { from { transform: scaleX(0); } to { transform: scaleX(1); } }

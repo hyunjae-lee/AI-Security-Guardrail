@@ -901,6 +901,16 @@ if (coverGo) {
   deck.on('ready', () => coverFromDeck(false));
 }
 
+/* ── 클로징 — 표지 2막을 한 번 더 ─────────────────────────
+ * 처음 본 그림으로 끝낸다. 들어올 때 한 번 돌고, 떠나면 끝 화면으로 둔다. */
+const closeHost = document.getElementById('close-art');
+if (closeHost) {
+  const closeGo = makeCoverController(buildCover(closeHost), reduced);
+  const closeSlide = closeHost.closest('section');
+  deck.on('slidechanged', (e) => closeGo(2, e.currentSlide === closeSlide));
+  deck.on('ready', () => closeGo(2, deck.getCurrentSlide() === closeSlide));
+}
+
 /** 지구본의 세로 타원만 천천히 돌려 자전처럼 보이게 한다.
  *  전체를 돌리면 가로선까지 기울어져 어지럽다. */
 function spinGlobes() {
