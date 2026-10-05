@@ -15,7 +15,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -59,6 +59,19 @@ app = FastAPI(
     description="프롬프트가 가드레일 없이 / 가드레일을 통과해 AI 시스템에 도달하는 과정을 시각화하는 PoC",
     lifespan=lifespan,
 )
+
+
+@app.middleware("http")
+async def html_no_cache(request: Request, call_next):
+    """HTML 은 매번 서버에 확인하게 한다.
+
+    덱·설명 사이트의 HTML 에는 Cache-Control 이 없어 브라우저가 휴리스틱으로
+    캐시했고, 재배포 뒤에도 예전 화면이 떴다.  해시가 붙은 /assets/* 는 그대로
+    캐시돼도 되므로 HTML 응답에만 붙인다."""
+    response = await call_next(request)
+    if response.headers.get("content-type", "").startswith("text/html"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
 
 
 def _engine(profile: str, *, scoring: str = "worst_decay", clearance: str = "student") -> GuardrailEngine:

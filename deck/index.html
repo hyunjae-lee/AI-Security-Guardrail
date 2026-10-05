@@ -710,7 +710,7 @@
       <table class="tbl tbl--text">
         <tr><th>가져다 쓴 것</th><th>무엇에</th></tr>
         <tr><td><strong>Microsoft Presidio</strong> 2.2</td><td>영어·국제 식별자 PII</td></tr>
-        <tr><td><strong>KoELECTRA-small</strong> → ONNX</td><td>한국어 이름·지명 (56 MB · CPU)</td></tr>
+        <tr><td><strong>KoELECTRA</strong> → ONNX</td><td>한국어 이름·지명 (56 MB)</td></tr>
         <tr><td><strong>NVIDIA NeMo Guardrails</strong></td><td>입력 레일 · 자가검사</td></tr>
         <tr><td><strong>LiteLLM</strong></td><td>OpenAI·Anthropic 호환 프록시</td></tr>
         <tr><td><strong>promptfoo · garak</strong></td><td>외부 레드팀 시나리오</td></tr>
@@ -718,16 +718,16 @@
       </table>
       <table class="tbl tbl--text">
         <tr><th>직접 쓴 것</th><th>왜 직접 써야 했나</th></tr>
-        <tr><td>한국어 유해 의도 판정</td><td>영어 규칙이 한국어 어순을 못 읽습니다</td></tr>
-        <tr><td>주민번호·계좌 체크섬</td><td>국내 식별자는 외국 도구에 없습니다</td></tr>
-        <tr><td>RAG 권한 접근통제 (CLR)</td><td>검색 단계에서 걸러야 합니다</td></tr>
-        <tr><td>데이터 등급 L0~L4</td><td>N2SF 의 C·S·O 에 맞물려야 합니다</td></tr>
-        <tr><td>라벨 코퍼스 205건</td><td>한국어 평가셋이 없습니다</td></tr>
-        <tr><td>스트리밍 꼬리 보류 검사</td><td>흘려보내면서 검사하는 도구가 없었습니다</td></tr>
+        <tr><td>한국어 유해 의도</td><td>영어 규칙은 한국어 어순을 못 읽음</td></tr>
+        <tr><td>주민번호 체크섬</td><td>국내 식별자는 외국 도구에 없음</td></tr>
+        <tr><td>RAG 권한 통제</td><td>검색 단계에서 걸러야 함</td></tr>
+        <tr><td>데이터 등급 L0~L4</td><td>N2SF 의 C·S·O 와 맞물림</td></tr>
+        <tr><td>라벨 코퍼스 205건</td><td>한국어 평가셋이 없음</td></tr>
+        <tr><td>스트리밍 꼬리 검사</td><td>흘려보내며 검사하는 도구 없음</td></tr>
       </table>
     </div>
     <div class="spacer"></div>
-    <p class="punch punch--teal">직접 쓴 자리는 전부 <em>「한국어」와 「대학」</em>입니다. 그 밖은 이미 있는 것을 씁니다.</p>
+    <p class="punch punch--teal">직접 쓴 자리는 전부 <em>「한국어」와 「대학」</em>입니다.</p>
     <p class="cite">파이썬 6,038줄 · 프런트 11,047줄 · 테스트 99개. 외부 엔진은 라이브러리가 없으면 내장 탐지기로 자동 대체됩니다.</p>
   </div>
     <aside class="notes">
@@ -956,17 +956,16 @@
       <div class="card card--amber">
         <span class="card__tag">자기 과제에서는 잘 잡는다</span>
         <span class="card__title">문제는 적중률이 아니었습니다</span>
-        <span class="card__body">영어 전용 모델은 인젝션 29건을 <strong>하나도 놓치지 않았습니다</strong>. 그런데 「졸업논문 제출 마감일」도 인젝션이라고 합니다.</span>
+        <span class="card__body">영어 전용 모델은 인젝션을 <strong>하나도 놓치지 않았지만</strong>, 「졸업논문 제출 마감일」도 인젝션이라고 합니다.</span>
       </div>
       <div class="card card--amber">
         <span class="card__title">한계 기여가 0 입니다</span>
-        <span class="card__body">규칙이 이미 다 잡고 있으므로 분류기가 <strong>새로 잡아 주는 공격이 없습니다</strong>. 남는 것은 새로 막히는 정상 질의뿐입니다.</span>
-        <span class="card__cite">반대로 한국어 NER 은 같은 기준으로 재서 미탐 7건을 0건으로 줄였습니다 — 그래서 켰습니다.</span>
+        <span class="card__body">분류기가 <strong>새로 잡는 공격은 0건</strong>, 새로 막히는 정상 질의만 남습니다. 한국어 NER 은 같은 기준으로 재서 켰습니다.</span>
       </div>
       
     </div>
     <div class="spacer"></div>
-    <p class="punch punch--amber">켜고 끌 수 있게 만들어 두고 <em>재 본 뒤에 껐습니다</em> — 끈 이유를 적어 두는 것도 결과입니다.</p>
+    <p class="punch punch--amber"><em>재 본 뒤에 껐습니다</em> — 끈 이유도 결과입니다.</p>
     <p class="cite">임계치 0.9 · 코퍼스 205건 · <b>attacks/corpus/results/classifier-comparison-205-2026-10-04.json</b> · 어댑터는 <b>app/guardrail/adapters/transformer_injection.py</b> (기본 꺼짐)</p>
   </div>
     <aside class="notes">
@@ -1180,17 +1179,15 @@
     <div class="grid grid--2" style="flex:0 0 auto;gap:2.2rem">
       <p class="lead lead--wide" style="max-width:none">
         <strong style="color:var(--teal)">모두를 위한 AI</strong> 가 되면
-        모든 구성원의 질의가 국경을 넘습니다. 쓰는 사람이 늘어날수록
-        검사대 없는 상태의 위험은 비례해서 커집니다.
+        모든 구성원의 질의가 국경을 넘습니다. 위험도 그만큼 커집니다.
       </p>
       <p class="lead lead--wide" style="max-width:none">
         <strong style="color:var(--teal)">규제를 줄인다</strong> 는 것은
-        검사를 없애는 것이 아닙니다. 전면 금지나 망분리 대신
-        <em>등급에 따라 통과시키는 것</em>입니다. 그것이 N2SF 의 취지이기도 합니다.
+        검사를 없애는 것이 아니라 <em>등급에 따라 통과시키는 것</em>입니다.
       </p>
     </div>
     <div class="spacer"></div>
-    <p class="punch punch--teal">지금처럼 막아 두면 규제가 남고, 그냥 풀면 사고가 납니다. <em>검사대가 있어야 문을 열 수 있습니다</em> — 이건 보안 과제가 아니라 <em>개방 과제</em>입니다.</p>
+    <p class="punch punch--teal"><em>검사대가 있어야 문을 열 수 있습니다</em> — 보안 과제가 아니라 <em>개방 과제</em>입니다.</p>
     <p class="cite">KAIST 제18대 <b>배충식</b> 총장 「Beyond Series」 5대 발전전략 · 비전 <b>Fundamentals First, Innovation Forward</b> · 취임식 2026.08.10</p>
   </div>
     <aside class="notes">
@@ -1280,7 +1277,7 @@
       <div class="card card--amber">
         <span class="card__tag">2단계 · 부여</span>
         <span class="card__title">부서가 직접 L0~L4</span>
-        <span class="card__body">정보통신처가 대신 쓰지 않습니다. 양식과 예시만 제공하고, <strong>정하지 못한 항목은 기본 L2</strong> 로 둡니다 — 보수적인 쪽이 기본값입니다.</span>
+        <span class="card__body">정보통신처는 양식과 예시만 줍니다. <strong>정하지 못한 항목은 기본 L2</strong> — 보수적인 쪽이 기본값입니다.</span>
         <span class="card__cite">「모르겠다」가 「허용」이 되면 안 됩니다.</span>
       </div>
       <div class="card card--teal">
@@ -1297,7 +1294,7 @@
       </div>
     </div>
     <div class="spacer"></div>
-    <p class="punch punch--amber">향후 연구과제가 여기서 나옵니다. 지금 엔진은 등급을 <em>추천</em>만 하고, 부서가 검수한 결과가 쌓이면 그것이 <em>국내 대학 최초의 데이터 등급 라벨 코퍼스</em>가 됩니다.</p>
+    <p class="punch punch--amber">부서가 검수한 등급이 쌓이면 <em>국내 대학 최초의 데이터 등급 라벨 코퍼스</em>가 됩니다 — 향후 연구과제입니다.</p>
     <p class="cite">사람이 쓴 등급표가 학습 데이터가 됩니다 — 이 순서를 뒤집으면 아무것도 검증할 수 없습니다.</p>
   </div>
     <aside class="notes">
