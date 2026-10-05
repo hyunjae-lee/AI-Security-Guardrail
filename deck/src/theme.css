@@ -615,3 +615,40 @@
 .news__link { display: block; position: relative; color: inherit; }
 .news__link:hover img { opacity: 0.85; }
 .news__link:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+
+/* ── 「그러면 우리는」 — 겉으로는 똑같은 계기판 셋 ─────────────
+   처음엔 「0건」 계기판만 보이고, 넘길 때마다 그 뒤의 가능성이 하나씩 드러난다.
+   셋이 구별되지 않는다는 것을 말이 아니라 그림으로 먼저 보이기 위해서다. */
+.us { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; }
+.us__card {
+  position: relative;
+  display: flex; flex-direction: column; gap: 1rem;
+  padding: 1.2rem; border: 1px solid var(--line); border-radius: 18px; background: var(--plate);
+}
+.us__card--blind { border-color: rgba(242, 122, 109, 0.7); background: rgba(242, 122, 109, 0.06); }
+.us__screen {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+  padding: 1rem 0 0.9rem; border-radius: 11px; background: var(--ground-2); border: 1px solid var(--line);
+}
+.us__label { font-size: 0.5em; letter-spacing: 0.12em; color: var(--ink3); }
+.us__num {
+  font-size: 2.6em; font-weight: 800; line-height: 1; color: var(--ink);
+  font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+}
+.us__num small { font-size: 0.32em; font-weight: 600; margin-left: 0.15em; color: var(--ink2); }
+.us__stamp {
+  position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%) rotate(-8deg);
+  font-size: 0.62em; font-weight: 800; color: var(--red);
+  border: 2.5px solid var(--red); border-radius: 8px; padding: 0.15em 0.5em; background: var(--ground-2);
+}
+.us__real { display: flex; flex-direction: column; gap: 0.35rem; }
+.us__icon { width: 2.1em; height: 2.1em; margin-bottom: 0.2rem; }
+.us__card--safe .us__icon { color: var(--ink2); }
+.us__card--wait .us__icon { color: var(--amber); }
+.us__card--blind .us__icon { color: var(--red); }
+.us .card__body { font-size: 0.6em; }
+.us__q {
+  position: absolute; left: 0; right: 0; top: 52%;
+  text-align: center; font-size: 3.4em; font-weight: 800; line-height: 1;
+  color: rgba(155, 157, 166, 0.32); pointer-events: none;
+}

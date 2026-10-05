@@ -354,35 +354,59 @@
 <section data-s="us">
   <div class="wrap">
     <p class="kicker kicker--red">08 · 그러면 우리는</p>
-    <h2>KAIST 는 사고 소식이 없습니다. 셋 중 무엇일까요.</h2>
-    <div class="spacer"></div>
-    <div class="grid grid--3" style="flex:0 0 auto">
-      <div class="card card--red">
-        <span class="card__tag">하나</span>
-        <span class="card__title">정말 더 나은 환경이다</span>
-        <span class="card__body">은행보다 보안 예산이 많습니까. 전담 인력이 많습니까. 감독기관이 분기마다 점검합니까. 망분리를 더 엄격하게 했습니까.</span>
+    <h2>KAIST 에는 사고 소식이 없습니다. 왜일까요?</h2>
+    <div class="us" style="flex:0 0 auto">
+      <div class="us__card us__card--safe">
+        <span class="us__q fragment fade-out" data-fragment-index="1" aria-hidden="true">?</span>
+        <div class="us__screen">
+          <span class="us__label">보고된 유출 사고</span>
+          <span class="us__num">0<small>건</small></span>
+          
+        </div>
+        <div class="us__real fragment" data-fragment-index="1">
+          <svg class="us__icon" viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M32 6 L54 14 V30 C54 44 44 53 32 58 C20 53 10 44 10 30 V14 Z"/><path d="M22 31 L29 38 L43 24"/></svg>
+          <span class="card__tag">가능성 하나</span>
+          <span class="card__title">정말 더 안전하다</span>
+          <span class="card__body">은행보다 보안 예산·전담 인력·감독이 더 많고, 망분리가 더 엄격하다면.</span>
+        </div>
       </div>
-      <div class="card card--red">
-        <span class="card__tag">둘</span>
-        <span class="card__title">아직 차례가 오지 않았다</span>
-        <span class="card__body">사고가 없었다는 것은 안전하다는 뜻일 수도 있고, 아직 순서가 아니라는 뜻일 수도 있습니다. 둘은 겉으로 같아 보입니다.</span>
+      <div class="us__card us__card--wait">
+        <span class="us__q fragment fade-out" data-fragment-index="2" aria-hidden="true">?</span>
+        <div class="us__screen">
+          <span class="us__label">보고된 유출 사고</span>
+          <span class="us__num">0<small>건</small></span>
+          
+        </div>
+        <div class="us__real fragment" data-fragment-index="2">
+          <svg class="us__icon" viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 6 H48 M16 58 H48"/><path d="M20 6 C20 22 44 25 44 32 C44 39 20 42 20 58 M44 6 C44 22 20 25 20 32 C20 39 44 42 44 58"/><path d="M26 52 H38" stroke-width="4"/></svg>
+          <span class="card__tag">가능성 둘</span>
+          <span class="card__title">아직 차례가 아니다</span>
+          <span class="card__body">사고가 없는 것과 아직 순서가 오지 않은 것은 겉으로 똑같아 보입니다.</span>
+        </div>
       </div>
-      <div class="card card--red">
-        <span class="card__tag">셋</span>
-        <span class="card__title">이미 일어났는데 모른다</span>
-        <span class="card__body">무엇이 나갔는지 아무도 기록하지 않으면, <strong>나간 적이 없는 것과 똑같아 보입니다.</strong></span>
+      <div class="us__card us__card--blind">
+        <span class="us__q fragment fade-out" data-fragment-index="3" aria-hidden="true">?</span>
+        <div class="us__screen">
+          <span class="us__label">보고된 유출 사고</span>
+          <span class="us__num">0<small>건</small></span>
+          <span class="us__stamp fragment" data-fragment-index="4">실제는 ?건</span>
+        </div>
+        <div class="us__real fragment" data-fragment-index="3">
+          <svg class="us__icon" viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="6" width="40" height="52" rx="5"/><path d="M20 16 H44 M20 24 H44" stroke-dasharray="3 4"/><path d="M26 36 a6 6 0 1 1 8.5 5.5 c-2 1 -2.5 2 -2.5 4.5"/><circle cx="32" cy="51" r="1.2" fill="currentColor"/></svg>
+          <span class="card__tag">가능성 셋</span>
+          <span class="card__title">이미 일어났는데 모른다</span>
+          <span class="card__body">무엇이 나갔는지 아무도 기록하지 않으면, <strong>나간 적이 없는 것과 똑같아 보입니다.</strong></span>
+        </div>
       </div>
     </div>
-    <div class="spacer"></div>
-    <p class="punch">검사하지 않으면 이 셋은 <em>구별되지 않습니다.</em><br>
-      지금 우리는 어느 쪽인지 말할 근거 자체가 없습니다.</p>
+    <p class="punch fragment" data-fragment-index="4">겉으로는 셋 다 <em>「0건」</em>입니다. 검사하지 않으면 <em>구별할 수 없습니다</em> — 지금 우리는 어느 쪽인지 말할 근거가 없습니다.</p>
   </div>
     <aside class="notes">
       <p><strong>본발표 · 2:28–2:44  ★ 앞 절반의 정점</strong></p>
-      <p>읽지 말고 세 문장을 띄우고 잠시 멈춘다.</p>
-      <p>「이런 기업들도 사고가 납니다. KAIST 는 정말 이들보다 뛰어난 환경이라 소식이 없는 걸까요? 시간의 문제일까요? 아니면 이미 난 사고를 우리가 모르는 걸까요?」</p>
-      <p>— 3초 침묵 —</p>
-      <p>「세 번째라면, 지금은 알 방법이 없습니다. 감사 기록이 없으니까요.」</p>
+      <p>처음에는 계기판 셋만 보인다 — 모두 「0건」. 「KAIST 에는 사고 소식이 없습니다. 왜일까요? 이유는 셋 중 하나입니다.」</p>
+      <p>→ 하나: 「정말 은행보다 더 안전한 환경이라서일까요?」 → 둘: 「시간의 문제일까요?」 → 셋: 「아니면 이미 난 사고를 우리가 모르는 걸까요?」</p>
+      <p>— 3초 침묵 — → 마지막: 세 번째 계기판에 「실제는 ?건」이 찍힌다.</p>
+      <p>「겉으로는 셋 다 0건입니다. 세 번째라면, 지금은 알 방법이 없습니다. 감사 기록이 없으니까요.」</p>
     </aside>
 </section>
 
