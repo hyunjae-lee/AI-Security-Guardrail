@@ -13,21 +13,19 @@ const TITLE = '생성형 AI 보안 프레임워크 및 가드레일 실증 연�
 
 let pages = '';
 
-// 겉표지 — 애플 제품 소개 페이지의 문법(흰 갤러리 · 28px 카드 · 그림자 없음 · 큰 제품 사진 · 좁힌 자간)
-// 위에 인스타그램식 해시태그 알약을 얹는다. 「제품 사진」은 표지 전용으로 그린 유리 게이트 하나(hero.svg)다 — 질문 카드가 가림 · 차단 · 통과로 갈린다.
-const hero = fs.readFileSync('/w/hero/hero.svg', 'utf8');
+// 겉표지 — 내셔널 지오그래픽 표지의 원칙: 노란 테두리 · 화면을 채운 이미지 한 장 · 글은 최소.
+// 이미지는 표지 전용으로 그린 「장노출 사진」 같은 장면(ng.svg) — 어둠 속 빛나는 게이트 하나를
+// 질의의 빛 궤적이 지나간다. 호박색은 들어오고, 청록·초록으로 나가고, 빨강 하나는 게이트 앞에서 멈춘다.
+const scene = fs.readFileSync('/w/hero/ng.svg', 'utf8');
 const logo = `data:image/svg+xml;base64,${fs.readFileSync('/w/book/kaist.svg').toString('base64')}`;
-const TAGS = ['#실증완료', '#한국어특화', '#나갈때_들어올때', '#원문미저장', '#N2SF'];
 pages += `<section class="pg outer">
-  <p class="ap-eyebrow">New <span>2026 직원 현장연구과정 · 최종 성과</span></p>
-  <h1 class="ap-title">AI GUARDRAIL</h1>
-  <p class="ap-sub">나갈 때 한 번, 들어올 때 한 번.<br><span>우리 기준으로 우리가 확인합니다.</span></p>
-  <div class="ap-card">${hero}
-    <div class="ap-cap"><b>검사 약 6 ms</b><i></i>GPU 없이 1U 서버 2대</div></div>
-  <div class="ap-tags">${TAGS.map((t) => `<span>${t}</span>`).join('')}</div>
-  <div class="ap-foot">
-    <div class="ap-paper">대학 행정환경을 고려한 생성형 AI 도입을 위한<br><b>보안 프레임워크 및 가드레일 실증 연구</b></div>
-    <div class="ap-who"><img src="${logo}" alt="KAIST"><div><b>AI 보안·거버넌스 현장연구팀</b><br>이현재 · 임종호 · 강경덕 · 2026.10</div></div>
+  <div class="ng-img">${scene}</div>
+  <div class="ng-frame"></div>
+  <h1 class="ng-mast">AI GUARDRAIL</h1>
+  <div class="ng-bottom">
+    <p class="ng-pre">대학 행정환경을 고려한 생성형 AI 도입을 위한</p>
+    <p class="ng-head">보안 프레임워크 및<br>가드레일 실증 연구</p>
+    <div class="ng-sign"><img src="${logo}" alt="KAIST"><span>AI 보안·거버넌스 현장연구회 · 2026</span></div>
   </div>
 </section>`;
 // 겉표지
@@ -38,7 +36,7 @@ pages += `<section class="pg cover">
   <div class="c-rule"></div>
   <img class="c-art" src="${art}" alt="">
   <div class="c-foot">
-    <div class="c-team"><b>AI 보안·거버넌스 현장연구팀</b><br>연구책임자 이현재 (정보보안팀)<br>공동연구원 임종호 (정보전산팀)<br>공동연구원 강경덕 (교수학습지원팀)</div>
+    <div class="c-team"><b>AI 보안·거버넌스 현장연구회</b><br>연구책임자 이현재 (정보보안팀)<br>공동연구원 임종호 (AI인프라팀)<br>공동연구원 강경덕 (교수학습지원팀)</div>
     <div class="c-meta">연구기간 2026.3.1. – 9.30.<br>발표 자료집 · 2026.10<br><b>KAIST</b></div>
   </div>
 </section>`;
@@ -51,30 +49,20 @@ for (let i = 0; i < N; i += 2) {
   const slot = (k) => k < N ? `<figure class="sl"><img src="${img(`s${String(k).padStart(2, '0')}.jpg`)}" alt=""><figcaption>${String(k + 1).padStart(2, '0')}</figcaption></figure>` : '';
   pages += `<section class="pg body"><header><span>${TITLE}</span><span>${chapterAt(Math.min(i + 1, N - 1))}</span></header><main>${slot(i)}${slot(i + 1)}</main><footer>${pageOf(i)}</footer></section>`;
 }
-const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;600;700&display=block"><style>
+const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Noto+Serif+KR:wght@900&family=Noto+Sans+KR:wght@300;400;600;700&display=block"><style>
 @page { size: 182mm 257mm; margin: 0; }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: #fff; color: #1d1d1f; font-family: 'Noto Sans CJK KR', 'Noto Sans KR', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pg { width: 182mm; height: 257mm; position: relative; overflow: hidden; page-break-after: always; }
-.outer { padding: 19mm 15mm 13mm; background: #fff; display: flex; flex-direction: column; font-family: 'Inter', 'Noto Sans KR', sans-serif; }
-.ap-eyebrow { margin: 0; text-align: center; font-size: 8.5pt; font-weight: 600; color: #b64400; letter-spacing: -.01em; }
-.ap-eyebrow span { color: #86868b; font-weight: 400; margin-left: 1.6mm; }
-.ap-title { margin: 3mm 0 0; text-align: center; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 47pt; letter-spacing: -.045em; line-height: 1; color: #1d1d1f; }
-.ap-sub { margin: 4.5mm 0 0; text-align: center; font-size: 13pt; font-weight: 600; letter-spacing: -.02em; line-height: 1.35; color: #1d1d1f; }
-.ap-sub span { color: #86868b; }
-.ap-card { position: relative; margin-top: 9mm; flex: 1; min-height: 0; background: #f5f5f7; border-radius: 7.4mm; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-.ap-card svg { width: 100%; height: auto; margin-top: -2mm; }
-.ap-cap { position: absolute; left: 50%; bottom: 6mm; transform: translateX(-50%); white-space: nowrap; background: rgba(255,255,255,.86); backdrop-filter: blur(8px); border-radius: 9999px; padding: 2.2mm 5mm; font-size: 8.5pt; color: #1d1d1f; display: flex; align-items: center; gap: 2.6mm; }
-.ap-cap b { font-weight: 600; }
-.ap-cap i { width: .3mm; height: 3.2mm; background: #d2d2d7; }
-.ap-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 2mm; margin-top: 5.5mm; }
-.ap-tags span { font-size: 8pt; color: #0066cc; background: #f5f5f7; border-radius: 9999px; padding: 1.4mm 3.4mm; letter-spacing: -.01em; }
-.ap-foot { margin-top: 7mm; padding-top: 5mm; border-top: .25mm solid #d2d2d7; display: flex; justify-content: space-between; align-items: center; gap: 6mm; }
-.ap-paper { font-size: 7.6pt; line-height: 1.55; color: #707070; }
-.ap-paper b { color: #1d1d1f; font-weight: 600; }
-.ap-who { display: flex; align-items: center; gap: 2.6mm; font-size: 7.6pt; line-height: 1.55; color: #707070; text-align: left; }
-.ap-who b { color: #1d1d1f; font-weight: 600; }
-.ap-who img { height: 11mm; width: auto; }
+.outer { background: #02040a; }
+.ng-img, .ng-img svg { position: absolute; inset: 0; width: 182mm; height: 257mm; display: block; }
+.ng-frame { position: absolute; inset: 7mm; border: 4.6mm solid #ffd000; }
+.ng-mast { position: absolute; top: 17mm; left: 0; right: 0; margin: 0; text-align: center; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 34pt; letter-spacing: .07em; color: #fff; }
+.ng-bottom { position: absolute; left: 18mm; right: 18mm; bottom: 19mm; color: #fff; }
+.ng-pre { margin: 0; font-size: 9.5pt; font-weight: 400; color: rgba(255,255,255,.75); letter-spacing: -.01em; }
+.ng-head { margin: 2mm 0 0; font-family: 'Noto Serif KR', serif; font-weight: 900; font-size: 26pt; line-height: 1.2; letter-spacing: -.02em; }
+.ng-sign { margin-top: 7mm; display: flex; align-items: center; gap: 3mm; font-size: 8pt; color: rgba(255,255,255,.8); letter-spacing: .02em; }
+.ng-sign img { height: 10mm; width: auto; filter: brightness(0) invert(1); opacity: .92; }
 .cover { padding: 24mm 18mm 18mm; display: flex; flex-direction: column; }
 .c-kicker { margin: 0; font-size: 8.5pt; letter-spacing: .16em; color: #9a6408; font-weight: 600; }
 .c-pre { margin: 9mm 0 0; font-size: 13pt; font-weight: 300; line-height: 1.45; color: #3c3c43; }
