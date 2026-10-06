@@ -63,7 +63,7 @@ pages += `<section class="pg back">
     <p class="bk-body">구성원이 생성형 AI 에 보내는 질문은 나갈 때 한 번, 돌아오는 답은 들어올 때 한 번 — 우리 기준으로 우리가 확인합니다. 이 자료집은 그 관문을 설계하고 실증한 2026 직원 현장연구의 최종 발표를 담았습니다.</p>
   </div>
   <div class="bk-foot">
-    <div><b>대학 행정환경을 고려한 생성형 AI 도입을 위한<br>보안 프레임워크 및 가드레일 실증 연구</b><br>AI 보안·거버넌스 현장연구회 — 이현재 · 임종호 · 강경덕<br>guardrail.kaist.ac.kr</div>
+    <div><b>대학 행정환경을 고려한 생성형 AI 도입을 위한<br>보안 프레임워크 및 가드레일 실증 연구</b><br>AI 보안·거버넌스 현장연구회 — 이현재 · 임종호 · 강경덕</div>
     <img src="${logo}" alt="KAIST">
   </div>
 </section>`;
