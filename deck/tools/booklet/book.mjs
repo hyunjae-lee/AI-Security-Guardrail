@@ -17,8 +17,8 @@ let pages = '';
 // 글이 그림 위에 따로 얹히지 않도록 제목을 게이트 바로 앞 바닥(지평선)에 세우고, 빛 궤적이 제목 뒤를 지나게 한다.
 // 뒤표지(ngback.svg)와 펼쳐 놓으면 궤적이 책등을 건너 이어진다.
 const scene = fs.readFileSync('/w/hero/ng.svg', 'utf8');
-const sceneBack = fs.readFileSync('/w/hero/ngback.svg', 'utf8');
 const logo = `data:image/png;base64,${fs.readFileSync('/w/book/kaist-w.png').toString('base64')}`;      // KAIST 공식 로고(단색) → 흰색
+const logoBlack = `data:image/png;base64,${fs.readFileSync('/w/book/kaist-k.png').toString('base64')}`;
 const logoBlue = `data:image/png;base64,${fs.readFileSync('/w/book/kaist-b.png').toString('base64')}`;
 pages += `<section class="pg outer">
   <div class="ng-img">${scene}</div>
@@ -57,16 +57,22 @@ for (let i = 0; i < N; i += 2) {
 pages += `<section class="pg blank"></section>`;
 // 뒤표지 — 책의 맨 바깥쪽. 빛 궤적이 캠퍼스에서 일어나 책등을 건너 앞표지의 게이트로 간다.
 pages += `<section class="pg back">
-  <div class="ng-img">${sceneBack}</div>
   <div class="ng-top bk"><span>2026 직원 현장연구과정</span><span>최종 성과 발표 자료집</span></div>
   <div class="bk-copy">
-    <p class="ng-pre"><i></i>AI GUARDRAIL</p>
-    <p class="bk-lead">막지 않습니다.<br><em>확인하고</em> 보냅니다.</p>
+    <svg class="bk-emblem" viewBox="0 0 60 64" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#111" stroke-linecap="round">
+      <path d="M12 62 V30 A18 18 0 0 1 48 30 V62" stroke-width="2.4"/>
+      <path d="M16 62 V30 A14 14 0 0 1 44 30 V62" stroke-width=".8"/>
+      <path d="M30 12 V62" stroke-width="1"/>
+      <path d="M0 34 H60" stroke-width="1.6"/><path d="M0 50 H60" stroke-width="1.6"/>
+      <path d="M0 42 H30" stroke-width="1.6"/><circle cx="30" cy="42" r="3" fill="#f5d327" stroke-width="1.4"/><circle cx="30" cy="42" r="1.2" fill="#111" stroke="none"/>
+    </svg>
+    <p class="bk-mark">AI GUARDRAIL</p>
+    <p class="bk-lead">막지 않습니다.<br>확인하고 보냅니다.</p>
     <p class="bk-body">구성원이 생성형 AI 에 보내는 질문은 나갈 때 한 번, 돌아오는 답은 들어올 때 한 번 — 우리 기준으로 우리가 확인합니다. 이 자료집은 그 관문을 설계하고 실증한 2026 직원 현장연구의 최종 발표를 담았습니다.</p>
   </div>
   <div class="bk-foot">
     <div><b>대학 행정환경을 고려한 생성형 AI 도입을 위한<br>보안 프레임워크 및 가드레일 실증 연구</b><br>AI 보안·거버넌스 현장연구회 — 이현재 · 임종호 · 강경덕</div>
-    <img src="${logo}" alt="KAIST">
+    <img src="${logoBlack}" alt="KAIST">
   </div>
 </section>`;
 const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;600;700&display=block"><style>
@@ -89,14 +95,15 @@ html, body { word-break: keep-all; margin: 0; background: #fff; color: #1d1d1f; 
 .ng-sign .who { display: flex; align-items: center; gap: 3mm; font-size: 9pt; font-weight: 600; color: #fff; }
 .ng-sign img { height: 6mm; width: auto; }
 .ng-sign .yr { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 17pt; color: #f5d327; }
-.back { background: #05070a; color: #fff; }
-.ng-top.bk { top: 14mm; }
-.bk-copy { position: absolute; left: 14.5mm; right: 14.5mm; top: 34mm; }
-.bk-lead { margin: 5mm 0 0; font-family: 'Black Han Sans', 'Noto Sans KR', sans-serif; font-size: 40pt; line-height: 1.15; color: #fff; }
-.bk-lead em { font-style: normal; color: #f5d327; }
-.bk-body { margin: 7mm 0 0; font-size: 9.5pt; line-height: 1.8; color: rgba(255,255,255,.82); max-width: 98mm; }
-.bk-foot { position: absolute; left: 14.5mm; right: 14.5mm; bottom: 13.5mm; display: flex; justify-content: space-between; align-items: flex-end; font-size: 7.6pt; line-height: 1.6; color: rgba(255,255,255,.78); border-top: .25mm solid rgba(255,255,255,.25); padding-top: 4mm; }
-.bk-foot b { color: #fff; font-weight: 700; }
+.back { background: #f5d327; color: #111; }
+.ng-top.bk { color: #111; }
+.bk-copy { position: absolute; left: 16mm; right: 16mm; top: 52mm; }
+.bk-emblem { width: 30mm; height: auto; display: block; }
+.bk-mark { margin: 9mm 0 0; font-family: 'Playfair Display', serif; font-weight: 900; font-size: 13pt; letter-spacing: .04em; }
+.bk-lead { margin: 3mm 0 0; font-family: 'Black Han Sans', 'Noto Sans KR', sans-serif; font-size: 40pt; line-height: 1.15; color: #111; }
+.bk-body { margin: 8mm 0 0; font-size: 9.6pt; line-height: 1.8; color: #2a2a2a; max-width: 112mm; }
+.bk-foot { position: absolute; left: 16mm; right: 16mm; bottom: 15mm; display: flex; justify-content: space-between; align-items: flex-end; font-size: 7.6pt; line-height: 1.6; color: #333; border-top: .3mm solid #111; padding-top: 4mm; }
+.bk-foot b { color: #111; font-weight: 700; }
 .bk-foot img { height: 7mm; width: auto; }
 .blank { background: #fff; }
 .cover { padding: 24mm 18mm 18mm; display: flex; flex-direction: column; }
