@@ -13,21 +13,21 @@ const TITLE = '생성형 AI 보안 프레임워크 및 가드레일 실증 연�
 
 let pages = '';
 
-// 겉표지 — 내셔널 지오그래픽 잡지의 문법: 노란 테두리 · 세리프 제호 · 그림 한 장 · 굵은 표지 문구.
-// 그림은 설명 사이트의 조감도(우리가 그린 단면 일러스트)다 — 사진·자연 이미지는 쓰지 않는다.
-const scene = `data:image/png;base64,${fs.readFileSync('/w/book/cover-scene.png').toString('base64')}`;
+// 겉표지 — 애플 제품 소개 페이지의 문법(흰 갤러리 · 28px 카드 · 그림자 없음 · 큰 제품 사진 · 좁힌 자간)
+// 위에 인스타그램식 해시태그 알약을 얹는다. 「제품 사진」은 표지 전용으로 그린 유리 게이트 하나(hero.svg)다 — 질문 카드가 가림 · 차단 · 통과로 갈린다.
+const hero = fs.readFileSync('/w/hero/hero.svg', 'utf8');
 const logo = `data:image/svg+xml;base64,${fs.readFileSync('/w/book/kaist.svg').toString('base64')}`;
+const TAGS = ['#실증완료', '#한국어특화', '#나갈때_들어올때', '#원문미저장', '#N2SF'];
 pages += `<section class="pg outer">
-  <div class="ng">
-    <div class="ng-mast"><span class="ng-kicker">KAIST · 2026 직원 현장연구과정 · 최종 성과 발표 자료집</span>
-      <h1 class="ng-title">GUARDRAIL</h1></div>
-    <div class="ng-scene"><img src="${scene}" alt=""></div>
-    <div class="ng-lines">
-      <p class="ng-pre">대학 행정환경을 고려한 생성형 AI 도입을 위한</p>
-      <p class="ng-head">보안 프레임워크 및<br>가드레일 실증 연구</p>
-      <p class="ng-dek">나갈 때 한 번, 들어올 때 한 번 — <b>우리 기준으로 우리가 확인하는 관문</b></p>
-    </div>
-    <div class="ng-foot"><img class="ng-logo" src="${logo}" alt="KAIST"><div class="ng-team"><b>AI 보안·거버넌스 현장연구팀</b><br>이현재 · 임종호 · 강경덕</div><div class="ng-date">2026.10</div></div>
+  <p class="ap-eyebrow">New <span>2026 직원 현장연구과정 · 최종 성과</span></p>
+  <h1 class="ap-title">AI GUARDRAIL</h1>
+  <p class="ap-sub">나갈 때 한 번, 들어올 때 한 번.<br><span>우리 기준으로 우리가 확인합니다.</span></p>
+  <div class="ap-card">${hero}
+    <div class="ap-cap"><b>검사 약 6 ms</b><i></i>GPU 없이 1U 서버 2대</div></div>
+  <div class="ap-tags">${TAGS.map((t) => `<span>${t}</span>`).join('')}</div>
+  <div class="ap-foot">
+    <div class="ap-paper">대학 행정환경을 고려한 생성형 AI 도입을 위한<br><b>보안 프레임워크 및 가드레일 실증 연구</b></div>
+    <div class="ap-who"><img src="${logo}" alt="KAIST"><div><b>AI 보안·거버넌스 현장연구팀</b><br>이현재 · 임종호 · 강경덕 · 2026.10</div></div>
   </div>
 </section>`;
 // 겉표지
@@ -51,28 +51,30 @@ for (let i = 0; i < N; i += 2) {
   const slot = (k) => k < N ? `<figure class="sl"><img src="${img(`s${String(k).padStart(2, '0')}.jpg`)}" alt=""><figcaption>${String(k + 1).padStart(2, '0')}</figcaption></figure>` : '';
   pages += `<section class="pg body"><header><span>${TITLE}</span><span>${chapterAt(Math.min(i + 1, N - 1))}</span></header><main>${slot(i)}${slot(i + 1)}</main><footer>${pageOf(i)}</footer></section>`;
 }
-const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Noto+Serif+KR:wght@900&family=Noto+Sans+KR:wght@300;400;600;700&display=block"><style>
+const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;600;700&display=block"><style>
 @page { size: 182mm 257mm; margin: 0; }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: #fff; color: #1d1d1f; font-family: 'Noto Sans CJK KR', 'Noto Sans KR', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pg { width: 182mm; height: 257mm; position: relative; overflow: hidden; page-break-after: always; }
-.outer { padding: 9mm; background: #fff; }
-.ng { position: relative; height: 100%; border: 5.5mm solid #ffcd00; background: #f4f4f6; display: flex; flex-direction: column; overflow: hidden; }
-.ng-mast { background: #fff; text-align: center; padding: 5mm 4mm 2mm; border-bottom: .3mm solid #e2e2e6; }
-.ng-kicker { display: block; font-size: 6.6pt; letter-spacing: .22em; color: #6e6e73; font-weight: 600; }
-.ng-title { margin: 1mm 0 0; font-family: 'Playfair Display', 'Liberation Serif', serif; font-weight: 900; font-size: 50pt; letter-spacing: .06em; line-height: 1; color: #111; }
-.ng-scene { flex: 1; position: relative; overflow: hidden; }
-.ng-scene img { position: absolute; height: 80%; width: auto; left: -24mm; top: 3mm; }
-.ng-lines { padding: 0 8mm 5mm; }
-.ng-pre { margin: 0; font-size: 9.5pt; font-weight: 400; color: #3c3c43; }
-.ng-head { margin: 1.5mm 0 0; font-family: 'Noto Serif KR', serif; font-weight: 900; font-size: 25pt; line-height: 1.16; letter-spacing: -.02em; color: #111; }
-.ng-dek { margin: 3mm 0 0; font-size: 9pt; color: #3c3c43; border-top: .6mm solid #ffcd00; padding-top: 2.5mm; display: inline-block; }
-.ng-dek b { color: #0d7a63; font-weight: 700; }
-.ng-foot { background: #fff; display: flex; align-items: center; gap: 4mm; padding: 3.5mm 8mm; border-top: .3mm solid #e2e2e6; }
-.ng-logo { height: 15mm; width: auto; }
-.ng-team { flex: 1; font-size: 8pt; line-height: 1.6; color: #3c3c43; }
-.ng-team b { color: #111; }
-.ng-date { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 13pt; color: #111; letter-spacing: .04em; }
+.outer { padding: 19mm 15mm 13mm; background: #fff; display: flex; flex-direction: column; font-family: 'Inter', 'Noto Sans KR', sans-serif; }
+.ap-eyebrow { margin: 0; text-align: center; font-size: 8.5pt; font-weight: 600; color: #b64400; letter-spacing: -.01em; }
+.ap-eyebrow span { color: #86868b; font-weight: 400; margin-left: 1.6mm; }
+.ap-title { margin: 3mm 0 0; text-align: center; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 47pt; letter-spacing: -.045em; line-height: 1; color: #1d1d1f; }
+.ap-sub { margin: 4.5mm 0 0; text-align: center; font-size: 13pt; font-weight: 600; letter-spacing: -.02em; line-height: 1.35; color: #1d1d1f; }
+.ap-sub span { color: #86868b; }
+.ap-card { position: relative; margin-top: 9mm; flex: 1; min-height: 0; background: #f5f5f7; border-radius: 7.4mm; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.ap-card svg { width: 100%; height: auto; margin-top: -2mm; }
+.ap-cap { position: absolute; left: 50%; bottom: 6mm; transform: translateX(-50%); white-space: nowrap; background: rgba(255,255,255,.86); backdrop-filter: blur(8px); border-radius: 9999px; padding: 2.2mm 5mm; font-size: 8.5pt; color: #1d1d1f; display: flex; align-items: center; gap: 2.6mm; }
+.ap-cap b { font-weight: 600; }
+.ap-cap i { width: .3mm; height: 3.2mm; background: #d2d2d7; }
+.ap-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 2mm; margin-top: 5.5mm; }
+.ap-tags span { font-size: 8pt; color: #0066cc; background: #f5f5f7; border-radius: 9999px; padding: 1.4mm 3.4mm; letter-spacing: -.01em; }
+.ap-foot { margin-top: 7mm; padding-top: 5mm; border-top: .25mm solid #d2d2d7; display: flex; justify-content: space-between; align-items: center; gap: 6mm; }
+.ap-paper { font-size: 7.6pt; line-height: 1.55; color: #707070; }
+.ap-paper b { color: #1d1d1f; font-weight: 600; }
+.ap-who { display: flex; align-items: center; gap: 2.6mm; font-size: 7.6pt; line-height: 1.55; color: #707070; text-align: left; }
+.ap-who b { color: #1d1d1f; font-weight: 600; }
+.ap-who img { height: 11mm; width: auto; }
 .cover { padding: 24mm 18mm 18mm; display: flex; flex-direction: column; }
 .c-kicker { margin: 0; font-size: 8.5pt; letter-spacing: .16em; color: #9a6408; font-weight: 600; }
 .c-pre { margin: 9mm 0 0; font-size: 13pt; font-weight: 300; line-height: 1.45; color: #3c3c43; }
