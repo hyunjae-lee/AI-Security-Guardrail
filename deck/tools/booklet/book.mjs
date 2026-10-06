@@ -13,20 +13,22 @@ const TITLE = '생성형 AI 보안 프레임워크 및 가드레일 실증 연�
 
 let pages = '';
 
-// 겉표지 — 내셔널 지오그래픽 표지의 원칙: 노란 테두리 · 화면을 채운 이미지 한 장 · 글은 최소.
-// 이미지는 표지 전용으로 그린 「장노출 사진」 같은 장면(ng.svg) — 어둠 속 빛나는 게이트 하나를
-// 질의의 빛 궤적이 지나간다. 호박색은 들어오고, 청록·초록으로 나가고, 빨강 하나는 게이트 앞에서 멈춘다.
+// 겉표지 — 내셔널지오그래픽(한국판) 톤: 노란 테두리 · 이미지가 지배 · 굵은 한글 고딕 · 노란 막대 강조.
+// 글이 그림 위에 따로 얹히지 않도록 제목을 게이트 바로 앞 바닥(지평선)에 세우고, 빛 궤적이 제목 뒤를 지나게 한다.
+// 뒤표지(ngback.svg)와 펼쳐 놓으면 궤적이 책등을 건너 이어진다.
 const scene = fs.readFileSync('/w/hero/ng.svg', 'utf8');
+const sceneBack = fs.readFileSync('/w/hero/ngback.svg', 'utf8');
 const logo = `data:image/svg+xml;base64,${fs.readFileSync('/w/book/kaist.svg').toString('base64')}`;
 pages += `<section class="pg outer">
   <div class="ng-img">${scene}</div>
   <div class="ng-frame"></div>
   <h1 class="ng-mast">AI GUARDRAIL</h1>
-  <div class="ng-bottom">
-    <p class="ng-pre">대학 행정환경을 고려한 생성형 AI 도입을 위한</p>
-    <p class="ng-head">보안 프레임워크 및<br>가드레일 실증 연구</p>
-    <div class="ng-sign"><img src="${logo}" alt="KAIST"><span>AI 보안·거버넌스 현장연구회 · 2026</span></div>
+  <div class="ng-issue">2026 직원 현장연구과정<br>최종 성과 발표 자료집</div>
+  <div class="ng-story">
+    <p class="ng-pre"><i></i>대학 행정환경을 고려한 생성형 AI 도입을 위한</p>
+    <p class="ng-head">보안 프레임워크 및<br><em>가드레일</em> 실증 연구</p>
   </div>
+  <div class="ng-sign"><img src="${logo}" alt="KAIST"><span>AI 보안·거버넌스 현장연구회</span></div>
 </section>`;
 // 겉표지
 pages += `<section class="pg cover">
@@ -49,20 +51,50 @@ for (let i = 0; i < N; i += 2) {
   const slot = (k) => k < N ? `<figure class="sl"><img src="${img(`s${String(k).padStart(2, '0')}.jpg`)}" alt=""><figcaption>${String(k + 1).padStart(2, '0')}</figcaption></figure>` : '';
   pages += `<section class="pg body"><header><span>${TITLE}</span><span>${chapterAt(Math.min(i + 1, N - 1))}</span></header><main>${slot(i)}${slot(i + 1)}</main><footer>${pageOf(i)}</footer></section>`;
 }
-const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Noto+Serif+KR:wght@900&family=Noto+Sans+KR:wght@300;400;600;700&display=block"><style>
+
+// 면지(빈 쪽) — 중철 제본은 4의 배수여야 한다(겉표지·속표지·차례·본문 23·면지·뒤표지 = 28).
+pages += `<section class="pg blank"></section>`;
+// 뒤표지 — 책의 맨 바깥쪽. 빛 궤적이 캠퍼스에서 일어나 책등을 건너 앞표지의 게이트로 간다.
+pages += `<section class="pg back">
+  <div class="ng-img">${sceneBack}</div>
+  <div class="bk-copy">
+    <p class="ng-pre"><i></i>AI GUARDRAIL</p>
+    <p class="bk-lead">막지 않습니다.<br><em>확인하고</em> 보냅니다.</p>
+    <p class="bk-body">구성원이 생성형 AI 에 보내는 질문은 나갈 때 한 번, 돌아오는 답은 들어올 때 한 번 — 우리 기준으로 우리가 확인합니다. 이 자료집은 그 관문을 설계하고 실증한 2026 직원 현장연구의 최종 발표를 담았습니다.</p>
+  </div>
+  <div class="bk-foot">
+    <div><b>대학 행정환경을 고려한 생성형 AI 도입을 위한<br>보안 프레임워크 및 가드레일 실증 연구</b><br>AI 보안·거버넌스 현장연구회 — 이현재 · 임종호 · 강경덕<br>guardrail.kaist.ac.kr</div>
+    <img src="${logo}" alt="KAIST">
+  </div>
+</section>`;
+const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;600;700&display=block"><style>
 @page { size: 182mm 257mm; margin: 0; }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: #fff; color: #1d1d1f; font-family: 'Noto Sans CJK KR', 'Noto Sans KR', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pg { width: 182mm; height: 257mm; position: relative; overflow: hidden; page-break-after: always; }
-.outer { background: #02040a; }
+.outer { background: #02040a; color: #fff; }
 .ng-img, .ng-img svg { position: absolute; inset: 0; width: 182mm; height: 257mm; display: block; }
-.ng-frame { position: absolute; inset: 7mm; border: 4.6mm solid #ffd000; }
-.ng-mast { position: absolute; top: 17mm; left: 0; right: 0; margin: 0; text-align: center; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 34pt; letter-spacing: .07em; color: #fff; }
-.ng-bottom { position: absolute; left: 18mm; right: 18mm; bottom: 19mm; color: #fff; }
-.ng-pre { margin: 0; font-size: 9.5pt; font-weight: 400; color: rgba(255,255,255,.75); letter-spacing: -.01em; }
-.ng-head { margin: 2mm 0 0; font-family: 'Noto Serif KR', serif; font-weight: 900; font-size: 26pt; line-height: 1.2; letter-spacing: -.02em; }
-.ng-sign { margin-top: 7mm; display: flex; align-items: center; gap: 3mm; font-size: 8pt; color: rgba(255,255,255,.8); letter-spacing: .02em; }
-.ng-sign img { height: 10mm; width: auto; filter: brightness(0) invert(1); opacity: .92; }
+.ng-frame { position: absolute; inset: 7mm; border: 4.8mm solid #ffd200; }
+.ng-mast { position: absolute; top: 16.5mm; left: 0; right: 0; margin: 0; text-align: center; font-family: 'Playfair Display', serif; font-weight: 900; font-size: 41pt; letter-spacing: .035em; line-height: 1; color: #fff; }
+.ng-issue { position: absolute; top: 33mm; right: 17mm; text-align: right; font-size: 7pt; line-height: 1.5; color: rgba(255,255,255,.72); letter-spacing: .02em; }
+.ng-story { position: absolute; left: 0; right: 0; top: 151mm; text-align: center; }
+.ng-pre { margin: 0; font-size: 9pt; color: rgba(255,255,255,.85); letter-spacing: -.01em; display: inline-flex; align-items: center; gap: 2mm; }
+.ng-pre i { display: inline-block; width: 1.3mm; height: 4mm; background: #ffd200; }
+.ng-head { margin: 3mm 0 0; font-family: 'Black Han Sans', 'Noto Sans KR', sans-serif; font-weight: 400; font-size: 37pt; line-height: 1.08; letter-spacing: -.01em; color: #fff;
+  text-shadow: 0 0 6mm rgba(63,231,192,.45), 0 .6mm 1.5mm rgba(0,0,0,.6); }
+.ng-head em { font-style: normal; color: #ffd200; text-shadow: 0 0 6mm rgba(255,170,40,.5), 0 .6mm 1.5mm rgba(0,0,0,.6); }
+.ng-sign { position: absolute; left: 0; right: 0; bottom: 18mm; display: flex; justify-content: center; align-items: center; gap: 2.6mm; font-size: 8pt; color: rgba(255,255,255,.82); letter-spacing: .02em; }
+.ng-sign img { height: 9mm; width: auto; filter: brightness(0) invert(1); opacity: .9; }
+.back { background: #02040a; color: #fff; }
+.bk-copy { position: absolute; left: 18mm; right: 18mm; top: 34mm; }
+.bk-copy .ng-pre { font-size: 8.5pt; }
+.bk-lead { margin: 5mm 0 0; font-family: 'Black Han Sans', 'Noto Sans KR', sans-serif; font-size: 25pt; line-height: 1.22; color: #fff; }
+.bk-lead em { font-style: normal; color: #ffd200; }
+.bk-body { margin: 6mm 0 0; font-size: 9.2pt; line-height: 1.75; color: rgba(255,255,255,.8); max-width: 112mm; }
+.bk-foot { position: absolute; left: 18mm; right: 18mm; bottom: 15mm; display: flex; justify-content: space-between; align-items: flex-end; font-size: 7.4pt; line-height: 1.6; color: rgba(255,255,255,.75); border-top: .25mm solid rgba(255,255,255,.25); padding-top: 4mm; }
+.bk-foot b { color: #fff; font-weight: 700; }
+.bk-foot img { height: 11mm; width: auto; filter: brightness(0) invert(1); opacity: .9; }
+.blank { background: #fff; }
 .cover { padding: 24mm 18mm 18mm; display: flex; flex-direction: column; }
 .c-kicker { margin: 0; font-size: 8.5pt; letter-spacing: .16em; color: #9a6408; font-weight: 600; }
 .c-pre { margin: 9mm 0 0; font-size: 13pt; font-weight: 300; line-height: 1.45; color: #3c3c43; }
@@ -94,5 +126,5 @@ const p = await b.newPage();
 await p.setContent(html, { waitUntil: 'networkidle' });
 await p.evaluate(() => document.fonts.ready);
 await p.pdf({ path: '/w/book/booklet.pdf', width: '182mm', height: '257mm', printBackground: true, preferCSSPageSize: true });
-console.log('pages', 3 + Math.ceil(N / 2), await p.evaluate(() => [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family).join(',')));
+console.log('pages', 5 + Math.ceil(N / 2), await p.evaluate(() => [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family).join(',')));
 await b.close();
