@@ -16,4 +16,4 @@ cp /tmp/booklet/book/booklet.pdf print/발표자료집-B5.pdf
 
 로고 `kaist.svg` 는 위키미디어 공용 `File:KAIST_logo.svg`(KAIST 휘장)에서 받았다. 글꼴(Playfair Display · Black Han Sans · Noto Sans KR)은 Google Fonts 에서 받으므로 만들 때 인터넷이 필요하다.
 
-표지 장면을 고치려면 `python3 tools/booklet/gen.py` (ng.svg · ngback.svg 를 함께 만든다 — 책등에서 궤적 높이 `EDGE` 가 맞물려야 한다).
+표지 장면을 고치려면 `python3 tools/booklet/gen2.py` (시안 `deck/print/intropage.png` 기준) (ng.svg · ngback.svg 를 함께 만든다 — 앞표지 왼쪽 끝 높이와 뒤표지 오른쪽 끝 높이가 `L` 의 같은 값을 쓴다).

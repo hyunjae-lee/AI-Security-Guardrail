@@ -22,13 +22,13 @@ const logo = `data:image/svg+xml;base64,${fs.readFileSync('/w/book/kaist.svg').t
 pages += `<section class="pg outer">
   <div class="ng-img">${scene}</div>
   <div class="ng-frame"></div>
+  <div class="ng-top"><span>2026 직원 현장연구과정</span><span>최종 성과 발표 자료집</span></div>
   <h1 class="ng-mast">AI GUARDRAIL</h1>
-  <div class="ng-issue">2026 직원 현장연구과정<br>최종 성과 발표 자료집</div>
   <div class="ng-story">
     <p class="ng-pre"><i></i>대학 행정환경을 고려한 생성형 AI 도입을 위한</p>
     <p class="ng-head">보안 프레임워크 및<br><em>가드레일</em> 실증 연구</p>
   </div>
-  <div class="ng-sign"><img src="${logo}" alt="KAIST"><span>AI 보안·거버넌스 현장연구회</span></div>
+  <div class="ng-sign"><span class="who"><img src="${logo}" alt="KAIST">AI 보안·거버넌스 현장연구회</span><span class="yr">2026</span></div>
 </section>`;
 // 겉표지
 pages += `<section class="pg cover">
@@ -57,6 +57,7 @@ pages += `<section class="pg blank"></section>`;
 // 뒤표지 — 책의 맨 바깥쪽. 빛 궤적이 캠퍼스에서 일어나 책등을 건너 앞표지의 게이트로 간다.
 pages += `<section class="pg back">
   <div class="ng-img">${sceneBack}</div>
+  <div class="ng-top bk"><span>2026 직원 현장연구과정</span><span>최종 성과 발표 자료집</span></div>
   <div class="bk-copy">
     <p class="ng-pre"><i></i>AI GUARDRAIL</p>
     <p class="bk-lead">막지 않습니다.<br><em>확인하고</em> 보냅니다.</p>
@@ -72,28 +73,30 @@ const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><link r
 * { box-sizing: border-box; }
 html, body { margin: 0; background: #fff; color: #1d1d1f; font-family: 'Noto Sans CJK KR', 'Noto Sans KR', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pg { width: 182mm; height: 257mm; position: relative; overflow: hidden; page-break-after: always; }
-.outer { background: #02040a; color: #fff; }
+.outer { background: #05070a; color: #fff; }
 .ng-img, .ng-img svg { position: absolute; inset: 0; width: 182mm; height: 257mm; display: block; }
-.ng-frame { position: absolute; inset: 7mm; border: 4.8mm solid #ffd200; }
-.ng-mast { position: absolute; top: 16.5mm; left: 0; right: 0; margin: 0; text-align: center; font-family: 'Playfair Display', serif; font-weight: 900; font-size: 41pt; letter-spacing: .035em; line-height: 1; color: #fff; }
-.ng-issue { position: absolute; top: 33mm; right: 17mm; text-align: right; font-size: 7pt; line-height: 1.5; color: rgba(255,255,255,.72); letter-spacing: .02em; }
-.ng-story { position: absolute; left: 0; right: 0; top: 151mm; text-align: center; }
-.ng-pre { margin: 0; font-size: 9pt; color: rgba(255,255,255,.85); letter-spacing: -.01em; display: inline-flex; align-items: center; gap: 2mm; }
-.ng-pre i { display: inline-block; width: 1.3mm; height: 4mm; background: #ffd200; }
-.ng-head { margin: 3mm 0 0; font-family: 'Black Han Sans', 'Noto Sans KR', sans-serif; font-weight: 400; font-size: 37pt; line-height: 1.08; letter-spacing: -.01em; color: #fff;
-  text-shadow: 0 0 6mm rgba(63,231,192,.45), 0 .6mm 1.5mm rgba(0,0,0,.6); }
-.ng-head em { font-style: normal; color: #ffd200; text-shadow: 0 0 6mm rgba(255,170,40,.5), 0 .6mm 1.5mm rgba(0,0,0,.6); }
-.ng-sign { position: absolute; left: 0; right: 0; bottom: 18mm; display: flex; justify-content: center; align-items: center; gap: 2.6mm; font-size: 8pt; color: rgba(255,255,255,.82); letter-spacing: .02em; }
-.ng-sign img { height: 9mm; width: auto; filter: brightness(0) invert(1); opacity: .9; }
-.back { background: #02040a; color: #fff; }
-.bk-copy { position: absolute; left: 18mm; right: 18mm; top: 34mm; }
-.bk-copy .ng-pre { font-size: 8.5pt; }
-.bk-lead { margin: 5mm 0 0; font-family: 'Black Han Sans', 'Noto Sans KR', sans-serif; font-size: 25pt; line-height: 1.22; color: #fff; }
-.bk-lead em { font-style: normal; color: #ffd200; }
-.bk-body { margin: 6mm 0 0; font-size: 9.2pt; line-height: 1.75; color: rgba(255,255,255,.8); max-width: 112mm; }
-.bk-foot { position: absolute; left: 18mm; right: 18mm; bottom: 15mm; display: flex; justify-content: space-between; align-items: flex-end; font-size: 7.4pt; line-height: 1.6; color: rgba(255,255,255,.75); border-top: .25mm solid rgba(255,255,255,.25); padding-top: 4mm; }
+.ng-frame { position: absolute; inset: 5.5mm; border: 3.6mm solid #f5d327; }
+.ng-top { position: absolute; top: 14mm; left: 14.5mm; right: 14.5mm; display: flex; justify-content: space-between; font-size: 8pt; font-weight: 700; letter-spacing: .12em; color: #fff; }
+.ng-mast { position: absolute; top: 20mm; left: 0; right: 0; margin: 0; text-align: center; font-family: 'Playfair Display', serif; font-weight: 900; font-size: 58pt; letter-spacing: -.005em; line-height: 1; color: #fff;
+  text-shadow: 0 0 5mm rgba(95,245,200,.35); }
+.ng-story { position: absolute; left: 14.5mm; right: 12mm; top: 180mm; }
+.ng-pre { margin: 0; font-size: 11pt; font-weight: 600; color: #fff; letter-spacing: -.01em; display: flex; align-items: center; gap: 2.6mm; }
+.ng-pre i { display: inline-block; width: 1.4mm; height: 4.8mm; background: #f5d327; }
+.ng-head { margin: 4.5mm 0 0; font-family: 'Black Han Sans', 'Noto Sans KR', sans-serif; font-weight: 400; font-size: 47pt; line-height: 1.12; letter-spacing: .01em; color: #fff; }
+.ng-head em { font-style: normal; color: #f5d327; }
+.ng-sign { position: absolute; left: 14.5mm; right: 14.5mm; bottom: 13.5mm; display: flex; justify-content: space-between; align-items: center; }
+.ng-sign .who { display: flex; align-items: center; gap: 3mm; font-size: 9pt; font-weight: 600; color: #fff; }
+.ng-sign img { height: 8.5mm; width: auto; filter: brightness(0) invert(1); }
+.ng-sign .yr { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 17pt; color: #f5d327; }
+.back { background: #05070a; color: #fff; }
+.ng-top.bk { top: 14mm; }
+.bk-copy { position: absolute; left: 14.5mm; right: 14.5mm; top: 34mm; }
+.bk-lead { margin: 5mm 0 0; font-family: 'Black Han Sans', 'Noto Sans KR', sans-serif; font-size: 40pt; line-height: 1.15; color: #fff; }
+.bk-lead em { font-style: normal; color: #f5d327; }
+.bk-body { margin: 7mm 0 0; font-size: 9.5pt; line-height: 1.8; color: rgba(255,255,255,.82); max-width: 98mm; }
+.bk-foot { position: absolute; left: 14.5mm; right: 14.5mm; bottom: 13.5mm; display: flex; justify-content: space-between; align-items: flex-end; font-size: 7.6pt; line-height: 1.6; color: rgba(255,255,255,.78); border-top: .25mm solid rgba(255,255,255,.25); padding-top: 4mm; }
 .bk-foot b { color: #fff; font-weight: 700; }
-.bk-foot img { height: 11mm; width: auto; filter: brightness(0) invert(1); opacity: .9; }
+.bk-foot img { height: 11mm; width: auto; filter: brightness(0) invert(1); }
 .blank { background: #fff; }
 .cover { padding: 24mm 18mm 18mm; display: flex; flex-direction: column; }
 .c-kicker { margin: 0; font-size: 8.5pt; letter-spacing: .16em; color: #9a6408; font-weight: 600; }
