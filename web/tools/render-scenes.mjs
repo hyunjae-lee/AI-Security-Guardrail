@@ -5,6 +5,8 @@
  *          node web/tools/render-scenes.mjs runway outro (장면 id 만 골라서)
  *          OUT=/tmp/shots node web/tools/render-scenes.mjs
  *          WIDTH=2000 node web/tools/render-scenes.mjs   (기본 1400px)
+ *          BARE=1 VIEWBOX='x y w h' node web/tools/render-scenes.mjs overview
+ *            — 라벨(콜아웃)·등식 상자를 걷고 틀을 잘라 그림만 굽는다(자료집 표지용, <id>-bare.png)
  *
  * 왜 있나
  * -------
@@ -36,6 +38,8 @@ const W = pathToFileURL(resolvePath(new URL('..', import.meta.url).pathname)).hr
 const SRC = `${W}/src`
 const OUT = process.env.OUT || resolvePath(new URL('..', import.meta.url).pathname, 'tools/.out')
 const WIDTH = Number(process.env.WIDTH || 1400)
+const BARE = Boolean(process.env.BARE)
+const VIEWBOX = process.env.VIEWBOX || ''
 
 const SCENES = [
   ['intro', 'scene-intro.js', 'sceneIntroSvg', '01 인트로'],
@@ -105,10 +109,12 @@ for (const [id, file, fn, label] of wanted) {
     .replace(/\.illus\s*\{[^}]*\}/g, '')
     .replace(/\.illus\s+/g, '')
 
-  const svg = deVar(mod[fn](), map).replace(
+  let raw = mod[fn]()
+  if (VIEWBOX) raw = raw.replace(/viewBox="[^"]*"/, `viewBox="${VIEWBOX}"`)
+  const svg = deVar(raw, map).replace(
     /<svg([^>]*)>/,
     `<svg$1 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">` +
-      `<style>${css}</style>` +
+      `<style>${css}${BARE ? '.callout,#s2-equation{display:none}' : ''}</style>` +
       /* 뷰박스 전체를 덮는 바탕 — 도면이 실제로 앉는 타일/판 색이다. */
       `<rect x="-99999" y="-99999" width="999999" height="999999" fill="${ground}"/>`,
   )
@@ -117,7 +123,7 @@ for (const [id, file, fn, label] of wanted) {
     .render()
     .asPng()
 
-  const path = `${OUT}/${id}.png`
+  const path = `${OUT}/${id}${BARE ? '-bare' : ''}.png`
   writeFileSync(path, png)
   console.log(`✓ ${label}  ${path}  (${(png.length / 1024).toFixed(0)} kB, 바탕 ${ground})`)
 }

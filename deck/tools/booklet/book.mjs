@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs';
 const meta = JSON.parse(fs.readFileSync('/w/book/meta.json', 'utf8'));
 const N = meta.length;
-const pageOf = (i) => 4 + Math.floor(i / 2);
+const pageOf = (i) => 1 + Math.floor(i / 2);
 const chapters = [];
 meta.forEach((m, i) => { if (m.chapter) chapters.push({ i, title: m.title }); });
 const ROMAN = ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'];
@@ -13,27 +13,22 @@ const TITLE = '생성형 AI 보안 프레임워크 및 가드레일 실증 연�
 
 let pages = '';
 
-// 겉표지 — 국경 하나, 검사대 하나, 질의 세 줄. 그 밖에는 아무것도 두지 않는다.
-const dots = (y, from, to, col, op0) => { let o = ''; let n = 0; for (let x = from; x <= to; x += 7) n++; let k = 0;
-  for (let x = from; x <= to; x += 7, k++) o += `<circle cx="${x}" cy="${y}" r="1.5" fill="${col}" opacity="${(op0 + (1 - op0) * k / Math.max(1, n - 1)).toFixed(2)}"/>`; return o; };
-const outerArt = `<svg class="o-art" viewBox="0 0 182 257" xmlns="http://www.w3.org/2000/svg">
-  <line x1="122" y1="0" x2="122" y2="257" stroke="#b3251a" stroke-width=".3" stroke-dasharray="1.6 1.6" opacity=".55"/>
-  <rect x="114" y="84" width="16" height="22" fill="#fff"/>
-  <rect x="119.6" y="104" width="4.8" height="58" rx="2.4" fill="#0d7a63"/>
-  <path d="M122 88.5 l6 2.4 v4.6 c0 4 -2.6 6.6 -6 8 c-3.4 -1.4 -6 -4 -6 -8 v-4.6 z" fill="none" stroke="#0d7a63" stroke-width=".7" stroke-linejoin="round"/>
-  <path d="M119.4 95.6 l1.9 1.9 l3.4 -3.6" fill="none" stroke="#0d7a63" stroke-width=".7" stroke-linecap="round" stroke-linejoin="round"/>
-  ${dots(116, 26, 110, '#d98f1f', .12)}
-  <circle cx="136" cy="116" r="1.5" fill="none" stroke="#0d7a63" stroke-width=".5"/>${dots(116, 143, 171, '#0d7a63', 1)}
-  ${dots(133, 26, 103, '#d98f1f', .12)}
-  <circle cx="114.5" cy="133" r="2.3" fill="none" stroke="#b3251a" stroke-width=".55"/>
-  <path d="M113.3 131.8 l2.4 2.4 M115.7 131.8 l-2.4 2.4" stroke="#b3251a" stroke-width=".5" stroke-linecap="round"/>
-  ${dots(150, 26, 110, '#d98f1f', .12)}${dots(136, 136, 171, '#3f7a24', 1).replace(/cy="136"/g, 'cy="150"')}
-</svg>`;
-pages += `<section class="pg outer">${outerArt}
-  <div class="o-top"><p class="o-kicker">2026 직원 현장연구과정 · 최종 성과 발표 자료집</p>
-  <p class="o-pre">대학 행정환경을 고려한 생성형 AI 도입을 위한</p>
-  <h1 class="o-title">보안 프레임워크 및<br>가드레일 실증 연구</h1></div>
-  <div class="o-foot"><div><b>AI 보안·거버넌스 현장연구팀</b><br>이현재 · 임종호 · 강경덕</div><div class="o-mark">KAIST<span>2026</span></div></div>
+// 겉표지 — 내셔널 지오그래픽 잡지의 문법: 노란 테두리 · 세리프 제호 · 그림 한 장 · 굵은 표지 문구.
+// 그림은 설명 사이트의 조감도(우리가 그린 단면 일러스트)다 — 사진·자연 이미지는 쓰지 않는다.
+const scene = `data:image/png;base64,${fs.readFileSync('/w/book/cover-scene.png').toString('base64')}`;
+const logo = `data:image/svg+xml;base64,${fs.readFileSync('/w/book/kaist.svg').toString('base64')}`;
+pages += `<section class="pg outer">
+  <div class="ng">
+    <div class="ng-mast"><span class="ng-kicker">KAIST · 2026 직원 현장연구과정 · 최종 성과 발표 자료집</span>
+      <h1 class="ng-title">GUARDRAIL</h1></div>
+    <div class="ng-scene"><img src="${scene}" alt=""></div>
+    <div class="ng-lines">
+      <p class="ng-pre">대학 행정환경을 고려한 생성형 AI 도입을 위한</p>
+      <p class="ng-head">보안 프레임워크 및<br>가드레일 실증 연구</p>
+      <p class="ng-dek">나갈 때 한 번, 들어올 때 한 번 — <b>우리 기준으로 우리가 확인하는 관문</b></p>
+    </div>
+    <div class="ng-foot"><img class="ng-logo" src="${logo}" alt="KAIST"><div class="ng-team"><b>AI 보안·거버넌스 현장연구팀</b><br>이현재 · 임종호 · 강경덕</div><div class="ng-date">2026.10</div></div>
+  </div>
 </section>`;
 // 겉표지
 pages += `<section class="pg cover">
@@ -56,21 +51,28 @@ for (let i = 0; i < N; i += 2) {
   const slot = (k) => k < N ? `<figure class="sl"><img src="${img(`s${String(k).padStart(2, '0')}.jpg`)}" alt=""><figcaption>${String(k + 1).padStart(2, '0')}</figcaption></figure>` : '';
   pages += `<section class="pg body"><header><span>${TITLE}</span><span>${chapterAt(Math.min(i + 1, N - 1))}</span></header><main>${slot(i)}${slot(i + 1)}</main><footer>${pageOf(i)}</footer></section>`;
 }
-const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>
+const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Noto+Serif+KR:wght@900&family=Noto+Sans+KR:wght@300;400;600;700&display=block"><style>
 @page { size: 182mm 257mm; margin: 0; }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: #fff; color: #1d1d1f; font-family: 'Noto Sans CJK KR', 'Noto Sans KR', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pg { width: 182mm; height: 257mm; position: relative; overflow: hidden; page-break-after: always; }
-.outer { padding: 26mm 18mm 20mm; display: flex; flex-direction: column; justify-content: space-between; }
-.o-art { position: absolute; inset: 0; width: 182mm; height: 257mm; }
-.o-top, .o-foot { position: relative; }
-.o-kicker { margin: 0; font-size: 7.5pt; letter-spacing: .18em; color: #6e6e73; font-weight: 600; }
-.o-pre { margin: 7mm 0 0; font-size: 10.5pt; font-weight: 300; color: #3c3c43; }
-.o-title { margin: 2.5mm 0 0; font-size: 25pt; line-height: 1.2; font-weight: 700; letter-spacing: -.025em; color: #1d1d1f; }
-.o-foot { display: flex; justify-content: space-between; align-items: flex-end; font-size: 8pt; line-height: 1.7; color: #3c3c43; }
-.o-foot b { color: #1d1d1f; font-weight: 700; }
-.o-mark { text-align: right; font-size: 15pt; font-weight: 700; letter-spacing: .04em; color: #1d1d1f; line-height: 1.1; }
-.o-mark span { display: block; font-size: 8pt; font-weight: 400; letter-spacing: .1em; color: #6e6e73; margin-top: 1.2mm; }
+.outer { padding: 9mm; background: #fff; }
+.ng { position: relative; height: 100%; border: 5.5mm solid #ffcd00; background: #f4f4f6; display: flex; flex-direction: column; overflow: hidden; }
+.ng-mast { background: #fff; text-align: center; padding: 5mm 4mm 2mm; border-bottom: .3mm solid #e2e2e6; }
+.ng-kicker { display: block; font-size: 6.6pt; letter-spacing: .22em; color: #6e6e73; font-weight: 600; }
+.ng-title { margin: 1mm 0 0; font-family: 'Playfair Display', 'Liberation Serif', serif; font-weight: 900; font-size: 50pt; letter-spacing: .06em; line-height: 1; color: #111; }
+.ng-scene { flex: 1; position: relative; overflow: hidden; }
+.ng-scene img { position: absolute; height: 80%; width: auto; left: -24mm; top: 3mm; }
+.ng-lines { padding: 0 8mm 5mm; }
+.ng-pre { margin: 0; font-size: 9.5pt; font-weight: 400; color: #3c3c43; }
+.ng-head { margin: 1.5mm 0 0; font-family: 'Noto Serif KR', serif; font-weight: 900; font-size: 25pt; line-height: 1.16; letter-spacing: -.02em; color: #111; }
+.ng-dek { margin: 3mm 0 0; font-size: 9pt; color: #3c3c43; border-top: .6mm solid #ffcd00; padding-top: 2.5mm; display: inline-block; }
+.ng-dek b { color: #0d7a63; font-weight: 700; }
+.ng-foot { background: #fff; display: flex; align-items: center; gap: 4mm; padding: 3.5mm 8mm; border-top: .3mm solid #e2e2e6; }
+.ng-logo { height: 15mm; width: auto; }
+.ng-team { flex: 1; font-size: 8pt; line-height: 1.6; color: #3c3c43; }
+.ng-team b { color: #111; }
+.ng-date { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 13pt; color: #111; letter-spacing: .04em; }
 .cover { padding: 24mm 18mm 18mm; display: flex; flex-direction: column; }
 .c-kicker { margin: 0; font-size: 8.5pt; letter-spacing: .16em; color: #9a6408; font-weight: 600; }
 .c-pre { margin: 9mm 0 0; font-size: 13pt; font-weight: 300; line-height: 1.45; color: #3c3c43; }
@@ -99,7 +101,8 @@ html, body { margin: 0; background: #fff; color: #1d1d1f; font-family: 'Noto San
 fs.writeFileSync('/w/book/book.html', html);
 const b = await chromium.launch();
 const p = await b.newPage();
-await p.setContent(html, { waitUntil: 'load' });
+await p.setContent(html, { waitUntil: 'networkidle' });
+await p.evaluate(() => document.fonts.ready);
 await p.pdf({ path: '/w/book/booklet.pdf', width: '182mm', height: '257mm', printBackground: true, preferCSSPageSize: true });
+console.log('pages', 3 + Math.ceil(N / 2), await p.evaluate(() => [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family).join(',')));
 await b.close();
-console.log('pages', 3 + Math.ceil(N / 2));
