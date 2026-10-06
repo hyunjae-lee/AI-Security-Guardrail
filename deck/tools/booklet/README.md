@@ -12,4 +12,4 @@ docker run --rm -v $PWD/dist:/dist -v /tmp/booklet:/w -w /w \
 cp /tmp/booklet/book/booklet.pdf print/발표자료집-B5.pdf
 ```
 
-결과물(`deck/print/*.pdf`)은 git 에 넣지 않는다.
+결과물(`deck/print/*.pdf`)은 git 에 넣지 않는다. 내려받기용 사본은 `deck/public/guardrail-booklet-B5.pdf` → https://guardrail.kaist.ac.kr/guardrail-booklet-B5.pdf (파일 이름은 영문으로 — 한글 이름은 전송 중 깨진다).
