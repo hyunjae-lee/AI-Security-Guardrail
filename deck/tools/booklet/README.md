@@ -6,7 +6,7 @@
 
 ```bash
 cd deck && npm run build
-mkdir -p /tmp/booklet/book && cp tools/booklet/*.mjs /tmp/booklet/ && cp tools/booklet/kaist.svg /tmp/booklet/book/ && mkdir -p /tmp/booklet/hero && cp tools/booklet/ng.svg tools/booklet/ngback.svg /tmp/booklet/hero/
+mkdir -p /tmp/booklet/book && cp tools/booklet/*.mjs /tmp/booklet/ && cp tools/booklet/kaist-w.png tools/booklet/kaist-b.png /tmp/booklet/book/ && mkdir -p /tmp/booklet/hero && cp tools/booklet/ng.svg tools/booklet/ngback.svg /tmp/booklet/hero/
 docker run --rm -v $PWD/dist:/dist -v /tmp/booklet:/w -w /w \
   mcr.microsoft.com/playwright:v1.55.0-noble sh -c "npm i -s playwright@1.55.0 >/dev/null; node shots.mjs && node book.mjs"
 cp /tmp/booklet/book/booklet.pdf print/발표자료집-B5.pdf
@@ -14,6 +14,6 @@ cp /tmp/booklet/book/booklet.pdf print/발표자료집-B5.pdf
 
 결과물(`deck/print/*.pdf`)은 git 에 넣지 않는다. 내려받기용 사본은 `deck/public/guardrail-booklet-B5.pdf` → https://guardrail.kaist.ac.kr/guardrail-booklet-B5.pdf (파일 이름은 영문으로 — 한글 이름은 전송 중 깨진다).
 
-로고 `kaist.svg` 는 위키미디어 공용 `File:KAIST_logo.svg`(KAIST 휘장)에서 받았다. 글꼴(Playfair Display · Black Han Sans · Noto Sans KR)은 Google Fonts 에서 받으므로 만들 때 인터넷이 필요하다.
+로고는 KAIST 공식 로고(`deck/print/KAIST_logo_trans(Single-Color)4000pix.png`, 2026-10-06 수령)에서 만들었다 — `kaist-b.png`(원래 색, 속표지) · `kaist-w.png`(흰색, 앞·뒤표지). 글꼴(Playfair Display · Black Han Sans · Noto Sans KR)은 Google Fonts 에서 받으므로 만들 때 인터넷이 필요하다.
 
 표지 장면을 고치려면 `python3 tools/booklet/gen2.py` (시안 `deck/print/intropage.png` 기준) (ng.svg · ngback.svg 를 함께 만든다 — 앞표지 왼쪽 끝 높이와 뒤표지 오른쪽 끝 높이가 `L` 의 같은 값을 쓴다).

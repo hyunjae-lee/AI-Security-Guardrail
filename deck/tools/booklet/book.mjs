@@ -18,7 +18,8 @@ let pages = '';
 // 뒤표지(ngback.svg)와 펼쳐 놓으면 궤적이 책등을 건너 이어진다.
 const scene = fs.readFileSync('/w/hero/ng.svg', 'utf8');
 const sceneBack = fs.readFileSync('/w/hero/ngback.svg', 'utf8');
-const logo = `data:image/svg+xml;base64,${fs.readFileSync('/w/book/kaist.svg').toString('base64')}`;
+const logo = `data:image/png;base64,${fs.readFileSync('/w/book/kaist-w.png').toString('base64')}`;      // KAIST 공식 로고(단색) → 흰색
+const logoBlue = `data:image/png;base64,${fs.readFileSync('/w/book/kaist-b.png').toString('base64')}`;
 pages += `<section class="pg outer">
   <div class="ng-img">${scene}</div>
   <div class="ng-frame"></div>
@@ -39,7 +40,7 @@ pages += `<section class="pg cover">
   <img class="c-art" src="${art}" alt="">
   <div class="c-foot">
     <div class="c-team"><b>AI 보안·거버넌스 현장연구회</b><br>연구책임자 이현재 (정보보안팀)<br>공동연구원 임종호 (AI인프라팀)<br>공동연구원 강경덕 (교수학습지원팀)</div>
-    <div class="c-meta">연구기간 2026.3.1. – 9.30.<br>발표 자료집 · 2026.10<br><b>KAIST</b></div>
+    <div class="c-meta">연구기간 2026.3.1. – 9.30.<br>발표 자료집 · 2026.10<br><img class="c-logo" src="${logoBlue}" alt="KAIST"></div>
   </div>
 </section>`;
 // 차례
@@ -71,7 +72,7 @@ pages += `<section class="pg back">
 const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;600;700&display=block"><style>
 @page { size: 182mm 257mm; margin: 0; }
 * { box-sizing: border-box; }
-html, body { margin: 0; background: #fff; color: #1d1d1f; font-family: 'Noto Sans CJK KR', 'Noto Sans KR', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+html, body { word-break: keep-all; margin: 0; background: #fff; color: #1d1d1f; font-family: 'Noto Sans CJK KR', 'Noto Sans KR', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pg { width: 182mm; height: 257mm; position: relative; overflow: hidden; page-break-after: always; }
 .outer { background: #05070a; color: #fff; }
 .ng-img, .ng-img svg { position: absolute; inset: 0; width: 182mm; height: 257mm; display: block; }
@@ -86,7 +87,7 @@ html, body { margin: 0; background: #fff; color: #1d1d1f; font-family: 'Noto San
 .ng-head em { font-style: normal; color: #f5d327; }
 .ng-sign { position: absolute; left: 14.5mm; right: 14.5mm; bottom: 13.5mm; display: flex; justify-content: space-between; align-items: center; }
 .ng-sign .who { display: flex; align-items: center; gap: 3mm; font-size: 9pt; font-weight: 600; color: #fff; }
-.ng-sign img { height: 8.5mm; width: auto; filter: brightness(0) invert(1); }
+.ng-sign img { height: 6mm; width: auto; }
 .ng-sign .yr { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 17pt; color: #f5d327; }
 .back { background: #05070a; color: #fff; }
 .ng-top.bk { top: 14mm; }
@@ -96,7 +97,7 @@ html, body { margin: 0; background: #fff; color: #1d1d1f; font-family: 'Noto San
 .bk-body { margin: 7mm 0 0; font-size: 9.5pt; line-height: 1.8; color: rgba(255,255,255,.82); max-width: 98mm; }
 .bk-foot { position: absolute; left: 14.5mm; right: 14.5mm; bottom: 13.5mm; display: flex; justify-content: space-between; align-items: flex-end; font-size: 7.6pt; line-height: 1.6; color: rgba(255,255,255,.78); border-top: .25mm solid rgba(255,255,255,.25); padding-top: 4mm; }
 .bk-foot b { color: #fff; font-weight: 700; }
-.bk-foot img { height: 11mm; width: auto; filter: brightness(0) invert(1); }
+.bk-foot img { height: 7mm; width: auto; }
 .blank { background: #fff; }
 .cover { padding: 24mm 18mm 18mm; display: flex; flex-direction: column; }
 .c-kicker { margin: 0; font-size: 8.5pt; letter-spacing: .16em; color: #9a6408; font-weight: 600; }
@@ -107,6 +108,7 @@ html, body { margin: 0; background: #fff; color: #1d1d1f; font-family: 'Noto San
 .c-foot { display: flex; justify-content: space-between; align-items: flex-end; border-top: .3mm solid #d2d2d7; padding-top: 5mm; font-size: 8.5pt; line-height: 1.7; color: #3c3c43; }
 .c-foot b { color: #1d1d1f; font-weight: 700; }
 .c-meta { text-align: right; }
+.c-logo { height: 6mm; width: auto; margin-top: 2mm; }
 .toc { padding: 30mm 22mm; }
 .toc h2 { font-size: 20pt; font-weight: 700; margin: 0 0 12mm; letter-spacing: -.01em; }
 .toc ol { list-style: none; margin: 0; padding: 0; }
