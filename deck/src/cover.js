@@ -124,7 +124,7 @@ export function buildCover(host) {
       </g>
 
       <!-- 방향 표시 -->
-      <text x="${PASS}" y="178" font-size="12.5" font-weight="600" fill="${C.ink3}">나가는 질의 →</text>
+      <text x="${PASS}" y="178" font-size="12.5" font-weight="600" fill="${C.ink3}">나가는 질문 →</text>
       <text x="${PASS}" y="458" font-size="12.5" font-weight="600" fill="${C.ink3}">← 들어오는 답변</text>
 
       <!-- 외부 생성형 AI -->

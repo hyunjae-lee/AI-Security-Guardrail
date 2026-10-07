@@ -115,7 +115,7 @@ export function buildArchitecture(host) {
     <g id="z-in">
       <rect x="440" y="84" width="${IX - 440 + IN_STAGES.length * (IW + IG)}" height="${IH + 76}" rx="14"
             fill="none" stroke="${C.teal}" stroke-width="1.2" stroke-dasharray="6 5" stroke-opacity="0.55"/>
-      <text x="452" y="106" font-size="14.5" font-weight="700" fill="${C.teal}">출국 검사 — 질의 파이프라인</text>
+      <text x="452" y="106" font-size="14.5" font-weight="700" fill="${C.teal}">나갈 때 검사 — 질문 파이프라인</text>
       ${IN_STAGES.map((s, i) => stageBox(IX + i * (IW + IG), IY, IW, IH, s, i)).join('')}
       <text x="${IX}" y="${IY + IH + 30}" font-size="13" fill="${C.ink3}">
         앞 단계가 디코딩한 결과를 다음 단계가 본다 — 인코딩으로 우회할 수 없다
@@ -127,9 +127,9 @@ export function buildArchitecture(host) {
       <text x="452" y="330" font-size="14.5" font-weight="700" fill="${C.ink2}">판정 — 막는 것이 아니라 등급에 따라 다르게 보낸다</text>
       ${[
         ['ALLOW', '그대로 통과', C.green],
-        ['SANITIZE', '금지 물건만 빼고', C.teal],
+        ['SANITIZE', '민감한 부분만 가림', C.teal],
         ['FLAG', '보내고 표시', C.amber],
-        ['BLOCK', '반출 금지', C.red],
+        ['BLOCK', '보내지 않음', C.red],
       ].map(([t, d, col], i) => `
         <g id="vd-${i}">
           <rect x="${452 + i * 196}" y="346" width="180" height="62" rx="10"
@@ -160,7 +160,7 @@ export function buildArchitecture(host) {
     <g id="z-out">
       <rect x="440" y="524" width="${OX - 440 + OUT_STAGES.length * (OW + OG)}" height="${OH + 72}" rx="14"
             fill="none" stroke="${C.green}" stroke-width="1.2" stroke-dasharray="6 5" stroke-opacity="0.55"/>
-      <text x="452" y="546" font-size="14.5" font-weight="700" fill="${C.green}">입국 검사 — 답변 파이프라인</text>
+      <text x="452" y="546" font-size="14.5" font-weight="700" fill="${C.green}">들어올 때 검사 — 답변 파이프라인</text>
       ${OUT_STAGES.map((s, i) => outBox(OX + i * (OW + OG), OY, OW, OH, s, i)).join('')}
       <text x="${OX}" y="${OY + OH + 28}" font-size="13" fill="${C.ink3}">
         나갈 때 깨끗했어도 돌아올 때 깨끗하다는 보장은 없다
@@ -212,9 +212,9 @@ export function buildArchitecture(host) {
          aria-labelledby="${uid}-t ${uid}-d" preserveAspectRatio="xMidYMid meet"
          font-family="'Noto Sans KR', system-ui, sans-serif">
       <title id="${uid}-t">가드레일 시스템 구조와 트래픽 흐름</title>
-      <desc id="${uid}-d">캠퍼스 구성원의 질의가 교내 AI 포털과 LiteLLM 프록시를 거쳐
-        여덟 단계의 출국 검사를 통과하고, 네 갈래 판정에 따라 국경 밖 외부 생성형 AI 로
-        나간다. 돌아온 답변은 여섯 단계의 입국 검사를 거쳐 전달되며, 감사 기록에는
+      <desc id="${uid}-d">캠퍼스 구성원의 질문이 교내 AI 포털과 LiteLLM 프록시를 거쳐
+        여덟 단계의 나갈 때 검사를 통과하고, 네 갈래 판정에 따라 국경 밖 외부 생성형 AI 로
+        나간다. 돌아온 답변은 여섯 단계의 들어올 때 검사를 거쳐 전달되며, 감사 기록에는
         판정만 남고 원문은 저장되지 않는다.</desc>
       <g clip-path="url(#arch-frame)">${body}</g>
     </svg>`;
@@ -226,15 +226,15 @@ export const ARCH_STEPS = [
   [[0, 20, 1600, 680], null,
    '전체 흐름 — 질문은 <b>나갈 때 8번</b> 검사를 받고 국경을 넘습니다. 돌아온 답은 <b>들어올 때 6번</b> 더 검사를 받습니다.'],
   [[24, 80, 420, 210], ['z-campus', 'z-portal'],
-   '구성원은 <b>교내 포털(aiportal.kaist.ac.kr)</b>만 봅니다. 학교 계정으로 로그인하면 <b>직급에 따라 볼 수 있는 자료 범위(CLR 0~4)</b>가 정해집니다. 프로그램은 같은 주소의 API 로 들어옵니다.'],
+   '구성원은 <b>교내 포털(aiportal.kaist.ac.kr)</b>만 봅니다. 학교 계정으로 로그인하면 <b>직급에 따라 볼 수 있는 자료 범위(CLR 0~3)</b>가 정해집니다. 프로그램은 같은 주소의 API 로 들어옵니다.'],
   [[436, 76, 790, 230], ['z-in'],
-   '<b>나갈 때 여덟 단계.</b> 순서가 중요합니다 — 1단계가 <b>암호처럼 감싼 글자(base64 등)를 먼저 펼쳐 놓아야</b> 뒤 단계들이 진짜 내용을 봅니다. 감싸서 몰래 내보낼 수 없습니다.'],
+   '<b>나갈 때 여덟 단계.</b> 순서가 중요합니다. 1단계가 <b>감싼 글자(base64)를 먼저 펼칩니다.</b> 그래서 뒤 단계가 진짜 내용을 봅니다. 감싸서 몰래 내보낼 수 없습니다.'],
   [[700, 98, 342, 154], ['z-in'],
-   '여덟 중 <b>AI 모델을 쓰는 곳은 하나</b>입니다 — 정해진 형식이 없는 <b>사람 이름·주소</b>는 규칙으로 못 잡아서, 작은 한국어 모델(56MB)이 문맥으로 찾습니다. 나머지는 모두 규칙이라 GPU 가 필요 없습니다.'],
+   '여덟 단계 중 <b>AI 모델을 쓰는 단계는 하나</b>입니다. 규칙은 <b>사람 이름·주소</b>를 잡지 못합니다. 그래서 작은 한국어 모델(56 MB)이 문맥으로 찾습니다. 나머지는 규칙이라 GPU 가 필요 없습니다.'],
   [[440, 316, 790, 110], ['z-verdict'],
-   '판정은 넷입니다 — <b>통과 · 가리고 통과 · 통과하되 기록 · 차단.</b> 무조건 막지 않습니다. 업무가 멈추면 사람들은 개인 계정으로 우회합니다.'],
+   '판정은 넷입니다. <b>통과 · 가림 · 표시 · 차단.</b> 무조건 막지 않습니다. 업무가 멈추면 사람들은 개인 계정으로 우회합니다.'],
   [[1100, 30, 420, 300], ['z-border'],
-   '국경 밖은 우리가 통제할 수 없습니다. 그래서 <b>외부 AI 로 직접 가는 길은 방화벽에서 막고</b>, 검사소를 지나는 이 길만 열어 둡니다.'],
+   '국경 밖은 우리가 통제할 수 없습니다. 그래서 <b>외부 AI 로 직접 가는 길은 방화벽에서 막고</b>, 가드레일을 지나는 이 길만 열어 둡니다.'],
   [[436, 516, 790, 200], ['z-out'],
    '<b>들어올 때 여섯 단계.</b> 질문이 깨끗했어도 답이 깨끗하다는 보장은 없습니다. 예: AI 에 몰래 심어 둔 <b>비밀 표식(카나리아)</b>이 답에 보이면, AI 가 내부 설정을 흘린 것이 확실합니다.'],
   [[24, 548, 400, 130], ['z-audit'],

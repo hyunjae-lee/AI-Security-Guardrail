@@ -99,7 +99,7 @@ function diagramGrades(host) {
     <!-- 질의가 나가는 화살표 -->
     <path d="M490 212 L688 212" stroke="${C.amber}" stroke-width="3"
           marker-end="url(#ar-amber)"/>
-    <text x="560" y="198" font-size="14" fill="${C.amber}" font-weight="600">질의</text>
+    <text x="560" y="198" font-size="14" fill="${C.amber}" font-weight="600">질문</text>
 
     <!-- 등급이 갈리는 경계 -->
     <line x1="700" y1="54" x2="700" y2="372" stroke="${C.red}"
@@ -160,8 +160,8 @@ function diagramGate(host) {
 
     <!-- 나가는 길 -->
     <path d="M128 182 L218 182" stroke="${C.amber}" stroke-width="3" marker-end="url(#ar-a)"/>
-    <text x="173" y="170" text-anchor="middle" font-size="13" fill="${C.amber}" font-weight="600">질의</text>
-    ${gate(228, '출국 검사', '질의 필터 · 1차', C.teal)}
+    <text x="173" y="170" text-anchor="middle" font-size="13" fill="${C.amber}" font-weight="600">질문</text>
+    ${gate(228, '나갈 때 검사', '질문 필터 · 1차', C.teal)}
     <path d="M418 182 L516 182" stroke="${C.amber}" stroke-width="3" marker-end="url(#ar-a)"/>
 
     <!-- 국경 밖 -->
@@ -176,7 +176,7 @@ function diagramGate(host) {
 
     <!-- 돌아오는 길 -->
     <path d="M684 218 L782 218" stroke="${C.green}" stroke-width="3" marker-end="url(#ar-g)"/>
-    ${gate(794, '입국 검사', '답변 필터 · 2차', C.teal)}
+    ${gate(794, '들어올 때 검사', '답변 필터 · 2차', C.teal)}
     <path d="M984 218 L1074 218" stroke="${C.green}" stroke-width="3" marker-end="url(#ar-g)"/>
     <text x="1029" y="206" text-anchor="middle" font-size="13" fill="${C.green}" font-weight="600">답변</text>
     ${person(1124, 200, 1.7, C.green)}
@@ -206,8 +206,8 @@ function diagramGate(host) {
   host.dataset.body = body;
   svgWrap(host, {
     viewBox: '0 0 1200 390',
-    title: '양방향 검사대 — 나가는 질의와 돌아오는 답변을 각각 검사한다',
-    desc: '구성원의 질의가 출국 검사(질의 필터)를 거쳐 외부 생성형 AI 로 나가고, 돌아온 답변이 입국 검사(답변 필터)를 거쳐 전달된다. 두 검사의 판정만 감사 기록에 남고 질의 원문은 저장하지 않는다.',
+    title: '양방향 가드레일 — 나가는 질문과 돌아오는 답변을 각각 검사한다',
+    desc: '구성원의 질문이 나갈 때 검사(질문 필터)를 거쳐 외부 생성형 AI 로 나가고, 돌아온 답변이 들어올 때 검사(답변 필터)를 거쳐 전달된다. 두 검사의 판정만 감사 기록에 남고 질의 원문은 저장하지 않는다.',
   });
 }
 
@@ -630,7 +630,7 @@ function scenarioAfter(host) {
     <g id="pkt">
       <rect x="44" y="168" width="188" height="62" rx="12"
             fill="${C.amber}" fill-opacity="0.15" stroke="${C.amber}" stroke-width="1.6"/>
-      <text x="64" y="194" font-size="13.5" font-weight="600" fill="${C.amber}">질의 + 첨부파일</text>
+      <text x="64" y="194" font-size="13.5" font-weight="600" fill="${C.amber}">질문 + 첨부파일</text>
       <text x="64" y="214" font-size="12" fill="${C.ink2}">주민등록번호 1,204건</text>
     </g>
 
@@ -677,9 +677,9 @@ function scenarioAfter(host) {
 
   svgWrap(host, {
     viewBox: '0 0 1200 440',
-    title: '국경을 넘은 질의가 가는 세 갈래',
+    title: '국경을 넘은 질문이 가는 세 경로',
     desc:
-      '캠퍼스에서 보낸 질의와 첨부파일이 국경을 넘으면 사업자 서버 저장, 모델 학습 사용, ' +
+      '캠퍼스에서 보낸 질문과 첨부파일이 국경을 넘으면 사업자 서버 저장, 모델 학습 사용, ' +
       '다른 모델이나 제3자로 전달 세 갈래로 흩어진다. 되돌리는 경로는 없다.',
   });
 }
@@ -799,12 +799,12 @@ if (userHost) {
   userGoto = makeUserController(svg, reduced);
 }
 const USER_CAPTIONS = [
-  '평소처럼 주소를 칩니다. <b>연결이 끊깁니다</b> — 복호화하는 것이 아니라 끊는 것입니다.',
-  '대신 <b>안내가 뜹니다.</b> 막기만 하고 대안을 주지 않으면 사람들은 주머니에서 폰을 꺼냅니다.',
+  '평소처럼 주소를 칩니다. <b>연결이 끊깁니다.</b> 내용을 복호화하지 않고 연결만 끊습니다.',
+  '대신 <b>안내가 뜹니다.</b> 대안 없이 막기만 하면 사람들은 개인 휴대폰을 씁니다.',
   '포털에는 <b>이미 로그인돼 있습니다.</b> 교내 SSO 가 권한 등급까지 함께 정합니다.',
   '평소와 <b>똑같이</b> 묻고 똑같이 첨부합니다. 그 사이 첨부파일에서 주민등록번호 1,204건이 걸립니다.',
-  '답이 옵니다. 돌아온 답변도 다시 검사하지만 <b>기다린 느낌은 없습니다</b> — 합쳐서 약 6 ms 입니다.',
-  '<b>사용자가 의식한 것은 주소가 바뀐 것 하나뿐입니다.</b> 좋은 검사대는 줄을 세우지 않습니다.',
+  '답이 옵니다. 돌아온 답도 다시 검사합니다. 그래도 <b>기다린 느낌은 없습니다.</b> 검사 시간은 합쳐서 약 6 ms 입니다.',
+  '<b>사용자가 의식한 것은 주소가 바뀐 것 하나뿐입니다.</b> 좋은 가드레일은 줄을 세우지 않습니다.',
 ];
 
 /* ── 세 갈래 — 같은 방식으로 방향키가 줄을 하나씩 밝힌다 ── */

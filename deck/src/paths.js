@@ -96,16 +96,16 @@ export function buildPaths(host) {
         lines: ['$ export ANTHROPIC_BASE_URL=https://aiportal.kaist.ac.kr',
                 '$ export ANTHROPIC_AUTH_TOKEN=kaist-••••',
                 '$ claude',
-                ['● 교내 게이트웨이에 연결됨', 'dim']],
+                ['● 교내 가드레일에 연결됨', 'dim']],
       })}
       ${flow(xa, [
         ['클라이언트가 교내 주소로 요청', 'POST https://aiportal.kaist.ac.kr/v1/messages'],
-        ['게이트웨이가 토큰을 확인하고 등급을 정함', '교내 토큰 → CLR 0~4'],
+        ['가드레일이 토큰을 확인하고 등급을 정함', '교내 토큰 → CLR 0~3'],
         ['입력 검사 8단계 → 판정', 'ALLOW / SANITIZE / FLAG / BLOCK'],
         ['통과분만 공급자로 중계', '→ api.anthropic.com'],
         ['응답은 꼬리를 붙잡고 흘려보냄', '출력 검사 6단계'],
       ], C.teal)}
-      ${footer(xa, 486, C.teal, '게이트웨이가 내야 하는 것', [
+      ${footer(xa, 486, C.teal, '가드레일이 갖출 것', [
         '/v1/messages · /v1/messages/count_tokens',
         'anthropic-version · anthropic-beta 헤더 전달',
         '배포: /etc/profile.d · 컨테이너 ENV · settings.json',
@@ -176,7 +176,7 @@ export function buildPaths(host) {
 
 export const PATH_CAPTIONS = [
   '브라우저 말고도 길이 있습니다. <b>셋 다 통제 지점이 다릅니다.</b>',
-  '<b>A — 주소를 바꿀 수 있습니다.</b> 요청이 교내 게이트웨이로 들어와 검사를 거친 뒤 공급자로 중계됩니다. 이미 되는 길입니다.',
+  '<b>A — 주소를 바꿀 수 있습니다.</b> 요청이 교내 가드레일로 들어와 검사를 거칩니다. 그다음 공급자로 중계됩니다. 이미 되는 길입니다.',
   '<b>B — 주소를 바꿀 설정이 없습니다.</b> 방화벽에서 끊고 포털로 대체합니다. 앱은 안내 페이지를 못 보므로 사전 공지가 필수입니다.',
   '<b>C — 통제 지점 자체가 없습니다.</b> 편집기가 벤더로 바로 갑니다. 기술이 아니라 계약으로 다룰 문제입니다.',
 ];
