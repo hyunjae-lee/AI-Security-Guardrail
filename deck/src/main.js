@@ -288,7 +288,8 @@ const sections = [...document.querySelectorAll('.slides > section')];
 sections.forEach((s, i) => {
   const n = document.createElement('span');
   n.className = 'slide-no';
-  n.textContent = `${String(i + 1).padStart(2, '0')} / ${sections.length}`;
+  // 자료집(B5 PDF)은 본문 1쪽부터 한 쪽에 두 장씩 싣는다 — 발표 중 「자료집 몇 쪽」을 바로 말할 수 있게 함께 적는다.
+  n.textContent = `${String(i + 1).padStart(2, '0')} / ${sections.length} · 자료집 ${Math.floor(i / 2) + 1}쪽`;
   s.querySelector('.wrap').appendChild(n);
 });
 
