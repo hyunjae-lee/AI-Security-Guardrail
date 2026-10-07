@@ -54,7 +54,9 @@ for (let i = 0; i < N; i += 2) {
 }
 
 // 면지(빈 쪽) — 중철 제본은 4의 배수여야 한다(겉표지·속표지·차례·본문 23·면지·뒤표지 = 28).
-pages += `<section class="pg blank"></section>`;
+// 앞표지·속표지·차례(3) + 본문 + 면지 + 뒤표지(1) = 4의 배수가 되도록 면지 수를 맞춘다
+const used = 3 + Math.ceil(N / 2) + 1;
+for (let k = 0; k < (4 - used % 4) % 4; k++) pages += `<section class="pg blank"></section>`;
 // 뒤표지 — 책의 맨 바깥쪽. 빛 궤적이 캠퍼스에서 일어나 책등을 건너 앞표지의 게이트로 간다.
 pages += `<section class="pg back">
   <div class="ng-top bk"><span>2026 직원 현장연구과정</span><span>최종 성과 발표 자료집</span></div>
@@ -138,5 +140,5 @@ const p = await b.newPage();
 await p.setContent(html, { waitUntil: 'networkidle' });
 await p.evaluate(() => document.fonts.ready);
 await p.pdf({ path: '/w/book/booklet.pdf', width: '182mm', height: '257mm', printBackground: true, preferCSSPageSize: true });
-console.log('pages', 5 + Math.ceil(N / 2), await p.evaluate(() => [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family).join(',')));
+console.log('pages', (s => s)(pages.split('class="pg ').length - 1), await p.evaluate(() => [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family).join(',')));
 await b.close();

@@ -1565,6 +1565,43 @@
       <p>「목록을 만들고, 부서가 등급을 정하고, 국가 기준과 맞추고, 가드레일에 올려 적용합니다. 가장 오래 걸리는 건 첫 단계입니다. 정하기 어려운 자료는 일단 L2 로 둡니다 — 모르겠다가 허용이 되면 안 됩니다.」</p>
       <p>「지금 엔진은 등급을 추천만 합니다. 부서가 확인한 등급표가 쌓이면, 그것이 등급 추천을 더 정확하게 만드는 다음 연구의 학습 자료가 됩니다. 사람이 먼저 정하고, 그것으로 기계를 가르칩니다.」</p>
       <p>— 이 문장이 「연구가 끝나고 무엇이 남는가」에 대한 답이다. 가장 천천히 말할 것.</p>
+      <p>「등급표를 어떻게 쓰나요」가 나오면 다음 예비 장(등급표 예시)을 연다.</p>
+    </aside>
+</section>
+
+<!-- 거버넌스 — 등급표 예시 ───────────────────────────────── -->
+<section data-s="gov3">
+  <div class="wrap">
+    <p class="kicker kicker--amber">39 · AI 거버넌스 — 등급표 예시</p>
+    <h2>등급표는 이렇게 씁니다. 한 줄에 자료 하나입니다.</h2>
+    <div class="spacer"></div>
+    <table class="tbl tbl--text tbl--compact tbl--grade" style="flex:0 0 auto">
+      <tr><th>자료</th><th>담당 부서</th><th>등급</th><th>N2SF</th><th>외부 AI</th><th>이유 (한 문장)</th></tr>
+      <tr><td><strong>학사 일정 공지</strong></td><td>학사팀</td><td>1 · 공개 <span class="dim">(L0)</span></td><td>공개(O)</td><td><span class="vd vd--allow">허용</span></td><td>홈페이지에 이미 공개된 자료입니다.</td></tr>
+      <tr><td><strong>회의 안건 초안</strong></td><td>각 부서</td><td>2 · 내부 <span class="dim">(L1)</span></td><td>공개(O)</td><td><span class="vd vd--allow">허용</span></td><td>공개 전 자료입니다. 개인정보는 없습니다.</td></tr>
+      <tr><td><strong>학생 연락처 명단</strong></td><td>학사·학적팀</td><td>3 · 민감 <span class="dim">(L2)</span></td><td>공개(O)</td><td><span class="vd vd--mask">가린 뒤</span></td><td>개인을 알아볼 수 있는 정보가 있습니다.</td></tr>
+      <tr><td><strong>성적 · 징계 기록</strong></td><td>학사·학적팀</td><td>4 · 기밀 <span class="dim">(L3)</span></td><td>민감(S)</td><td><span class="vd vd--block">금지</span></td><td>학생에게 불이익이 생길 수 있는 기록입니다.</td></tr>
+      <tr><td><strong>인사 평가 · 급여</strong></td><td>인사·고객경영팀</td><td>4 · 기밀 <span class="dim">(L3)</span></td><td>민감(S)</td><td><span class="vd vd--block">금지</span></td><td>대외비 인사 자료입니다.</td></tr>
+      <tr><td><strong>미공개 연구노트 · 보안과제</strong></td><td>연구처·산학협력단</td><td>5 · 극비 <span class="dim">(L4)</span></td><td>기밀(C)</td><td><span class="vd vd--block">절대 금지</span></td><td>유출되면 기술유출이 됩니다.</td></tr>
+      <tr><td><strong>주민등록번호 · 계정 비밀번호</strong></td><td>전 부서</td><td>5 · 극비 <span class="dim">(L4)</span></td><td>기밀(C)</td><td><span class="vd vd--block">절대 금지</span></td><td>법정 고유식별정보와 자격증명입니다.</td></tr>
+    </table>
+    <div class="spacer"></div>
+    <div class="grade-rules" style="flex:0 0 auto">
+      <span class="grade-rules__h">작성 규칙</span>
+      <span><b>1</b> 자료 하나에 한 줄을 씁니다.</span>
+      <span><b>2</b> 등급은 1~5 중 하나만 고릅니다.</span>
+      <span><b>3</b> 이유는 한 문장으로 씁니다.</span>
+      <span><b>4</b> 정하기 어려우면 3등급으로 둡니다.</span>
+      <span><b>5</b> 해마다 검토일을 다시 적습니다.</span>
+    </div>
+    <p class="cite">예시입니다 — 실제 등급은 각 부서가 정합니다 · 등급과 외부 AI 범위는 가드레일 엔진의 데이터 등급 정의(app/guardrail/classify.py)와 같습니다 · 3등급은 개인정보를 가린 뒤에만 보냅니다</p>
+  </div>
+    <aside class="notes">
+      <p><strong>예비 — 「등급표를 어떻게 쓰나요」가 나오면 꺼낸다</strong></p>
+      <p>「등급표는 한 줄에 자료 하나를 씁니다. 자료 이름, 담당 부서, 등급, 국가 기준, 외부 AI 허용 여부, 이유 한 문장입니다.」</p>
+      <p>「1·2등급은 그대로 보냅니다. 3등급은 개인정보를 가린 뒤 보냅니다. 4·5등급은 보내지 않습니다.」</p>
+      <p>「정하기 어려우면 3등급으로 둡니다. 모르겠다가 허용이 되면 안 됩니다.」</p>
+      <p>표의 행은 예시다. 실제 등급은 부서가 정한다고 반드시 말한다. 등급 정의는 엔진 classify.py 의 GRADES 와 같다(1 공개 · 2 내부 · 3 민감 · 4 기밀 · 5 극비).</p>
     </aside>
 </section>
 

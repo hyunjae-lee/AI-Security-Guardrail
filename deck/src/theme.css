@@ -907,3 +907,16 @@ html.paper .reveal .controls, html.paper .reveal .progress,
 html.paper .slide-no, html.paper .cover__btns { display: none !important; }
 html.paper .stage svg { filter: none; }
 html.paper .term { --ink: #f4f3ef; --ink-2: #c7c8ce; --ink-3: #9b9da6; --amber: #f5b355; --teal: #5fcfb0; --red: #f27a6d; --green: #95cf70; color: var(--ink); }
+
+/* 등급표 예시 — 표 + 작성 규칙 한 줄 */
+.tbl--grade { table-layout: fixed; width: 100%; }
+.tbl--grade th:nth-child(1) { width: 21%; }
+.tbl--grade th:nth-child(2) { width: 13%; }
+.tbl--grade th:nth-child(3) { width: 11%; }
+.tbl--grade th:nth-child(4) { width: 9%; }
+.tbl--grade th:nth-child(5) { width: 10%; }
+.tbl--grade td { vertical-align: middle; }
+.tbl--grade td:nth-child(6) { color: var(--ink-2); }
+.grade-rules { display: flex; flex-wrap: wrap; gap: 0.5rem 1.4rem; align-items: baseline; font-size: 0.66em; color: var(--ink-2); border-top: 1px solid var(--line); padding-top: 0.8rem; }
+.grade-rules__h { font-weight: 700; color: var(--amber); letter-spacing: 0.04em; }
+.grade-rules b { color: var(--amber); margin-right: 0.3em; }
