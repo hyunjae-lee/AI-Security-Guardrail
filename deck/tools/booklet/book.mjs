@@ -70,7 +70,7 @@ pages += `<section class="pg back">
     </svg>
     <p class="bk-mark">AI GUARDRAIL</p>
     <p class="bk-lead">막지 않습니다.<br>확인하고 보냅니다.</p>
-    <p class="bk-body">구성원이 생성형 AI 에 보내는 질문은 나갈 때 검사합니다. 돌아오는 답은 들어올 때 다시 검사합니다. 기준은 우리가 정합니다. 이 자료집은 그 가드레일을 설계하고 실증한 2026 직원 현장연구의 최종 발표를 담았습니다.</p>
+    <p class="bk-body"><span>구성원이 생성형 AI 에 보내는 질문은 나갈 때 검사합니다.</span><span>돌아오는 답은 들어올 때 다시 검사합니다.</span><span>기준은 우리가 정합니다.</span><span class="gap">이 자료집은 2026 직원 현장연구의 최종 발표를 담았습니다.</span><span>그 가드레일을 어떻게 설계하고 실증했는지 보여 줍니다.</span></p>
   </div>
   <div class="bk-foot">
     <div><b>대학 행정환경을 고려한 생성형 AI 도입을 위한<br>보안 프레임워크 및 가드레일 실증 연구</b><br>AI 보안·거버넌스 현장연구회 — 이현재 · 임종호 · 강경덕</div>
@@ -103,7 +103,9 @@ html, body { word-break: keep-all; margin: 0; background: #fff; color: #1d1d1f; 
 .bk-emblem { width: 30mm; height: auto; display: block; }
 .bk-mark { margin: 9mm 0 0; font-family: 'Playfair Display', serif; font-weight: 900; font-size: 13pt; letter-spacing: .04em; }
 .bk-lead { margin: 3mm 0 0; font-family: 'Black Han Sans', 'Noto Sans KR', sans-serif; font-size: 40pt; line-height: 1.15; color: #111; }
-.bk-body { margin: 8mm 0 0; font-size: 9.6pt; line-height: 1.8; color: #2a2a2a; max-width: 112mm; }
+.bk-body { margin: 8mm 0 0; font-size: 9.6pt; line-height: 1.8; color: #2a2a2a; }
+.bk-body span { display: block; white-space: nowrap; }
+.bk-body .gap { margin-top: 3mm; }
 .bk-foot { position: absolute; left: 16mm; right: 16mm; bottom: 15mm; display: flex; justify-content: space-between; align-items: flex-end; font-size: 7.6pt; line-height: 1.6; color: #333; border-top: .3mm solid #111; padding-top: 4mm; }
 .bk-foot b { color: #111; font-weight: 700; }
 .bk-foot img { height: 7mm; width: auto; }
