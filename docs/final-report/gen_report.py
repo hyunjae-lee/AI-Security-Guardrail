@@ -391,7 +391,7 @@ table(['그림 2-8 의 구성', '원문이 요구하는 것', '본 연구의 구
 figure('s14.jpg', 'N2SF AI 연계체계 원문 그림과 본 연구 구현의 대응 (발표 자료 11)')
 para('**(3) 해외 대학** — 해외 주요 대학은 생성형 AI 를 막지 않는다. 기관이 계약하거나 운영하는 통로를 따로 낸다.')
 table(['대학', '방식', '내용', '출처'], [
-    ['Harvard', '교내 환경', 'AI Sandbox — 입력을 AI 회사와 공유하지 않고 학습에 쓰지 않음. 개인 계정 일반 AI 에는 Level 1(공개) 자료만', 'Harvard Gazette 2023.09.26 · HMS IT 지침'],
+    ['Harvard', '교내 환경', 'AI Sandbox — 입력을 AI 회사와 공유하지 않고 학습에 쓰지 않음. 의대(HMS) 지침: 개인 계정 일반 AI 는 Level 1(공개) 자료만 · 학교 계약 AI 는 Level 3 까지 · Level 4 는 승인된 AI 없음(IT 와 먼저 협의) · Level 5 금지', 'Harvard Gazette 2023.09.26 · HMS IT 지침'],
     ['Stanford', '교내 플랫폼', 'AI Playground — 여러 회사 모델. 2026.05 개인정보 포함 고위험 데이터 승인 (의료 · 카드정보 제외). 개인 계정 ChatGPT · Claude 는 Low 등급만', 'Stanford UIT 2026.05.13'],
     ['Michigan', '자체 구축', 'U-M GPT (2023.08) — 학생 기록(FERPA) 수준까지 허용', 'The Michigan Daily 2024.11.06'],
     ['Oxford', '기관 계약', '전 구성원 ChatGPT Edu — 약 750명 시범 운영 뒤 확대', 'Mothership 2025.09.21'],
