@@ -271,10 +271,9 @@
 .stage svg { width: 100%; height: 100%; max-height: 100%; filter: drop-shadow(3px 5px 30px rgba(0, 0, 0, 0.22)); }
 
 /* 모션을 끄면 완성된 정지 화면이 남아야 한다 (web/ 과 같은 원칙) */
-@media (prefers-reduced-motion: reduce) {
-  .reveal .slides section * { transition: none !important; animation: none !important; }
-  .b-item { opacity: 1; }
-}
+/* 정지 화면(`?still`) — OS 의 동작 줄이기 대신 주소로 고른다 (main.js 의 reduced) */
+html.still .reveal .slides section * { transition: none !important; animation: none !important; }
+html.still .b-item { opacity: 1; }
 
 /* ── 근거 문서 — 남의 원문 표지 ─────────────────────────── */
 .doc {
@@ -853,9 +852,7 @@
 .close__art { min-height: 0; height: 100%; display: flex; align-items: center; }
 .close__art svg { width: 100%; height: auto; max-height: 100%; }
 .close__foot { font-size: 0.56em; color: var(--ink-2); }
-@media (prefers-reduced-motion: no-preference) {
-  .reveal section.present .close__was span::after { animation: close-strike 0.7s cubic-bezier(.28,.11,.32,1) 0.5s both; }
-}
+html:not(.still) .reveal section.present .close__was span::after { animation: close-strike 0.7s cubic-bezier(.28,.11,.32,1) 0.5s both; }
 @keyframes close-strike { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 /* 오픈소스 · 연구회 개발 — 「왜 필요했나」가 가장 긴 칸이라 마지막에 넓게 둔다 */

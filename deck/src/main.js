@@ -212,7 +212,11 @@ function diagramGate(host) {
 }
 
 /* ── 초기화 ───────────────────────────────────────────────── */
-const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* 발표 화면이라 OS 의 「동작 줄이기」는 따르지 않는다(2026-10-28 요청).
+ * 발표 PC·원격 접속에서 이 신호가 켜져 있으면 표지·구조도가 전부 끝 장면으로
+ * 굳어 있었다(콘솔 오류 없이).  정지 화면이 필요하면 `?still` 로 연다. */
+const reduced = new URLSearchParams(location.search).has('still');
+if (reduced) document.documentElement.classList.add('still');
 
 /* 등장 연출의 투명도 하한.
  *
